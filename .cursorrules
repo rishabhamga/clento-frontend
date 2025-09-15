@@ -1,0 +1,285 @@
+# Clento Frontend Development Rules
+
+## Project Structure & Architecture
+
+### File Organization
+- Use Next.js App Router with route groups: `(marketing)` for public pages, `(dashboard)` for authenticated routes
+- Organize by feature when components exceed 5-10 files: `src/features/campaigns/`, `src/features/leads/`
+- Keep `components/ui/` untouched (raw ShadCN components)
+- Business logic components go in `components/` or `src/features/[feature]/components/`
+- Use absolute imports with `@/` prefix for all internal imports
+
+### Component Structure
+- Every component file should export a default component and named types
+- Use PascalCase for component names and files
+- Prefer function components with TypeScript interfaces
+- Keep components under 200 lines; extract subcomponents if larger
+
+## TypeScript & Type Safety
+
+### Strict Typing
+- Enable strict mode in tsconfig.json
+- Never use `any` type; use `unknown` if type is truly unknown
+- Define interfaces for all props, API responses, and complex objects
+- Use generic types for reusable components and hooks
+- Prefer `interface` over `type` for object shapes
+- Use `type` for unions, primitives, and computed types
+
+### API Types
+- Define all API types in `src/types/` directory
+- Create separate files for each domain: `campaign.ts`, `lead.ts`, `account.ts`
+- Use consistent naming: `Campaign`, `CreateCampaignRequest`, `CampaignResponse`
+- Export types with descriptive names, avoid generic names like `Data` or `Response`
+
+### Component Props
+```typescript
+// ✅ DO: Define clear prop interfaces
+interface CampaignCardProps {
+  campaign: Campaign
+  onEdit: (id: string) => void
+  onDelete: (id: string) => void
+  className?: string
+}
+
+// ❌ DON'T: Use inline types or any
+const CampaignCard = (props: any) => { ... }
+```
+
+## React Best Practices
+
+### Hooks & State Management
+- Use custom hooks for complex logic and API calls
+- Prefix custom hooks with `use`: `useCampaigns`, `useAuth`
+- Keep hooks focused on single responsibility
+- Use TanStack Query for server state, Zustand for client state
+- Avoid prop drilling; use context or state management for deep data
+
+### Component Patterns
+- Use compound components for complex UI patterns
+- Implement proper error boundaries for each major section
+- Use React.memo for expensive components, but measure first
+- Prefer controlled components over uncontrolled
+- Use refs sparingly, prefer state for most interactions
+
+### Event Handling
+```typescript
+// ✅ DO: Type event handlers properly
+const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault()
+  // ...
+}
+
+// ✅ DO: Use useCallback for event handlers passed to children
+const handleCampaignEdit = useCallback((id: string) => {
+  // ...
+}, [])
+```
+
+## Styling & UI
+
+### Tailwind CSS
+- Use utility classes, avoid custom CSS unless absolutely necessary
+- Create utility classes in globals.css for repeated patterns
+- Use CSS variables for theme colors, defined in globals.css
+- Prefer Tailwind's responsive prefixes: `md:`, `lg:`, `xl:`
+- Use `clsx` or `cn` utility for conditional classes
+
+### ShadCN Components
+- Never modify files in `components/ui/` directly
+- Create wrapper components for business-specific variations
+- Use ShadCN's theming system for consistent colors
+- Leverage ShadCN's built-in accessibility features
+
+### Responsive Design
+- Mobile-first approach: base styles for mobile, then `md:`, `lg:` for larger screens
+- Test on multiple screen sizes during development
+- Use semantic HTML elements for better accessibility
+
+## Data Fetching & API
+
+### TanStack Query
+- Use query keys that are hierarchical: `['campaigns', 'list']`, `['campaigns', id]`
+- Implement proper error handling for all queries
+- Use mutations for data modifications with optimistic updates
+- Set appropriate stale times and cache times
+- Implement proper loading and error states
+
+### API Client
+```typescript
+// ✅ DO: Centralize API calls with proper typing
+export async function getCampaigns(): Promise<Campaign[]> {
+  return apiFetch<Campaign[]>('/campaigns')
+}
+
+// ✅ DO: Handle errors consistently
+export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  try {
+    const token = await getClerkToken()
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        ...options?.headers,
+      },
+    })
+    
+    if (!response.ok) {
+      throw new ApiError(response.status, await response.text())
+    }
+    
+    return response.json()
+  } catch (error) {
+    // Proper error handling
+    throw error
+  }
+}
+```
+
+## Forms & Validation
+
+### Form Handling
+- Use react-hook-form for complex forms
+- Implement Zod schemas for validation
+- Create reusable form components with proper TypeScript integration
+- Handle form errors gracefully with user-friendly messages
+
+### Validation
+```typescript
+// ✅ DO: Define Zod schemas for validation
+export const createCampaignSchema = z.object({
+  name: z.string().min(1, 'Campaign name is required').max(100),
+  description: z.string().optional(),
+  leadListId: z.string().uuid('Invalid lead list ID'),
+  accountId: z.string().uuid('Invalid account ID'),
+})
+
+export type CreateCampaignData = z.infer<typeof createCampaignSchema>
+```
+
+## Performance & Optimization
+
+### Code Splitting
+- Use dynamic imports for heavy components: `const Chart = dynamic(() => import('./Chart'))`
+- Implement route-based code splitting automatically with Next.js
+- Lazy load components that are not immediately visible
+
+### Bundle Optimization
+- Avoid importing entire libraries; use tree-shaking friendly imports
+- Use Next.js Image component for optimized images
+- Implement proper caching strategies for static assets
+
+## Error Handling
+
+### Error Boundaries
+- Implement error boundaries for each major section of the app
+- Provide meaningful error messages to users
+- Log errors to monitoring service (e.g., Sentry)
+- Have fallback UI for when components fail
+
+### API Error Handling
+- Create custom error classes for different error types
+- Implement retry logic for transient failures
+- Show appropriate error messages based on error type
+- Provide recovery actions when possible
+
+## Security
+
+### Authentication
+- Never store sensitive data in localStorage
+- Use Clerk's secure token handling
+- Implement proper route protection with middleware
+- Validate user permissions on sensitive actions
+
+### Data Handling
+- Sanitize user inputs before displaying
+- Use TypeScript to prevent data type mismatches
+- Implement proper CSRF protection for forms
+- Validate data on both client and server sides
+
+## Testing (Future Implementation)
+
+### Unit Testing
+- Test custom hooks with React Testing Library
+- Test utility functions with Jest
+- Mock API calls in tests
+- Aim for high coverage on critical business logic
+
+### Integration Testing
+- Test user workflows end-to-end
+- Test form submissions and API interactions
+- Test error scenarios and edge cases
+
+## Code Quality
+
+### Naming Conventions
+- Use descriptive names for variables and functions
+- Use PascalCase for components and types
+- Use camelCase for functions and variables
+- Use SCREAMING_SNAKE_CASE for constants
+- Prefix boolean variables with `is`, `has`, `can`, `should`
+
+### Code Organization
+- Keep functions small and focused (under 50 lines)
+- Extract complex logic into custom hooks
+- Use early returns to reduce nesting
+- Group related functionality together
+- Add JSDoc comments for complex functions
+
+### Import Organization
+```typescript
+// ✅ DO: Organize imports in this order
+// 1. React and Next.js imports
+import React from 'react'
+import { NextPage } from 'next'
+
+// 2. Third-party libraries
+import { useQuery } from '@tanstack/react-query'
+import { z } from 'zod'
+
+// 3. Internal imports (absolute paths)
+import { Button } from '@/components/ui/button'
+import { useCampaigns } from '@/hooks/useCampaigns'
+import { Campaign } from '@/types/campaign'
+
+// 4. Relative imports
+import './styles.css'
+```
+
+## Environment & Configuration
+
+### Environment Variables
+- Use `NEXT_PUBLIC_` prefix for client-side variables
+- Validate environment variables with Zod schemas
+- Never commit sensitive environment variables
+- Use different .env files for different environments
+
+### Configuration
+- Centralize configuration in `src/config/` directory
+- Use TypeScript for configuration files
+- Validate configuration at startup
+- Document all configuration options
+
+## Accessibility
+
+### ARIA and Semantic HTML
+- Use semantic HTML elements when possible
+- Add proper ARIA labels for interactive elements
+- Ensure keyboard navigation works properly
+- Test with screen readers during development
+
+### Color and Contrast
+- Ensure sufficient color contrast for text
+- Don't rely solely on color to convey information
+- Test with color blindness simulators
+- Provide alternative text for images
+
+## Performance Monitoring
+
+### Metrics
+- Monitor Core Web Vitals (LCP, FID, CLS)
+- Track bundle size and loading times
+- Monitor API response times
+- Set up alerts for performance regressions
+
+Remember: These rules should guide development but not hinder productivity. When in doubt, prioritize code clarity and maintainability over strict adherence to rules.
