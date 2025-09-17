@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { 
-  leadListsApi, 
-  CreateLeadListRequest, 
+import {
+  leadListsApi,
+  CreateLeadListRequest,
   UpdateLeadListRequest,
   LeadListQuery,
   CsvPreviewRequest,
@@ -68,7 +68,7 @@ export function useUpdateLeadList() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateLeadListRequest }) => 
+    mutationFn: ({ id, data }: { id: string; data: UpdateLeadListRequest }) =>
       leadListsApi.updateLeadList(id, data),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: leadListKeys.lists() })
@@ -172,7 +172,7 @@ export function useDuplicateLeadList() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, name }: { id: string; name: string }) => 
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
       leadListsApi.duplicateLeadList(id, name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: leadListKeys.lists() })

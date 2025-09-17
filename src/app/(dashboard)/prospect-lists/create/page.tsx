@@ -77,26 +77,26 @@ export default function CreateLeadListPage() {
       try {
         const url = `/api/accounts`
         console.log('Fetching accounts from:', url)
-        
+
         const response = await fetch(url)
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch accounts')
         }
 
         const data = await response.json()
         console.log('Accounts API response:', data)
-        
+
         // The API returns { success: true, data: [...], meta: {...} }
         // So we need to access data.data, not data.accounts
         const accounts = data.data || []
         console.log('Accounts from API:', accounts)
-        
+
         // Filter only connected LinkedIn accounts
-        const linkedinAccounts = accounts.filter((account: any) => 
+        const linkedinAccounts = accounts.filter((account: any) =>
           account.provider === 'linkedin' && account.status === 'connected'
         )
-        
+
         console.log('LinkedIn accounts found:', linkedinAccounts)
         setConnectedAccounts(linkedinAccounts)
       } catch (error) {
@@ -120,7 +120,7 @@ export default function CreateLeadListPage() {
 John,Doe,john.doe@example.com,https://linkedin.com/in/johndoe,Acme Corp,Software Engineer,+1234567890
 Jane,Smith,jane.smith@example.com,https://linkedin.com/in/janesmith,Tech Solutions,Product Manager,+1234567891
 Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innovation Inc,Data Scientist,+1234567892`
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
@@ -133,10 +133,10 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
   }
 
   // Filter out any accounts with missing required fields
-  const validConnectedAccounts = connectedAccounts.filter(account => 
-    account && 
-    account.id && 
-    account.display_name && 
+  const validConnectedAccounts = connectedAccounts.filter(account =>
+    account &&
+    account.id &&
+    account.display_name &&
     typeof account.display_name === 'string' &&
     account.display_name.trim().length > 0
   )
@@ -171,12 +171,12 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
         const csvText = e.target?.result as string
         const lines = csvText.split('\n')
         const headers = lines[0]?.split(',').map(h => h.trim().toLowerCase())
-        
+
         // Check if CSV has required LinkedIn URL field
-        const hasLinkedInField = headers?.some(header => 
+        const hasLinkedInField = headers?.some(header =>
           header === 'linkedinurl' || header === 'linkedin_url' || header === 'linkedin'
         )
-        
+
         if (!hasLinkedInField) {
           setCsvValidationError("CSV must contain a 'linkedin_url' or 'linkedinUrl' field. Please download the sample CSV for the correct format.")
           return
@@ -193,7 +193,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
         setCsvValidationError("Error reading CSV file. Please ensure it's a valid CSV format.")
       }
     }
-    
+
     reader.readAsText(file)
   }
 
@@ -231,7 +231,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* LinkedIn Search URL */}
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-purple-300"
           onClick={() => handleMethodSelect("linkedin-search")}
         >
@@ -272,7 +272,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
         </Card>
 
         {/* Sales Navigator URL */}
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-purple-300"
           onClick={() => handleMethodSelect("sales-navigator")}
         >
@@ -313,7 +313,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
         </Card>
 
         {/* B2B Data Search */}
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-purple-300"
           onClick={() => handleMethodSelect("b2b-data")}
         >
@@ -354,7 +354,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
         </Card>
 
         {/* Import from CSV */}
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-purple-300"
           onClick={() => handleMethodSelect("csv-import")}
         >
@@ -438,7 +438,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
 
         <div className="space-y-2">
           <Label htmlFor="account">LinkedIn Account</Label>
-          <Select 
+          <Select
             value={formData.connectedAccountId}
             onValueChange={(value) => setFormData(prev => ({ ...prev, connectedAccountId: value }))}
           >
@@ -476,8 +476,8 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>CSV File (Max 10MB)</Label>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={handleDownloadSampleCsv}
                 className="text-purple-600 border-purple-200 hover:bg-purple-50"
@@ -486,7 +486,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                 Download Sample CSV
               </Button>
             </div>
-            
+
             {csvValidationError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -495,7 +495,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                 </AlertDescription>
               </Alert>
             )}
-            
+
             <Card className="border-2 border-dashed border-border/50 bg-background/50">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 {!formData.csvFile ? (
@@ -524,8 +524,8 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                     <p className="text-sm text-muted-foreground">
                       {(formData.csvFile.size / 1024).toFixed(2)} KB
                     </p>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="mt-4"
                       onClick={() => document.getElementById('csv-upload')?.click()}
                     >
@@ -557,7 +557,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button 
+        <Button
           onClick={() => setCurrentStep("preview")}
           disabled={!formData.name || !formData.connectedAccountId || (selectedMethod === "csv-import" && !formData.csvFile)}
           className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -623,9 +623,9 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                   <TableCell>{lead.company || 'N/A'}</TableCell>
                   <TableCell>
                     {lead.linkedin_url ? (
-                      <a 
-                        href={lead.linkedin_url} 
-                        target="_blank" 
+                      <a
+                        href={lead.linkedin_url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
                       >
@@ -646,7 +646,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button 
+        <Button
           onClick={handlePublish}
           disabled={!csvPreview?.validation.isValid || publishMutation.isPending}
           className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -666,7 +666,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
             <div key={step} className="flex items-center">
               <div className={`
                 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                ${currentStep === step ? "bg-purple-600 text-white" : 
+                ${currentStep === step ? "bg-purple-600 text-white" :
                   ["select-method", "configure", "preview"].indexOf(currentStep) > index ? "bg-green-500 text-white" : "bg-muted text-muted-foreground"}
               `}>
                 {["select-method", "configure", "preview"].indexOf(currentStep) > index ? "✓" : index + 1}
