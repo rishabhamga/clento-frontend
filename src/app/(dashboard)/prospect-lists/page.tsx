@@ -27,9 +27,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Filter, Plus, MoreHorizontal, Loader2, Eye, Edit, Trash2 } from "lucide-react"
+import { Search, Filter, Plus, MoreHorizontal, Loader2, Eye, Edit, Trash2, AlertCircle, FileText, RefreshCw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import { useLeadLists, useDeleteLeadList } from "@/hooks/useLeadLists"
+import { LeadList } from "../../../lib/api/lead-lists"
+import { EmptyState } from "@/components/ui/empty-state"
 
 const getStatusBadge = (status: string) => {
   switch (status.toLowerCase()) {
@@ -50,85 +60,89 @@ const getStatusBadge = (status: string) => {
 }
 
 const getSourceLabel = (source: string) => {
-  switch (source) {
-    case "csv_import":
-      return "CSV Import"
-    case "filter_search":
-      return "Filter Search"
-    case "api":
-      return "API"
-    case "manual":
-      return "Manual"
-    default:
-      return source
-  }
-}
+  if (!source) return "";
+  return source
+    .split("_")
+    .map((part) =>
+      part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+    ).join(" ");
+};
 
 export default function ProspectListsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sourceFilter, setSourceFilter] = useState<string>("all")
-  
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
+  // Delete confirmation modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [listToDelete, setListToDelete] = useState<{ id: string; name: string } | null>(null)
+
   // Fetch lead lists from backend
   const { data: leadListsResponse, isLoading, error } = useLeadLists({
     search: searchTerm || undefined,
     source: sourceFilter !== "all" ? sourceFilter : undefined,
-    limit: 50, // Show more items per page
+    limit: pageSize,
+    page: currentPage,
   })
-  
+
   // Delete mutation
   const deleteLeadListMutation = useDeleteLeadList()
 
   // Extract lead lists data from API response
-  const apiResponse = leadListsResponse as any
-  
-  // Debug logging to see the actual structure
-  console.log('=== DEBUG LEAD LISTS ===')
-  console.log('leadListsResponse:', leadListsResponse)
-  console.log('apiResponse:', apiResponse)
-  console.log('apiResponse?.data:', apiResponse?.data)
-  console.log('apiResponse?.data?.data:', apiResponse?.data?.data)
-  
+  const apiResponse = leadListsResponse
+
   // Try multiple ways to access the data
-  let leadLists = []
-  if (apiResponse?.data?.data && Array.isArray(apiResponse.data.data)) {
-    leadLists = apiResponse.data.data
-    console.log('Using apiResponse.data.data (nested):', leadLists)
-  } else if (apiResponse?.data && Array.isArray(apiResponse.data)) {
+  let leadLists: LeadList[] = []
+  if(apiResponse?.data) {
     leadLists = apiResponse.data
-    console.log('Using apiResponse.data (direct):', leadLists)
-  } else if (Array.isArray(apiResponse)) {
-    leadLists = apiResponse
-    console.log('Using apiResponse (array):', leadLists)
-  } else {
-    console.log('Could not extract lead lists, structure:', typeof apiResponse, apiResponse)
   }
-  
-  console.log('Final leadLists:', leadLists)
-  console.log('Final leadLists.length:', leadLists?.length)
-  
-  // Temporary fallback for testing
-  if (!leadLists || leadLists.length === 0) {
-    leadLists = [
-      {
-        id: 'test-1',
-        name: 'Test Lead List 1',
-        description: 'This is a test lead list',
-        source: 'csv_import',
-        status: 'completed',
-        total_leads: 5,
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 'test-2',
-        name: 'Test Lead List 2', 
-        description: 'Another test lead list',
-        source: 'csv_import',
-        status: 'draft',
-        total_leads: 3,
-        created_at: new Date().toISOString()
+
+  // Pagination calculations
+  const totalLeads = apiResponse?.pagination?.total || leadLists.length
+  const totalPages = apiResponse?.pagination?.totalPages || Math.ceil(totalLeads / pageSize)
+
+  // Reset to first page when search or filter changes
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    setCurrentPage(1)
+  }
+
+  const handleSourceFilterChange = (value: string) => {
+    setSourceFilter(value)
+    setCurrentPage(1)
+  }
+
+  // Handle page size change
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(Number(value))
+    setCurrentPage(1)
+  }
+
+  // Handle page navigation
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = []
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
       }
-    ]
-    console.log('Using fallback test data:', leadLists)
+    } else {
+      const startPage = Math.max(1, currentPage - 2)
+      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i)
+      }
+    }
+
+    return pages
   }
 
   if (error) {
@@ -144,10 +158,22 @@ export default function ProspectListsPage() {
     window.location.href = `/prospect-lists/edit/${listId}`
   }
 
-  const handleDeleteList = async (listId: string, listName: string) => {
-    if (window.confirm(`Are you sure you want to delete "${listName}"? This action cannot be undone.`)) {
-      deleteLeadListMutation.mutate(listId)
+  const handleDeleteList = (listId: string, listName: string) => {
+    setListToDelete({ id: listId, name: listName })
+    setDeleteModalOpen(true)
+  }
+
+  const confirmDelete = () => {
+    if (listToDelete) {
+      deleteLeadListMutation.mutate(listToDelete.id)
+      setDeleteModalOpen(false)
+      setListToDelete(null)
     }
+  }
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false)
+    setListToDelete(null)
   }
 
   return (
@@ -157,7 +183,7 @@ export default function ProspectListsPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Prospect lists</h1>
         </div>
-        <Button 
+        <Button
           className="bg-purple-600 hover:bg-purple-700 text-white"
           onClick={() => window.location.href = '/prospect-lists/create'}
         >
@@ -174,10 +200,10 @@ export default function ProspectListsPage() {
             placeholder="Search lead lists..."
             className="pl-10 bg-background"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
-        <Select value={sourceFilter} onValueChange={setSourceFilter}>
+        <Select value={sourceFilter} onValueChange={handleSourceFilterChange}>
           <SelectTrigger className="w-[180px] bg-background">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="All Types" />
@@ -208,29 +234,62 @@ export default function ProspectListsPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
+                  <TableCell colSpan={5} className="text-center py-12">
                     <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-muted-foreground">Loading lead lists...</span>
+                      <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+                      <span className="text-muted-foreground font-medium">Loading lead lists...</span>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
-                    <div className="text-red-500">
-                      Error loading lead lists. Please try again.
+                  <TableCell colSpan={5} className="text-center py-12">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="flex items-center gap-2 text-red-500">
+                        <AlertCircle className="w-5 h-5" />
+                        <span className="font-medium">Oops! Something went wrong</span>
+                      </div>
+                      <p className="text-muted-foreground text-sm max-w-md text-center">
+                        We couldn't load your lead lists. This might be a temporary issue.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.location.reload()}
+                        className="gap-2"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Try Again
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : leadLists.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
-                    <div className="text-muted-foreground">
-                      {searchTerm || sourceFilter !== "all" 
-                        ? "No lead lists match your search criteria."
-                        : "No lead lists found. Create your first lead list to get started."
-                      }
+                  <TableCell colSpan={5} className="text-center py-12">
+                    <div className="flex flex-col items-center gap-4">
+                      <FileText className="w-12 h-12 text-muted-foreground/50" />
+                      <div className="text-center">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
+                          {searchTerm || sourceFilter !== "all"
+                            ? "No lead lists found"
+                            : "No lead lists yet"
+                          }
+                        </h3>
+                        <p className="text-muted-foreground text-sm max-w-md">
+                          {searchTerm || sourceFilter !== "all"
+                            ? "No lead lists match your search criteria. Try adjusting your filters or search terms."
+                            : "Create your first lead list to start organizing and managing your prospects."
+                          }
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => window.location.href = '/prospect-lists/create'}
+                        className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Create Lead List
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -277,14 +336,14 @@ export default function ProspectListsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleViewList(list.id)}
                               className="cursor-pointer"
                             >
                               <Eye className="w-4 h-4 mr-2" />
                               View List
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleEditList(list.id)}
                               className="cursor-pointer"
                             >
@@ -292,7 +351,7 @@ export default function ProspectListsPage() {
                               Edit List
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleDeleteList(list.id, list.name)}
                               className="cursor-pointer text-red-600 focus:text-red-600"
                             >
@@ -312,44 +371,109 @@ export default function ProspectListsPage() {
       </Card>
 
       {/* Pagination */}
-      {leadLists.length > 0 && (
+      {!isLoading && !error && leadLists.length > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {leadLists.length} lead list{leadLists.length !== 1 ? 's' : ''}
-            {apiResponse?.data?.pagination && (
-              <span> (Page {apiResponse.data.pagination.page} of {apiResponse.data.pagination.totalPages})</span>
-            )}
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalLeads)} of {totalLeads} lead lists
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Items per page</span>
-            <Select defaultValue="10">
-              <SelectTrigger className="w-16 h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="25">25</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
-            <span className="text-sm text-muted-foreground">Page 1 of 2</span>
-            <div className="flex gap-1">
-              <Button variant="outline" size="sm" disabled>
-                ‹‹
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Rows per page</span>
+              <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="w-16 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronsLeft className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="sm" disabled>
-                ‹
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="sm">
-                ›
+
+              {getPageNumbers().map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(page)}
+                  className="w-8 h-8 p-0"
+                >
+                  {page}
+                </Button>
+              ))}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="sm">
-                ››
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronsRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Lead List</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{listToDelete?.name}"? This action cannot be undone and will permanently remove the lead list and all associated data.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelDelete}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deleteLeadListMutation.isPending}
+            >
+              {deleteLeadListMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete List"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
