@@ -12,7 +12,7 @@ export interface ConnectedAccount {
   profile_picture_url?: string
   status: 'connected' | 'disconnected' | 'error' | 'pending'
   capabilities: string[]
-  metadata: Record<string, unknown>
+  metadata: Record<string, any>
   last_synced_at?: string
   created_at: string
   updated_at: string
@@ -37,24 +37,24 @@ export function useConnectedAccounts(provider?: 'linkedin' | 'email') {
         if (provider) {
           params.append('provider', provider)
         }
-        
+
         const url = params.toString() ? `/accounts?${params.toString()}` : '/accounts'
         console.log('Fetching connected accounts:', url)
-        
+
         const response = await api.get<{
           success: boolean
           data: ConnectedAccount[]
           meta: { total: number }
         }>(url)
-        
+
         console.log('Connected accounts API response:', response)
         console.log('Connected accounts data:', response.data)
         console.log('Connected accounts count:', response.data?.length || 0)
-        
+
         // The response structure is: { success: true, data: [...], meta: {...} }
         // But api.get() extracts the data field, so response is actually the accounts array
         const accounts = Array.isArray(response) ? response : (response.data || [])
-        
+
         return {
           success: true,
           data: {

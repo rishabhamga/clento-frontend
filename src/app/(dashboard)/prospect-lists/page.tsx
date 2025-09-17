@@ -38,6 +38,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Filter, Plus, MoreHorizontal, Loader2, Eye, Edit, Trash2, AlertCircle, FileText, RefreshCw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import { useLeadLists, useDeleteLeadList } from "@/hooks/useLeadLists"
+import { ConnectedAccount, useConnectedAccounts } from "@/hooks/useConnectedAccounts"
 import { LeadList } from "../../../lib/api/lead-lists"
 import { EmptyState } from "@/components/ui/empty-state"
 
@@ -75,6 +76,7 @@ export default function ProspectListsPage() {
   const [pageSize, setPageSize] = useState(10)
 
   // Delete confirmation modal state
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [listToDelete, setListToDelete] = useState<{ id: string; name: string } | null>(null)
 
@@ -88,6 +90,15 @@ export default function ProspectListsPage() {
 
   // Delete mutation
   const deleteLeadListMutation = useDeleteLeadList()
+
+  // Fetch connected accounts
+  const { data: accountsData } = useConnectedAccounts('linkedin')
+
+  // Helper function to get account data by ID
+  const getAccountById = (accountId: string): ConnectedAccount | undefined => {
+    const accounts = accountsData?.data?.data || []
+    return accounts.find(account => account.id === accountId)
+  }
 
   // Extract lead lists data from API response
   const apiResponse = leadListsResponse
@@ -308,17 +319,39 @@ export default function ProspectListsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-8 h-8">
-                          <AvatarFallback className="bg-gradient-purple text-white text-xs">
-                            CL
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium text-foreground">Clento User</div>
-                          <div className="text-sm text-muted-foreground">Premium</div>
-                        </div>
-                      </div>
+                      {(() => {
+                        const account = getAccountById(list.connected_account_id)
+                        if (account) {
+                          return (
+                            <div className="flex items-center gap-3">
+                              <Avatar className="w-8 h-8">
+                                <AvatarImage src={account.profile_picture_url} alt={account.display_name || 'Account'} />
+                                <AvatarFallback className="bg-gradient-purple text-white text-xs">
+                                  {account.display_name ? account.display_name.split(' ').map((n: string) => n[0]).join('') : 'AC'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium text-foreground">{account.display_name || 'Unknown Account'}</div>
+                                <div className="text-sm text-muted-foreground">{account.metadata.account_type}</div>
+                              </div>
+                            </div>
+                          )
+                        } else {
+                          return (
+                            <div className="flex items-center gap-3">
+                              <Avatar className="w-8 h-8">
+                                <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                                  ?
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium text-muted-foreground">Account not found</div>
+                                <div className="text-sm text-muted-foreground">ID: {list.connected_account_id}</div>
+                              </div>
+                            </div>
+                          )
+                        }
+                      })()}
                     </TableCell>
                     <TableCell>
                       {getStatusBadge(list.status)}
