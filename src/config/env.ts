@@ -7,9 +7,9 @@ const envSchema = z.object({
   // API
   NEXT_PUBLIC_API_URL: z.string().url('Invalid API URL'),
   
-  // Clerk Authentication (optional for development)
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().optional(),
-  CLERK_SECRET_KEY: z.string().optional(),
+  // Clerk Authentication (required)
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1, 'Clerk Publishable Key is required'),
+  CLERK_SECRET_KEY: z.string().min(1, 'Clerk Secret Key is required'),
   
   // App Configuration
   NEXT_PUBLIC_APP_URL: z.string().url('Invalid app URL').default('http://localhost:3000'),

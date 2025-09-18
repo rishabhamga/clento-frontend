@@ -26,6 +26,10 @@ export function ClerkProvider({ children }: ClerkProviderProps) {
           footerActionLink: 'text-purple-600 hover:text-purple-700',
         },
       }}
+      // Organization-only configuration
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
+      afterSignOutUrl="/sign-in"
     >
       {children}
     </ClerkProviderComponent>

@@ -1,31 +1,20 @@
 "use client"
 
-import { User } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { useUser, useClerk } from "@clerk/nextjs"
+import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
 
 export function TopBar() {
-  const { user } = useUser()
-  const { signOut } = useClerk()
-
-  const handleSignOut = () => {
-    signOut()
-  }
 
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm">
-      <div className="flex h-16 items-center justify-end px-6">
-        {/* Credits, Theme Toggle and User Profile */}
+      <div className="flex h-16 items-center justify-between px-6">
+        {/* Left side - can add app logo or other elements here */}
+        <div className="flex items-center gap-4">
+          {/* You can add your app logo here if needed */}
+        </div>
+
+        {/* Right side - Credits, Organization Switcher, Theme Toggle and User Profile */}
         <div className="flex items-center gap-4">
           {/* Remaining Credits */}
           <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-md border">
@@ -36,48 +25,65 @@ export function TopBar() {
             </Button>
           </div>
 
+          {/* Enhanced Organization Switcher */}
+          <div className="flex items-center">
+            <OrganizationSwitcher
+              appearance={{
+                elements: {
+                  // Main trigger button
+                  organizationSwitcherTrigger: "flex items-center gap-2 border border-border bg-background hover:bg-muted rounded-md px-3 py-2 text-sm min-w-[140px] justify-between",
+                  
+                  // Organization preview inside trigger
+                  organizationPreview: "flex items-center gap-2",
+                  organizationPreviewAvatarBox: "w-6 h-6",
+                  organizationPreviewAvatarImage: "w-6 h-6 rounded-full",
+                  organizationPreviewMainIdentifier: "font-medium text-sm",
+                  organizationPreviewSecondaryIdentifier: "text-xs text-muted-foreground",
+                  
+                  // Dropdown content
+                  organizationSwitcherPopoverCard: "bg-background border-border shadow-lg rounded-md p-1 min-w-[240px]",
+                  organizationSwitcherPopoverMain: "space-y-1",
+                  
+                  // Organization options in dropdown
+                  organizationSwitcherPopoverActionButton: "w-full text-left px-3 py-2 text-sm hover:bg-muted rounded-sm transition-colors flex items-center gap-2",
+                  organizationSwitcherPopoverActionButtonText: "flex-1",
+                  organizationSwitcherPopoverActionButtonIcon: "w-4 h-4",
+                  
+                  // Header in dropdown
+                  organizationSwitcherPopoverRoleBox: "px-3 py-2 border-b border-border",
+                  
+                  // Footer buttons (Create org, Manage org)
+                  organizationSwitcherPopoverFooter: "border-t border-border pt-2 mt-2",
+                },
+              }}
+              createOrganizationMode="navigation"
+              createOrganizationUrl="/dashboard/organizations/new"
+              organizationProfileMode="navigation"
+              organizationProfileUrl="/dashboard/organizations/profile"
+              hidePersonal={false} // Show personal account option
+              defaultOpen={false}
+            />
+          </div>
+
           {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* User Profile Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={user?.imageUrl} alt={user?.fullName || "User"} />
-                  <AvatarFallback className="bg-gradient-purple text-white">
-                    {user?.firstName ? user.firstName[0] : <User className="w-4 h-4" />}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {user?.fullName || "User"}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user?.primaryEmailAddress?.emailAddress || "No email"}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut}>
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* User Profile - Using Clerk's UserButton */}
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "w-10 h-10",
+                userButtonPopoverCard: "bg-background border-border",
+                userButtonPopoverActions: "bg-background",
+                userButtonPopoverActionButton: "hover:bg-muted",
+                userButtonPopoverActionButtonText: "text-foreground",
+                userButtonPopoverFooter: "hidden", // Hide Clerk branding
+              },
+            }}
+            userProfileMode="modal"
+            afterSignOutUrl="/sign-in"
+            showName={false}
+          />
         </div>
       </div>
     </header>
