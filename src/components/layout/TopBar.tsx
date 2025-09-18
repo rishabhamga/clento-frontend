@@ -12,8 +12,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { useUser, useClerk } from "@clerk/nextjs"
 
 export function TopBar() {
+  const { user } = useUser()
+  const { signOut } = useClerk()
+
+  const handleSignOut = () => {
+    signOut()
+  }
+
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm">
       <div className="flex h-16 items-center justify-end px-6">
@@ -27,7 +35,7 @@ export function TopBar() {
               Get More +
             </Button>
           </div>
-          
+
           {/* Theme Toggle */}
           <ThemeToggle />
 
@@ -36,9 +44,9 @@ export function TopBar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src="/avatars/user.jpg" alt="User" />
+                  <AvatarImage src={user?.imageUrl} alt={user?.fullName || "User"} />
                   <AvatarFallback className="bg-gradient-purple text-white">
-                    <User className="w-4 h-4" />
+                    {user?.firstName ? user.firstName[0] : <User className="w-4 h-4" />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -46,9 +54,11 @@ export function TopBar() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">John Doe</p>
+                  <p className="text-sm font-medium leading-none">
+                    {user?.fullName || "User"}
+                  </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    john@company.com
+                    {user?.primaryEmailAddress?.emailAddress || "No email"}
                   </p>
                 </div>
               </DropdownMenuLabel>
@@ -63,7 +73,7 @@ export function TopBar() {
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSignOut}>
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -1,20 +1,22 @@
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
-// Check if Clerk is configured
-const hasClerkKeys = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY;
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/webhooks(.*)',
+])
 
-// Simple middleware that allows all routes when Clerk is not configured
-export default function middleware() {
-  // If Clerk is not configured, allow all routes
-  if (!hasClerkKeys) {
-    return NextResponse.next();
+export default clerkMiddleware(async (auth, req) => {
+  if (!isPublicRoute(req)) {
+    const sessionAuth = await auth();
+    if (!sessionAuth.userId) {
+      // Redirect to sign-in if not authenticated
+      return NextResponse.redirect(new URL('/sign-in', req.url));
+    }
   }
-
-  // For now, allow all routes even with Clerk configured (development mode)
-  // TODO: Implement proper Clerk middleware when keys are provided
-  return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [

@@ -1,48 +1,40 @@
 'use client'
 
-import Link from 'next/link'
-// import { SignUp } from '@clerk/nextjs'
+import { SignUp } from '@clerk/nextjs'
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full space-y-8 text-center">
         {/* Logo and branding */}
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-purple bg-clip-text text-transparent mb-2">
-            Clento Clay
-          </h1>
-          <p className="text-lg text-muted-foreground font-medium">
-            AI-powered LinkedIn and Email Outreach Automation
-          </p>
+            <h1 className="text-3xl font-bold text-purple-700 mb-2">
+                Clento Clay
+            </h1>
+            <p className="text-md text-muted-foreground font-medium">
+                AI-powered LinkedIn and Email Outreach Automation
+            </p>
         </div>
 
-        {/* Sign-up placeholder */}
-        <div className="shadow-xl border border-border bg-card w-full rounded-2xl p-8">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-foreground mb-2">Sign Up</h2>
-            <p className="text-muted-foreground mb-6">Authentication is disabled in development mode</p>
-            <div className="space-y-4">
-              <button 
-                onClick={() => window.location.href = '/'}
-                className="bg-gradient-purple hover:hover-gradient-purple text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl hover-glow-purple transition-all duration-200 transform hover:-translate-y-0.5 w-full"
-              >
-                Continue to Dashboard
-              </button>
-            </div>
-          </div>
+        {/* Clerk Sign-up component */}
+        <div className="flex justify-center">
+          <SignUp
+            appearance={{
+              elements: {
+                formButtonPrimary: 'bg-purple-600 hover:bg-purple-700 text-white',
+                card: 'bg-card border-border shadow-xl',
+                headerTitle: 'text-foreground',
+                headerSubtitle: 'text-muted-foreground',
+                socialButtonsBlockButton: 'border-border bg-background hover:bg-muted',
+                socialButtonsBlockButtonText: 'text-foreground',
+                formFieldInput: 'bg-background border-border text-foreground',
+                footerActionLink: 'text-purple-600 hover:text-purple-700',
+              },
+            }}
+            redirectUrl="/"
+            signInUrl="/sign-in"
+          />
         </div>
-
-        {/* Footer text */}
-        <p className="text-sm text-muted-foreground text-center">
-          Already have an account?{' '}
-          <Link 
-            href="/sign-in" 
-            className="text-primary font-semibold hover:text-primary/80 hover:underline transition-all duration-200"
-          >
-            Sign in
-          </Link>
-        </p>
       </div>
     </div>
   )
