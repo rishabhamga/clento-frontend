@@ -509,13 +509,6 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                       <Upload className="w-4 h-4 mr-2" />
                       Choose File
                     </Button>
-                    <input
-                      id="csv-upload"
-                      type="file"
-                      accept=".csv"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                    />
                   </>
                 ) : (
                   <div className="text-center space-y-2">
@@ -533,6 +526,14 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                     </Button>
                   </div>
                 )}
+                {/* Hidden file input - always present in DOM */}
+                <input
+                  id="csv-upload"
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
               </CardContent>
             </Card>
           </div>
