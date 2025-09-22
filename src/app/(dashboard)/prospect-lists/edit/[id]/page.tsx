@@ -47,7 +47,7 @@ export default function EditLeadListPage() {
   const updateMutation = useUpdateLeadList()
 
   // Filter valid connected accounts
-  const validConnectedAccounts = accountsData?.data?.data?.filter(account =>
+  const validConnectedAccounts = accountsData?.data?.filter(account =>
     account &&
     account.id &&
     account.display_name &&

@@ -19,12 +19,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { 
-  Linkedin, 
-  Plus, 
-  MoreHorizontal, 
-  Settings, 
-  Trash2, 
+import {
+  Linkedin,
+  Plus,
+  MoreHorizontal,
+  Settings,
+  Trash2,
   RefreshCw,
   AlertTriangle,
   CheckCircle,
@@ -33,11 +33,11 @@ import {
 import { useConnectedAccounts } from "@/hooks/useConnectedAccounts"
 export default function LinkedInAccountsPage() {
   const [isConnecting, setIsConnecting] = useState(false)
-  
+
   // Get connected LinkedIn accounts
   const { data: connectedAccountsData, isLoading } = useConnectedAccounts('linkedin')
-  const connectedAccounts = connectedAccountsData?.data?.data || []
-  
+  const connectedAccounts = connectedAccountsData?.data || []
+
   console.log('LinkedIn accounts page - connected accounts:', connectedAccounts)
   console.log('LinkedIn accounts page - accounts count:', connectedAccounts.length)
 
@@ -46,7 +46,7 @@ export default function LinkedInAccountsPage() {
     try {
       // Use ngrok URL for webhooks so Unipile can reach our server
       const baseUrl = 'https://0fe4ab0cee34.ngrok-free.app'
-      
+
       const response = await fetch('/api/accounts/connect', {
         method: 'POST',
         headers: {
@@ -66,7 +66,7 @@ export default function LinkedInAccountsPage() {
 
       const data = await response.json()
       console.log('Connection response:', data)
-      
+
       // Extract the URL from the response
       const redirectUrl = data.data?.url || data.data?.connection_url || data.connection_url
       if (redirectUrl) {
@@ -113,7 +113,7 @@ export default function LinkedInAccountsPage() {
     const date = new Date(lastSync)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) return 'Just now'
     if (diffInHours < 24) return `${diffInHours}h ago`
     const diffInDays = Math.floor(diffInHours / 24)
@@ -130,8 +130,8 @@ export default function LinkedInAccountsPage() {
             Manage your connected LinkedIn accounts for outreach campaigns
           </p>
         </div>
-        <Button 
-          onClick={handleConnectLinkedIn} 
+        <Button
+          onClick={handleConnectLinkedIn}
           disabled={isConnecting}
           className="bg-gradient-purple hover:bg-gradient-purple-dark text-white border-0 hover-glow-purple"
         >
@@ -188,8 +188,8 @@ export default function LinkedInAccountsPage() {
               <p className="text-muted-foreground mb-4">
                 Connect your LinkedIn account to start creating outreach campaigns
               </p>
-              <Button 
-                onClick={handleConnectLinkedIn} 
+              <Button
+                onClick={handleConnectLinkedIn}
                 disabled={isConnecting}
                 className="bg-gradient-purple hover:bg-gradient-purple-dark text-white border-0 hover-glow-purple"
               >

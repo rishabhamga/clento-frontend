@@ -39,8 +39,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Filter, Plus, MoreHorizontal, Loader2, Eye, Edit, Trash2, AlertCircle, FileText, RefreshCw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import { useLeadLists, useDeleteLeadList } from "@/hooks/useLeadLists"
 import { ConnectedAccount, useConnectedAccounts } from "@/hooks/useConnectedAccounts"
-import { LeadList } from "../../../lib/api/lead-lists"
 import { EmptyState } from "@/components/ui/empty-state"
+import { LeadList } from "../../../types/lead-list"
 
 const getStatusBadge = (status: string) => {
   switch (status.toLowerCase()) {
@@ -96,7 +96,7 @@ export default function ProspectListsPage() {
 
   // Helper function to get account data by ID
   const getAccountById = (accountId: string): ConnectedAccount | undefined => {
-    const accounts = accountsData?.data?.data || []
+    const accounts = accountsData?.data || []
     return accounts.find(account => account.id === accountId)
   }
 
