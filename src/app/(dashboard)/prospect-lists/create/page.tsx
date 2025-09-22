@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, Linkedin, Search, Database, FileSpreadsheet } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useConnectedAccounts } from "../../../../hooks/useConnectedAccounts"
 
 type Step = "select-method" | "configure" | "upload" | "preview" | "publish"
 type ImportMethod = "linkedin-search" | "sales-navigator" | "b2b-data" | "csv-import"
@@ -64,56 +65,11 @@ export default function CreateLeadListPage() {
   const [csvValidationError, setCsvValidationError] = useState<string>("")
 
   // State for connected accounts
-  const [connectedAccounts, setConnectedAccounts] = useState<any[]>([])
-  const [loadingAccounts, setLoadingAccounts] = useState(true)
+  const { data: connectedAccounts, isLoading: loadingAccounts } = useConnectedAccounts('linkedin');
 
   // API hooks
   const uploadCsvMutation = useUploadCsv()
   const publishMutation = usePublishLeadList()
-
-  // Fetch connected accounts directly (same approach as accounts page)
-  useEffect(() => {
-    const fetchConnectedAccounts = async () => {
-      try {
-        const url = `/api/accounts`
-        console.log('Fetching accounts from:', url)
-
-        const response = await fetch(url)
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch accounts')
-        }
-
-        const data = await response.json()
-        console.log('Accounts API response:', data)
-
-        // The API returns { success: true, data: [...], meta: {...} }
-        // So we need to access data.data, not data.accounts
-        const accounts = data.data || []
-        console.log('Accounts from API:', accounts)
-
-        // Filter only connected LinkedIn accounts
-        const linkedinAccounts = accounts.filter((account: any) =>
-          account.provider === 'linkedin' && account.status === 'connected'
-        )
-
-        console.log('LinkedIn accounts found:', linkedinAccounts)
-        setConnectedAccounts(linkedinAccounts)
-      } catch (error) {
-        console.error('Failed to load connected accounts:', error)
-        setConnectedAccounts([])
-      } finally {
-        setLoadingAccounts(false)
-      }
-    }
-
-    // Only fetch if we're in the browser (not during SSR)
-    if (typeof window !== 'undefined') {
-      fetchConnectedAccounts()
-    } else {
-      setLoadingAccounts(false)
-    }
-  }, [])
 
   const handleDownloadSampleCsv = () => {
     const csvContent = `first_name,last_name,email,linkedin_url,company,title,phone
@@ -133,13 +89,13 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
   }
 
   // Filter out any accounts with missing required fields
-  const validConnectedAccounts = connectedAccounts.filter(account =>
+  const validConnectedAccounts = connectedAccounts?.data?.filter(account =>
     account &&
     account.id &&
     account.display_name &&
     typeof account.display_name === 'string' &&
     account.display_name.trim().length > 0
-  )
+  ) || []
 
   const handleMethodSelect = (method: ImportMethod) => {
     setSelectedMethod(method)
@@ -450,7 +406,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                 <SelectItem value="loading" disabled>Loading accounts...</SelectItem>
               ) : validConnectedAccounts.length === 0 ? (
                 <SelectItem value="no-accounts" disabled>
-                  {connectedAccounts.length > 0 ? 'No valid LinkedIn accounts found' : 'No LinkedIn accounts connected'}
+                  {connectedAccounts?.data?.length && connectedAccounts.data.length > 0 ? 'No valid LinkedIn accounts found' : 'No LinkedIn accounts connected'}
                 </SelectItem>
               ) : (
                 validConnectedAccounts.map((account) => (

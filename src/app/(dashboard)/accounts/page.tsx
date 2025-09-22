@@ -33,7 +33,7 @@ export default function AccountsPage() {
 
   // Get connected LinkedIn accounts
   const { data: connectedAccountsData, isLoading } = useConnectedAccounts('linkedin')
-  const connectedAccounts = connectedAccountsData?.data?.data || []
+  const connectedAccounts = connectedAccountsData?.data || []
   const linkedInAccounts = connectedAccounts
 
   const accounts = [
@@ -52,7 +52,7 @@ export default function AccountsPage() {
       id: 2,
       name: "Email",
       icon: Mail,
-      status: "Disconnected", 
+      status: "Disconnected",
       statusColor: "error",
       seatsUsed: 0,
       seatsTotal: 0,
@@ -65,7 +65,7 @@ export default function AccountsPage() {
       name: "Whatsapp",
       icon: MessageSquare,
       status: "Coming soon",
-      statusColor: "warning", 
+      statusColor: "warning",
       seatsUsed: 0,
       seatsTotal: 0,
       iconColor: "text-green-600",
@@ -84,7 +84,7 @@ export default function AccountsPage() {
     },
     {
       id: 5,
-      name: "Instagram", 
+      name: "Instagram",
       icon: Instagram,
       status: "Coming soon",
       statusColor: "warning",
@@ -148,7 +148,7 @@ const getStatusBadge = (status: string, statusColor: string) => {
     try {
       // Use ngrok URL for webhooks so Unipile can reach our server
       const baseUrl = 'https://0fe4ab0cee34.ngrok-free.app'
-      
+
       const response = await fetch('/api/accounts/connect', {
         method: 'POST',
         headers: {
@@ -231,7 +231,7 @@ const getStatusBadge = (status: string, statusColor: string) => {
               {accounts.map((account) => {
                 const IconComponent = account.icon
                 const isLinkedIn = account.name === "LinkedIn"
-                
+
                 return (
                   <TableRow key={account.id} className="hover:bg-background/50">
                     {/* App Column */}
@@ -370,8 +370,8 @@ const getStatusBadge = (status: string, statusColor: string) => {
 
             {/* Connect New Account Button */}
             <div className="pt-4 border-t">
-              <Button 
-                onClick={handleConnectLinkedIn} 
+              <Button
+                onClick={handleConnectLinkedIn}
                 className="w-full bg-gradient-purple hover:bg-gradient-purple-dark text-white border-0 hover-glow-purple"
               >
                 <Plus className="w-4 h-4 mr-2" />
