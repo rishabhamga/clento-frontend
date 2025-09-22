@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { makeAuthenticatedRequest } from '@/lib/axios-utils'
+import { useAuth } from '@clerk/nextjs'
 
 export interface ConnectedAccount {
   id: string
@@ -29,10 +30,15 @@ export const connectedAccountKeys = {
 
 // Get connected accounts
 export function useConnectedAccounts(provider?: 'linkedin' | 'email') {
+  const { getToken } = useAuth()
+
   return useQuery({
     queryKey: connectedAccountKeys.list({ provider }),
     queryFn: async () => {
       try {
+        const token = await getToken()
+        if (!token) throw new Error('Authentication required')
+
         const params = new URLSearchParams()
         if (provider) {
           params.append('provider', provider)
@@ -41,18 +47,17 @@ export function useConnectedAccounts(provider?: 'linkedin' | 'email') {
         const url = params.toString() ? `/accounts?${params.toString()}` : '/accounts'
         console.log('Fetching connected accounts:', url)
 
-        const response = await api.get<{
+        const response = await makeAuthenticatedRequest<{
           success: boolean
           data: ConnectedAccount[]
           meta: { total: number }
-        }>(url)
+        }>('GET', url, {}, token)
 
         console.log('Connected accounts API response:', response)
         console.log('Connected accounts data:', response.data)
         console.log('Connected accounts count:', response.data?.length || 0)
 
         // The response structure is: { success: true, data: [...], meta: {...} }
-        // But api.get() extracts the data field, so response is actually the accounts array
         const accounts = Array.isArray(response) ? response : (response.data || [])
 
         return {
@@ -92,11 +97,16 @@ export function useConnectedAccounts(provider?: 'linkedin' | 'email') {
 
 // Get connected account by ID
 export function useConnectedAccount(id: string) {
+  const { getToken } = useAuth()
+
   return useQuery({
     queryKey: connectedAccountKeys.detail(id),
     queryFn: async () => {
       try {
-        const response = await api.get<ConnectedAccount>(`/accounts/${id}`)
+        const token = await getToken()
+        if (!token) throw new Error('Authentication required')
+
+        const response = await makeAuthenticatedRequest<ConnectedAccount>('GET', `/accounts/${id}`, {}, token)
         return {
           success: true,
           data: response

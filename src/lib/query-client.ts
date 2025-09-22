@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
-import { ApiError } from './api'
+import { ApiError } from './axios-utils'
+
 
 // Create a query client with default options
 export const queryClient = new QueryClient({
@@ -44,7 +45,7 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.campaigns.details(), id] as const,
     analytics: (id: string) => [...queryKeys.campaigns.detail(id), 'analytics'] as const,
   },
-  
+
   // Leads
   leads: {
     all: ['leads'] as const,
@@ -54,7 +55,7 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.leads.details(), id] as const,
     activities: (id: string) => [...queryKeys.leads.detail(id), 'activities'] as const,
   },
-  
+
   // Lead Lists
   leadLists: {
     all: ['leadLists'] as const,
@@ -64,7 +65,7 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.leadLists.details(), id] as const,
     leads: (id: string) => [...queryKeys.leadLists.detail(id), 'leads'] as const,
   },
-  
+
   // Accounts
   accounts: {
     all: ['accounts'] as const,
@@ -74,7 +75,7 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.accounts.details(), id] as const,
     usage: (id: string) => [...queryKeys.accounts.detail(id), 'usage'] as const,
   },
-  
+
   // Dashboard
   dashboard: {
     all: ['dashboard'] as const,
