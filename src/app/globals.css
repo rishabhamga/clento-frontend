@@ -187,6 +187,22 @@
   }
 }
 
+/* React Flow Custom Styles */
+.react-flow__node {
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.react-flow__node-action,
+.react-flow__node-addStep {
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 /* React Day Picker Styles */
 .rdp {
   --rdp-cell-size: 40px;

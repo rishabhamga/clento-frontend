@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { getAllNodeTypes } from '@/config/workflow-nodes'
 
 // Common validation schemas
 export const emailSchema = z.string().email('Please enter a valid email address')
@@ -8,7 +9,7 @@ export const phoneSchema = z.string().regex(/^\+?[\d\s\-\(\)]+$/, 'Please enter 
 // Campaign validation schemas
 export const workflowStepSchema = z.object({
   id: z.string(),
-  type: z.enum(['visit_profile', 'connection_request', 'send_message', 'like_post', 'comment_post', 'email']),
+  type: z.enum(getAllNodeTypes() as [string, ...string[]]),
   delay: z.number().min(0).max(168).optional(), // Max 1 week in hours
   config: z.object({
     message: z.string().optional(),
