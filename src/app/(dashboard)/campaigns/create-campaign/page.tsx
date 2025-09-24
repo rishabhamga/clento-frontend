@@ -98,6 +98,8 @@ export interface BaseConfig {
     tone?: 'professional' | 'friendly' | 'casual' | 'enthusiastic' | 'supportive' | 'cold' | 'moderate' | 'warm';
     language?: 'english' | 'spanish' | 'french' | 'german' | 'portuguese';
     customGuidelines?: string;
+    customComment?: string;
+    customMessage?: string;
     // Connection request configuration options
     formality?: 'casual' | 'approachable' | 'professional';
     approach?: 'direct' | 'diplomatic' | 'indirect';
@@ -821,7 +823,7 @@ const CreateCampaignPage = () => {
                                     key={tabItem.id}
                                     onClick={() => setTab(tabItem.id)}
                                     className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${tab === tabItem.id
-                                        ? 'border-blue-500 text-blue-600'
+                                        ? 'border-purple-500 text-purple-600'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }`}
                                 >
@@ -831,7 +833,7 @@ const CreateCampaignPage = () => {
                             )
                         })}
                     </nav>
-                    <Button>
+                    <Button className="bg-gradient-purple hover-glow-purple">
                         Create Campaign
                     </Button>
                 </div>

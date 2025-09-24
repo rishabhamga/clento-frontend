@@ -38,7 +38,7 @@ export const ActionNode = ({
             />
 
             <Card
-                className={`min-w-[200px] transition-all duration-200 overflow-hidden py-2 gap-0 cursor-pointer ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm hover:shadow-md'
+                className={`min-w-[200px] transition-all duration-200 overflow-hidden py-2 gap-0 cursor-pointer ${selected ? 'ring-2 ring-primary shadow-lg' : 'shadow-sm hover:shadow-md'
                 }`}
                 onClick={() => onNodeClick?.(data)}
             >
