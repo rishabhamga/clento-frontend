@@ -8,10 +8,12 @@ import { getNodeConfig, getNodeLabel, hasConditionalPaths, WorkflowNodeType } fr
 
 export const ActionNode = ({
     data,
-    selected
+    selected,
+    onNodeClick
 }: {
     data: ActionNodeData,
-    selected?: boolean
+    selected?: boolean,
+    onNodeClick?: (nodeData: ActionNodeData) => void
 }) => {
     const nodeConfig = getNodeConfig(data.type);
     const Icon = nodeConfig?.icon || User;
@@ -34,8 +36,9 @@ export const ActionNode = ({
             />
 
             <Card
-                className={`min-w-[200px] transition-all duration-200 overflow-hidden py-2 gap-0 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm hover:shadow-md'
+                className={`min-w-[200px] transition-all duration-200 overflow-hidden py-2 gap-0 cursor-pointer ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm hover:shadow-md'
                 }`}
+                onClick={() => onNodeClick?.(data)}
             >
                 <CardContent className="px-3 py-2">
                     <div className="flex items-center justify-between">

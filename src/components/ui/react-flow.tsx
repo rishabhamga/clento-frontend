@@ -5,6 +5,8 @@ import { WorkflowData, WorkflowEdge, WorkflowNode, ActionNodeData, AddStepNodeDa
 import { ActionNode } from '../workflow/ActionNode';
 import { AddStepNode } from '../workflow/AddStepNode';
 import DelayEdge from '../workflow/DelayEdge';
+import { NodeConfigurationDrawer } from '../workflow/NodeConfigurationDrawer';
+import { BaseConfig } from '../../app/(dashboard)/campaigns/create-campaign/page';
 
 // Convert WorkflowNode to React Flow Node
 const convertWorkflowNodeToReactFlowNode = (workflowNode: WorkflowNode): Node => ({
@@ -67,12 +69,14 @@ const ReactFlowCard = ({
     workflow,
     setWorkflow,
     onAddStepClick,
-    onDelayUpdate
+    onDelayUpdate,
+    onNodeClick
 }: {
     workflow: WorkflowData,
     setWorkflow: (workflow: WorkflowData) => void,
     onAddStepClick?: (nodeId: string) => void,
-    onDelayUpdate?: (edgeId: string, delayConfig: { delay: number; unit: string }) => void
+    onDelayUpdate?: (edgeId: string, delayConfig: { delay: number; unit: string }) => void,
+    onNodeClick?: (nodeData: ActionNodeData) => void
 }) => {
 
     const [nodes, setNodes] = useState<Node[]>(
@@ -82,11 +86,65 @@ const ReactFlowCard = ({
         workflow.edges.map(edge => convertWorkflowEdgeToReactFlowEdge(edge, onDelayUpdate))
     );
 
+    // Drawer state
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [selectedNodeData, setSelectedNodeData] = useState<ActionNodeData | null>(null);
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+    // Handle node click to open drawer
+    const handleNodeClick = (nodeData: ActionNodeData) => {
+        setSelectedNodeData(nodeData);
+        setIsDrawerOpen(true);
+        // Also call the parent's onNodeClick if provided
+        onNodeClick?.(nodeData);
+    };
+
+    // Handle configuration changes
+    const handleConfigChange = (nodeId: string, config: BaseConfig) => {
+        setNodes((currentNodes) =>
+            currentNodes.map((node) => {
+                if (node.id === nodeId) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            config: config
+                        }
+                    };
+                }
+                return node;
+            })
+        );
+
+        // Also update the parent workflow
+        const updatedWorkflowNodes = workflow.nodes.map((workflowNode) => {
+            if (workflowNode.id === nodeId) {
+                return {
+                    ...workflowNode,
+                    data: {
+                        ...workflowNode.data,
+                        config: config
+                    }
+                };
+            }
+            return workflowNode;
+        });
+
+        setWorkflow({
+            ...workflow,
+            nodes: updatedWorkflowNodes
+        });
+    };
+
     const nodeTypes = useMemo<NodeTypes>(() => ({
         action: (props) => (
             <ActionNode
                 data={props.data as ActionNodeData}
                 selected={props.selected}
+                onNodeClick={(nodeData) => {
+                    setSelectedNodeId(props.id);
+                    handleNodeClick(nodeData);
+                }}
             />
         ),
         addStep: (props) => (
@@ -97,7 +155,7 @@ const ReactFlowCard = ({
                 onNodeClick={onAddStepClick}
             />
         ),
-    }), [onAddStepClick]);
+    }), [onAddStepClick, handleNodeClick]);
 
     const edgeTypes = useMemo<EdgeTypes>(() => ({
         delay: DelayEdge,
@@ -117,6 +175,11 @@ const ReactFlowCard = ({
             isUpdatingFromParent.current = false;
         }, 0);
     }, [workflow, onDelayUpdate]);
+
+    // Debug: Log workflow changes
+    useEffect(() => {
+        console.log('🔄 Workflow changed:', workflow);
+    }, [workflow]);
 
     // Update parent workflow state when local nodes/edges change (but not when updating from parent)
     // Only update for structural changes, not selection changes
@@ -222,7 +285,7 @@ const ReactFlowCard = ({
     );
 
     return (
-        <div style={{ width: '100%', height: '70vh' }}>
+        <div style={{ width: '100%', height: '70vh' }} className="relative">
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -246,6 +309,19 @@ const ReactFlowCard = ({
             >
                 <Background color="skyblue" variant={BackgroundVariant.Dots} />
             </ReactFlow>
+            {selectedNodeId && (
+                <NodeConfigurationDrawer
+                    nodeId={selectedNodeId}
+                    isOpen={isDrawerOpen}
+                    onClose={() => {
+                        setIsDrawerOpen(false);
+                        setSelectedNodeData(null);
+                        setSelectedNodeId(null);
+                    }}
+                    nodeData={selectedNodeData}
+                    onConfigChange={handleConfigChange}
+                />
+            )}
         </div>
     )
 }

@@ -2,6 +2,56 @@
 
 import { Button } from "@/components/ui/button";
 import { WorkflowNodeType, getNodeLabel, hasConditionalPaths } from "@/config/workflow-nodes";
+
+// Function to get default configuration for each node type
+const getDefaultConfigForNodeType = (nodeType: WorkflowNodeType): BaseConfig => {
+    switch (nodeType) {
+        case "like_post":
+            return {
+                numberOfPosts: 1,
+                recentPostDays: 7
+            };
+        case "comment_post":
+            return {
+                numberOfPosts: 1,
+                recentPostDays: 7,
+                configureWithAI: false,
+                commentLength: 'medium',
+                tone: 'professional',
+                language: 'english',
+                customGuidelines: ''
+            };
+        case "send_connection_request":
+            return {
+                useAI: false,
+                tone: 'moderate',
+                formality: 'approachable',
+                approach: 'diplomatic',
+                focus: 'relational',
+                intention: 'networking',
+                callToAction: 'confident',
+                personalization: 'specific',
+                language: 'english',
+                engageWithRecentActivity: false,
+                customGuidelines: ''
+            };
+        case "send_inmail":
+        case "send_followup":
+        case "send_invite":
+        case "withdraw_request":
+            return {
+                smartFollowups: false,
+                aiWritingAssistant: false,
+                messageLength: 'medium',
+                tone: 'professional',
+                language: 'english',
+                engageWithRecentActivity: false,
+                messagePurpose: ''
+            };
+        default:
+            return {};
+    }
+};
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +88,27 @@ export type PathType = "accepted" | "not-accepted";
 
 export interface BaseConfig {
     useAI?: boolean;
+    // Comment configuration options
+    numberOfPosts?: number;
+    recentPostDays?: number;
+    configureWithAI?: boolean;
+    commentLength?: 'short' | 'medium' | 'long';
+    tone?: 'professional' | 'friendly' | 'casual' | 'enthusiastic' | 'supportive' | 'cold' | 'moderate' | 'warm';
+    language?: 'english' | 'spanish' | 'french' | 'german' | 'portuguese';
+    customGuidelines?: string;
+    // Connection request configuration options
+    formality?: 'casual' | 'approachable' | 'professional';
+    approach?: 'direct' | 'diplomatic' | 'indirect';
+    focus?: 'personal' | 'relational' | 'business';
+    intention?: 'networking' | 'partnership' | 'collaboration';
+    callToAction?: 'strong' | 'confident' | 'subtle';
+    personalization?: 'specific' | 'generic';
+    engageWithRecentActivity?: boolean;
+    // Message configuration options
+    smartFollowups?: boolean;
+    aiWritingAssistant?: boolean;
+    messageLength?: 'short' | 'medium' | 'long';
+    messagePurpose?: string;
 }
 
 export interface ActionNodeData {
@@ -169,6 +240,7 @@ const CreateCampaignPage = () => {
             edges: updatedEdges
         })
     }
+
 
     const handleSelectNodeType = (nodeType: WorkflowNodeType) => {
         if (isAddingStepNode && workflow && selectedNodeId) {
@@ -350,7 +422,7 @@ const CreateCampaignPage = () => {
                 type: nodeType,
                 label: getNodeLabel(nodeType),
                 isConfigured: true,
-                config: {},
+                config: getDefaultConfigForNodeType(nodeType),
                 pathType: clickedPathType
             } as ActionNodeData,
             measured: {
