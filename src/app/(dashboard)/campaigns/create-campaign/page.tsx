@@ -68,6 +68,8 @@ import { getTimezoneOptionsByRegion, getUserTimezone } from "../../../../lib/tim
 import ReactFlowCard from "../../../../components/ui/react-flow";
 import { NodeSelectionModal } from "../../../../components/workflow/NodeSelectionModal";
 import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
+import { CheckNever, makeAuthenticatedRequest } from "../../../../lib/axios-utils";
+import { useAuth } from "@clerk/nextjs";
 
 enum CampaignTabs {
     DETAILS = 'DETAILS',
@@ -179,6 +181,7 @@ const CreateCampaignPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
     const [isAddingStepNode, setIsAddingStepNode] = useState(false)
+    const { getToken } = useAuth()
 
     // Function to export workflow JSON in the exact reference format
     const exportWorkflowJSON = () => {
@@ -267,7 +270,7 @@ const CreateCampaignPage = () => {
         if (!cleanJSON) return;
 
         const dataStr = JSON.stringify(cleanJSON, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
         const exportFileDefaultName = `workflow-${new Date().toISOString().split('T')[0]}.json`;
 
@@ -276,6 +279,95 @@ const CreateCampaignPage = () => {
         linkElement.setAttribute('download', exportFileDefaultName);
         linkElement.click();
     };
+
+    const verifyDetailPage = (): boolean => {
+        const requiredFields: (keyof CampaignDetailsState)[] = [
+            'name',
+            'description',
+            'prospectList',
+            'senderAccount',
+            'startDate',
+            'endDate',
+            'startTime',
+            'endTime',
+            'timezone'
+        ];
+
+        // Helper function to check if a field is empty (including trimmed strings)
+        const isFieldEmpty = (field: keyof CampaignDetailsState): boolean => {
+            const value = detailsState[field];
+            if (value === null || value === undefined) return true;
+
+            // For string fields, also check if trimmed value is empty
+            if (typeof value === 'string') {
+                return value.trim() === '';
+            }
+
+            return !value;
+        };
+
+        const firstMissingField = requiredFields.find(field => isFieldEmpty(field));
+
+        if (firstMissingField) {
+            switch (firstMissingField) {
+                case 'name':
+                    toast.error("Campaign Name is required");
+                    break;
+                case 'prospectList':
+                    toast.error("Prospect List is required");
+                    break;
+                case 'senderAccount':
+                    toast.error("Sender Account is required");
+                    break;
+                case 'startDate':
+                    toast.error("Start Date is required");
+                    break;
+                case 'endDate':
+                    toast.error("End Date is required");
+                    break;
+                case 'startTime':
+                    toast.error("Start Time is required");
+                    break;
+                case 'endTime':
+                    toast.error("End Time is required");
+                    break;
+                case 'timezone':
+                    toast.error("Timezone is required");
+                    break;
+                case 'description':
+                    toast.error("Description is required");
+                    break;
+                default:
+                    CheckNever(firstMissingField);
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    const handleCreateCampaign = async() => {
+        if (!verifyDetailPage()) {
+            return;
+        }
+        if (!workflow) {
+            toast.error("No Workflow Created");
+            return;
+        }
+        const cleanJSON = exportWorkflowJSON();
+        const reqBody = {
+            detail: detailsState,
+            flow: cleanJSON
+        };
+        const token = await getToken();
+        if(!token){
+            toast.error("Please login to create a campaign");
+            return;
+        }
+        const res = await makeAuthenticatedRequest('POST', '/campaigns/create', reqBody, token)
+        console.log(res);
+        toast.success("Campaign created successfully!");
+    }
 
     // Function to delete a node and clean up connected edges intelligently
     const handleDeleteNode = (nodeId: string) => {
@@ -429,18 +521,18 @@ const CreateCampaignPage = () => {
 
         const firstNode: WorkflowNode = {
             id: firstNodeId,
-                type: 'action',
-                position: {
+            type: 'action',
+            position: {
                 x: 100,
                 y: 0
-                },
-                data: {
-                    type: nodeType,
+            },
+            data: {
+                type: nodeType,
                 label: getNodeLabel(nodeType),
                 isConfigured: true,
-                    config: {}
-                } as ActionNodeData,
-                measured: {
+                config: {}
+            } as ActionNodeData,
+            measured: {
                 width: 220,
                 height: 54
             },
@@ -545,19 +637,19 @@ const CreateCampaignPage = () => {
 
             nodes = [firstNode, addStepNode]
             edges = [{
-                    id: `e0-1`,
-                    source: firstNodeId,
-                    target: addStepNodeId,
-                    type: 'buttonedge',
-                    animated: true,
-                    data: {
-                        delay: "15m",
-                        delayData: {
-                            delay: 15,
-                            unit: "m"
-                        }
+                id: `e0-1`,
+                source: firstNodeId,
+                target: addStepNodeId,
+                type: 'buttonedge',
+                animated: true,
+                data: {
+                    delay: "15m",
+                    delayData: {
+                        delay: 15,
+                        unit: "m"
                     }
-                }]
+                }
+            }]
         }
 
         setWorkflow({
@@ -833,7 +925,7 @@ const CreateCampaignPage = () => {
                             )
                         })}
                     </nav>
-                    <Button className="bg-gradient-purple hover-glow-purple">
+                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleCreateCampaign}>
                         Create Campaign
                     </Button>
                 </div>

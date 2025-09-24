@@ -25,6 +25,94 @@
 - Prefer `interface` over `type` for object shapes
 - Use `type` for unions, primitives, and computed types
 
+### Proper Solutions Over Quick Fixes
+When encountering TypeScript errors, ALWAYS find proper type-safe solutions rather than quick fixes that bypass type checking. TypeScript's type system exists to prevent runtime errors and improve code maintainability.
+
+#### ❌ AVOID These Quick Fixes:
+1. **Type Assertions**: `as any`, `as unknown`, `as never`
+   ```typescript
+   // ❌ BAD - Quick fix
+   const data = response as any;
+
+   // ✅ GOOD - Proper typing
+   interface ApiResponse {
+     data: User[];
+     status: number;
+   }
+   const data: ApiResponse = response;
+   ```
+
+2. **Type Ignore Comments**: `@ts-ignore`, `@ts-expect-error`
+   ```typescript
+   // ❌ BAD - Suppressing errors
+   // @ts-ignore
+   const result = someFunction();
+
+   // ✅ GOOD - Fix the underlying issue
+   const result = someFunction() || defaultValue;
+   ```
+
+3. **Non-null Assertion Operator**: `!` operator
+   ```typescript
+   // ❌ BAD - Assuming non-null
+   const value = data!.property;
+
+   // ✅ GOOD - Proper null checking
+   const value = data?.property ?? defaultValue;
+   ```
+
+4. **Generic Any Types**: Using `any` in generics
+   ```typescript
+   // ❌ BAD - Losing type safety
+   function process<T = any>(data: T): T { ... }
+
+   // ✅ GOOD - Proper generic constraints
+   function process<T extends Record<string, unknown>>(data: T): T { ... }
+   ```
+
+#### ✅ DO These Proper Solutions:
+1. **Create Proper Interfaces**: Define types for complex objects
+2. **Use Union Types**: Handle multiple possible types safely
+3. **Implement Type Guards**: Check types at runtime when needed
+4. **Use Optional Chaining**: Handle undefined/null properly
+5. **Generic Constraints**: Use proper generic bounds instead of any
+6. **Error Type Definitions**: Create specific error types
+7. **API Response Typing**: Define interfaces for all API responses
+8. **Null Safety**: Use nullish coalescing and optional chaining
+
+#### Examples of Proper Solutions:
+```typescript
+// ✅ Proper API response typing
+interface CreateCampaignRequest {
+  detail: CampaignDetailsState;
+  flow: WorkflowData;
+}
+
+interface CreateCampaignResponse {
+  id: string;
+  status: 'created' | 'pending' | 'failed';
+  message: string;
+}
+
+// ✅ Proper error handling
+class CampaignValidationError extends Error {
+  constructor(public field: keyof CampaignDetailsState, message: string) {
+    super(message);
+    this.name = 'CampaignValidationError';
+  }
+}
+
+// ✅ Proper type guards
+function isWorkflowData(data: unknown): data is WorkflowData {
+  return typeof data === 'object' && data !== null && 'nodes' in data && 'edges' in data;
+}
+
+// ✅ Proper null safety
+const workflowName = workflow?.name ?? 'Untitled Workflow';
+```
+
+**Remember**: TypeScript errors are there to help you, not hinder you. Quick fixes often lead to runtime errors later. Proper typing improves code maintainability and developer experience. Take time to understand the type system and use it effectively.
+
 ### API Types
 - Define all API types in `src/types/` directory
 - Create separate files for each domain: `campaign.ts`, `lead.ts`, `account.ts`
@@ -123,11 +211,11 @@ export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T
         ...options?.headers,
       },
     })
-    
+
     if (!response.ok) {
       throw new ApiError(response.status, await response.text())
     }
-    
+
     return response.json()
   } catch (error) {
     // Proper error handling
