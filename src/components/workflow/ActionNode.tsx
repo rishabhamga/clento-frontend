@@ -2,18 +2,20 @@ import { Handle, Position, Node } from '@xyflow/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Settings, User } from 'lucide-react';
+import { Settings, User, X } from 'lucide-react';
 import { ActionNodeData } from '@/app/(dashboard)/campaigns/create-campaign/page';
 import { getNodeConfig, getNodeLabel, hasConditionalPaths, WorkflowNodeType } from '@/config/workflow-nodes';
 
 export const ActionNode = ({
     data,
     selected,
-    onNodeClick
+    onNodeClick,
+    onDeleteNode
 }: {
     data: ActionNodeData,
     selected?: boolean,
-    onNodeClick?: (nodeData: ActionNodeData) => void
+    onNodeClick?: (nodeData: ActionNodeData) => void,
+    onDeleteNode?: () => void
 }) => {
     const nodeConfig = getNodeConfig(data.type);
     const Icon = nodeConfig?.icon || User;
@@ -56,9 +58,13 @@ export const ActionNode = ({
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0"
+                            className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteNode?.();
+                            }}
                         >
-                            <Settings className="h-3 w-3" />
+                            <X className="h-3 w-3" />
                         </Button>
                     </div>
 

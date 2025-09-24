@@ -70,13 +70,15 @@ const ReactFlowCard = ({
     setWorkflow,
     onAddStepClick,
     onDelayUpdate,
-    onNodeClick
+    onNodeClick,
+    onDeleteNode
 }: {
     workflow: WorkflowData,
     setWorkflow: (workflow: WorkflowData) => void,
     onAddStepClick?: (nodeId: string) => void,
     onDelayUpdate?: (edgeId: string, delayConfig: { delay: number; unit: string }) => void,
-    onNodeClick?: (nodeData: ActionNodeData) => void
+    onNodeClick?: (nodeData: ActionNodeData) => void,
+    onDeleteNode?: (nodeId: string) => void
 }) => {
 
     const [nodes, setNodes] = useState<Node[]>(
@@ -145,6 +147,7 @@ const ReactFlowCard = ({
                     setSelectedNodeId(props.id);
                     handleNodeClick(nodeData);
                 }}
+                onDeleteNode={() => onDeleteNode?.(props.id)}
             />
         ),
         addStep: (props) => (

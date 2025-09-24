@@ -59,6 +59,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { Settings, Workflow } from "lucide-react";
+import { toast } from "sonner";
 import { ActionDispatch, useEffect, useReducer, useState } from "react";
 import { useConnectedAccounts, ConnectedAccount } from "../../../../hooks/useConnectedAccounts";
 import { useLeadLists } from "../../../../hooks/useLeadLists";
@@ -66,6 +67,7 @@ import { LeadList } from "../../../../types/lead-list";
 import { getTimezoneOptionsByRegion, getUserTimezone } from "../../../../lib/timezone-utils";
 import ReactFlowCard from "../../../../components/ui/react-flow";
 import { NodeSelectionModal } from "../../../../components/workflow/NodeSelectionModal";
+import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
 
 enum CampaignTabs {
     DETAILS = 'DETAILS',
@@ -206,6 +208,175 @@ const CreateCampaignPage = () => {
             edges: cleanEdges,
             timestamp: new Date().toISOString()
         };
+    };
+
+    // Function to import workflow from JSON file
+    const importWorkflowJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const jsonContent = e.target?.result as string;
+                const importedWorkflow = JSON.parse(jsonContent);
+
+                // Validate the imported workflow structure
+                if (importedWorkflow.nodes && Array.isArray(importedWorkflow.nodes) &&
+                    importedWorkflow.edges && Array.isArray(importedWorkflow.edges)) {
+
+                    // Ensure all nodes have default configs if missing
+                    const nodesWithDefaults = importedWorkflow.nodes.map((node: any) => {
+                        if (node.data && node.data.type && !node.data.config) {
+                            return {
+                                ...node,
+                                data: {
+                                    ...node.data,
+                                    config: getDefaultConfigForNodeType(node.data.type)
+                                }
+                            };
+                        }
+                        return node;
+                    });
+
+                    setWorkflow({
+                        nodes: nodesWithDefaults,
+                        edges: importedWorkflow.edges
+                    });
+
+                    toast.success('Workflow imported successfully!');
+                } else {
+                    toast.error('Invalid workflow file format. Please check the file structure.');
+                }
+            } catch (error) {
+                toast.error('Error importing workflow: Invalid JSON format.');
+                console.error('Import error:', error);
+            }
+
+            // Reset the file input so the same file can be imported again
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    };
+
+    // Function to download workflow as JSON file
+    const downloadWorkflowJSON = () => {
+        const cleanJSON = exportWorkflowJSON();
+        if (!cleanJSON) return;
+
+        const dataStr = JSON.stringify(cleanJSON, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+        const exportFileDefaultName = `workflow-${new Date().toISOString().split('T')[0]}.json`;
+
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    };
+
+    // Function to delete a node and clean up connected edges intelligently
+    const handleDeleteNode = (nodeId: string) => {
+        if (!workflow) return;
+
+        console.log('Deleting node:', nodeId);
+        console.log('Current workflow nodes:', workflow.nodes.map(n => n.id));
+        console.log('Current workflow edges:', workflow.edges.map(e => `${e.source} -> ${e.target}`));
+
+        // Find the node to delete
+        const nodeToDelete = workflow.nodes.find(node => node.id === nodeId);
+        if (!nodeToDelete) return;
+
+        // Convert to React Flow format for utility functions
+        const reactFlowNodes = workflow.nodes.map(node => ({
+            id: node.id,
+            type: node.type,
+            position: node.position,
+            data: node.data as unknown as Record<string, unknown>
+        }));
+
+        const reactFlowEdges = workflow.edges.map(edge => ({
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+            type: edge.type,
+            animated: edge.animated,
+            data: edge.data
+        }));
+
+        // Convert the node to delete to React Flow format
+        const reactFlowNodeToDelete = {
+            id: nodeToDelete.id,
+            type: nodeToDelete.type,
+            position: nodeToDelete.position,
+            data: nodeToDelete.data as unknown as Record<string, unknown>
+        };
+
+        // Use React Flow utilities to find connected nodes and edges
+        const incomers = getIncomers(reactFlowNodeToDelete, reactFlowNodes, reactFlowEdges);
+        const outgoers = getOutgoers(reactFlowNodeToDelete, reactFlowNodes, reactFlowEdges);
+        const connectedEdges = getConnectedEdges([reactFlowNodeToDelete], reactFlowEdges);
+
+        console.log('Incomers:', incomers.map(n => n.id));
+        console.log('Outgoers:', outgoers.map(n => n.id));
+        console.log('Connected edges:', connectedEdges.map(e => `${e.source} -> ${e.target}`));
+
+        // Remove the node
+        const updatedNodes = workflow.nodes.filter(node => node.id !== nodeId);
+
+        // Remove edges connected to the deleted node
+        const remainingEdges = workflow.edges.filter(edge =>
+            !connectedEdges.some(connectedEdge => connectedEdge.id === edge.id)
+        );
+
+        // Create new edges connecting incomers to outgoers
+        const createdEdges = incomers.flatMap(({ id: source }) =>
+            outgoers.map(({ id: target }) => {
+                // Find the original edge to copy its properties
+                const originalEdge = workflow.edges.find(edge =>
+                    edge.source === nodeId && edge.target === target
+                );
+
+                return {
+                    id: `e-${source}-${target}`,
+                    source,
+                    target,
+                    type: originalEdge?.type || 'buttonedge',
+                    animated: originalEdge?.animated || true,
+                    data: {
+                        ...originalEdge?.data,
+                        delay: originalEdge?.data?.delay || "15m",
+                        delayData: originalEdge?.data?.delayData || {
+                            delay: 15,
+                            unit: "minutes"
+                        }
+                    }
+                };
+            })
+        );
+
+        console.log('Created edges:', createdEdges.map(e => `${e.source} -> ${e.target}`));
+
+        // Also clean up any AddStep nodes that were connected to the deleted node
+        const connectedAddStepNodes = updatedNodes.filter(node =>
+            node.type === 'addStep' &&
+            (node.data as AddStepNodeData).pathType &&
+            node.id.includes(nodeId)
+        );
+
+        const finalNodes = updatedNodes.filter(node =>
+            !connectedAddStepNodes.some(addStepNode => addStepNode.id === node.id)
+        );
+
+        const finalEdges = [...remainingEdges, ...createdEdges];
+
+        console.log('After deletion - nodes:', finalNodes.map(n => n.id));
+        console.log('After deletion - edges:', finalEdges.map(e => `${e.source} -> ${e.target}`));
+
+        setWorkflow({
+            nodes: finalNodes,
+            edges: finalEdges
+        });
     };
 
     const handleAddFirstNodeClick = () => {
@@ -682,12 +853,10 @@ const CreateCampaignPage = () => {
                     onAddFirstNode: handleAddFirstNodeClick,
                     onAddStepClick: handleAddStepClick,
                     onDelayUpdate: handleDelayUpdate,
-                    onExportJSON: () => {
-                        const cleanJSON = exportWorkflowJSON();
-                        console.log('Clean Workflow JSON:', JSON.stringify(cleanJSON, null, 2));
-                        // Copy to clipboard for easy testing
-                        navigator.clipboard.writeText(JSON.stringify(cleanJSON, null, 2));
-                    }
+                    onExportJSON: downloadWorkflowJSON,
+                    onImportJSON: importWorkflowJSON,
+                    onDeleteNode: handleDeleteNode,
+                    onResetWorkflow: () => setWorkflow(null)
                 })}
             </div>
 
@@ -891,24 +1060,127 @@ const renderDetailsTab = ({
     </div>
 )
 
-const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: string }) => void, onExportJSON: () => void }) => {
+const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: string }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
 
     return (
         <div className="space-y-6">
             <Card>
                 <CardContent>
                     {workflow ? (
-                        <div className="space-y-4">
-                            <div className="flex justify-end">
-                                <Button variant="outline" onClick={onExportJSON}>
-                                    Export JSON
+                        <div className="relative">
+                            {/* Hidden file input for import */}
+                            <input
+                                type="file"
+                                accept=".json"
+                                onChange={onImportJSON}
+                                className="hidden"
+                                id="import-workflow"
+                            />
+
+                            {/* Floating action buttons over React Flow */}
+                            <div className="absolute top-4 right-4 z-10 flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={onResetWorkflow}
+                                    className="bg-white shadow-md hover:shadow-lg"
+                                >
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-sm">↻</span>
+                                        Reset
+                                    </div>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => document.getElementById('import-workflow')?.click()}
+                                    className="bg-white shadow-md hover:shadow-lg"
+                                >
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-sm">↓</span>
+                                        Import
+                                    </div>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={onExportJSON}
+                                    className="bg-white shadow-md hover:shadow-lg"
+                                >
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-sm">↑</span>
+                                        Export
+                                    </div>
                                 </Button>
                             </div>
-                        <ReactFlowCard workflow={workflow} setWorkflow={setWorkflow} onAddStepClick={onAddStepClick} onDelayUpdate={onDelayUpdate} />
+
+                            <ReactFlowCard workflow={workflow} setWorkflow={setWorkflow} onAddStepClick={onAddStepClick} onDelayUpdate={onDelayUpdate} onDeleteNode={onDeleteNode} />
                         </div>
                     ) : (
-                        <div className="flex items-center justify-center w-full" style={{ height: '70vh' }}>
-                            <Button onClick={onAddFirstNode}>Add First Node</Button>
+                        <div className="relative w-full" style={{ height: '70vh' }}>
+                            {/* Hidden file input for import */}
+                            <input
+                                type="file"
+                                accept=".json"
+                                onChange={onImportJSON}
+                                className="hidden"
+                                id="import-workflow-empty"
+                            />
+
+                            {/* Background with dotted pattern */}
+                            <div className="absolute inset-0 bg-gray-50 rounded-2xl" style={{
+                                backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
+                                backgroundSize: '20px 20px'
+                            }}></div>
+
+                            {/* Main content */}
+                            <div className="relative flex flex-col items-center justify-center h-full space-y-6">
+                                {/* Main action buttons */}
+                                <div className="flex flex-col items-center space-y-4">
+                                    <Button
+                                        onClick={onAddFirstNode}
+                                        variant="outline"
+                                        className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-gray-400 rounded-sm flex items-center justify-center">
+                                                <span className="text-gray-400 text-xs">+</span>
+                                            </div>
+                                            Add First Step
+                                        </div>
+                                    </Button>
+
+                                    <div className="text-sm text-gray-500">OR</div>
+
+                                    <Button
+                                        variant="outline"
+                                        className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white"
+                                        disabled
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 bg-gray-200 rounded-sm flex items-center justify-center">
+                                                <span className="text-gray-400 text-xs">📄</span>
+                                            </div>
+                                            Choose a Flow Template
+                                        </div>
+                                    </Button>
+
+                                    <div className="text-sm text-gray-500">OR</div>
+
+                                    <Button
+                                        variant="outline"
+                                        className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white"
+                                        onClick={() => document.getElementById('import-workflow-empty')?.click()}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 bg-gray-200 rounded-sm flex items-center justify-center">
+                                                <span className="text-gray-400 text-xs">📥</span>
+                                            </div>
+                                            Import flow
+                                        </div>
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </CardContent>

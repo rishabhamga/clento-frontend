@@ -5,6 +5,7 @@ import { ClerkProvider } from "@/components/providers/ClerkProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { siteConfig } from "@/config/site";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -73,6 +74,7 @@ export default function RootLayout({
           >
             <QueryProvider>
               {children}
+              <Toaster />
             </QueryProvider>
           </ThemeProvider>
         </body>
