@@ -5,12 +5,12 @@ import { apiConfig } from '@/config/site'
 export type JsonType = Record<string, any> | any[] | string | number | boolean | null
 
 // Utility function to check if value is null or undefined
-const isNullOrUndefined = (value: any): boolean => {
+export const isNullOrUndefined = (value: any): boolean => {
     return value === null || value === undefined
 }
 
 // Utility function for exhaustive checking (never type)
-const CheckNever = (value: never): never => {
+export const CheckNever = (value: never): never => {
     throw new Error(`Unhandled case: ${value}`)
 }
 

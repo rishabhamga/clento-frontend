@@ -1,3 +1,5 @@
+import { WorkflowNodeType } from '@/config/workflow-nodes'
+
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled'
 
 export interface Campaign {
@@ -23,7 +25,7 @@ export interface WorkflowDefinition {
 
 export interface WorkflowStep {
   id: string
-  type: 'visit_profile' | 'connection_request' | 'send_message' | 'like_post' | 'comment_post' | 'email'
+  type: WorkflowNodeType
   delay?: number // in hours
   config: WorkflowStepConfig
   errorHandling?: 'skip' | 'retry' | 'fail'
