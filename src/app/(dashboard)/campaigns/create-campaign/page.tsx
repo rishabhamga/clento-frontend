@@ -43,6 +43,7 @@ export interface BaseConfig {
 export interface ActionNodeData {
     type: WorkflowNodeType;
     label: string;
+    isConfigured: boolean;
     config: BaseConfig;
     pathType?: PathType;
 }
@@ -75,14 +76,15 @@ export interface WorkflowEdge {
     animated: boolean;
     selected?: boolean;
     data: {
-        delayData: {
+        delay?: string; // "15m", "1d", etc
+        delayData?: {
             delay: number;
-            unit: "m" | "d" | string; // minutes, days, etc
-        } | null;
+            unit: "m" | "d" | string;
+        };
         isPositive?: boolean;
         isConditionalPath?: boolean;
     };
-    deletable: boolean;
+    deletable?: boolean;
 }
 
 
@@ -102,6 +104,38 @@ const CreateCampaignPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
     const [isAddingStepNode, setIsAddingStepNode] = useState(false)
+
+    // Function to export workflow JSON in the exact reference format
+    const exportWorkflowJSON = () => {
+        if (!workflow) return null;
+
+        const cleanNodes = workflow.nodes.map(node => ({
+            id: node.id,
+            type: node.type,
+            position: node.position,
+            data: node.data,
+            measured: node.measured,
+            selected: node.selected || false,
+            ...(node.deletable !== undefined && { deletable: node.deletable })
+        }));
+
+        const cleanEdges = workflow.edges.map(edge => ({
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+            type: edge.type,
+            animated: edge.animated,
+            data: edge.data,
+            ...(edge.selected !== undefined && { selected: edge.selected }),
+            ...(edge.deletable !== undefined && { deletable: edge.deletable })
+        }));
+
+        return {
+            nodes: cleanNodes,
+            edges: cleanEdges,
+            timestamp: new Date().toISOString()
+        };
+    };
 
     const handleAddFirstNodeClick = () => {
         setIsModalOpen(true)
@@ -145,22 +179,26 @@ const CreateCampaignPage = () => {
     }
 
     const createFirstNode = (nodeType: WorkflowNodeType) => {
+        const timestamp = Date.now()
+        const firstNodeId = `${nodeType}-${timestamp}`
+
         const firstNode: WorkflowNode = {
-            id: '1',
+            id: firstNodeId,
                 type: 'action',
                 position: {
-                x: 250,
-                y: 80
+                x: 100,
+                y: 0
                 },
                 data: {
                     type: nodeType,
                 label: getNodeLabel(nodeType),
+                isConfigured: true,
                     config: {}
                 } as ActionNodeData,
                 measured: {
-                    width: 200,
-                    height: 100
-                },
+                width: 220,
+                height: 54
+            },
             deletable: false
         }
 
@@ -169,36 +207,38 @@ const CreateCampaignPage = () => {
 
         if (hasConditionalPaths(nodeType)) {
             // Create two AddStep nodes for accepted and not-accepted paths
+            const acceptedAddStepNodeId = `add-step-accepted-${firstNodeId}`
             const acceptedAddStepNode: WorkflowNode = {
-                id: '2',
+                id: acceptedAddStepNodeId,
                 type: 'addStep',
                 position: {
-                    x: 400,
-                    y: 300
+                    x: 300,
+                    y: 150
                 },
                 data: {
                     pathType: 'accepted'
                 },
                 measured: {
-                    width: 200,
-                    height: 60
+                    width: 220,
+                    height: 40
                 },
                 deletable: false
             }
 
+            const notAcceptedAddStepNodeId = `add-step-not-accepted-${firstNodeId}`
             const notAcceptedAddStepNode: WorkflowNode = {
-                id: '3',
+                id: notAcceptedAddStepNodeId,
                 type: 'addStep',
                 position: {
-                    x: 100,
-                    y: 300
+                    x: -100,
+                    y: 150
                 },
                 data: {
                     pathType: 'not-accepted'
                 },
                 measured: {
-                    width: 200,
-                    height: 60
+                    width: 220,
+                    height: 40
                 },
                 deletable: false
             }
@@ -206,65 +246,72 @@ const CreateCampaignPage = () => {
             nodes = [firstNode, acceptedAddStepNode, notAcceptedAddStepNode]
             edges = [
                 {
-                    id: '1-2',
-                    source: '1',
-                    target: '2',
+                    id: `e-${firstNodeId}-accepted`,
+                    source: firstNodeId,
+                    target: acceptedAddStepNodeId,
                     type: 'conditional',
                     animated: true,
-                    selected: false,
                     data: {
-                        delayData: null,
+                        delay: "15m",
+                        delayData: {
+                            delay: 15,
+                            unit: "m"
+                        },
                         isPositive: true,
                         isConditionalPath: true
-                    },
-                    deletable: false
+                    }
                 } as WorkflowEdge,
                 {
-                    id: '1-3',
-                    source: '1',
-                    target: '3',
+                    id: `e-${firstNodeId}-not-accepted`,
+                    source: firstNodeId,
+                    target: notAcceptedAddStepNodeId,
                     type: 'conditional',
                     animated: true,
-                    selected: false,
                     data: {
-                        delayData: null,
+                        delay: "15m",
+                        delayData: {
+                            delay: 15,
+                            unit: "m"
+                        },
                         isPositive: false,
                         isConditionalPath: true
-                    },
-                    deletable: false
+                    }
                 } as WorkflowEdge
             ]
         } else {
             // Single path for non-conditional nodes
+            const addStepNodeId = `add-step-${firstNodeId}`
             const addStepNode: WorkflowNode = {
-                id: '2',
+                id: addStepNodeId,
                 type: 'addStep',
                 position: {
-                    x: 250,
-                    y: 280
+                    x: 100,
+                    y: 150
                 },
                 data: {
                     pathType: 'accepted'
                 },
                 measured: {
-                    width: 200,
-                    height: 60
+                    width: 220,
+                    height: 40
                 },
                 deletable: false
             }
 
             nodes = [firstNode, addStepNode]
             edges = [{
-                    id: '1-2',
-                    source: '1',
-                    target: '2',
-                    type: 'conditional',
+                    id: `e0-1`,
+                    source: firstNodeId,
+                    target: addStepNodeId,
+                    type: 'buttonedge',
                     animated: true,
-                    selected: false,
                     data: {
-                        delayData: null
-                    },
-                    deletable: false
+                        delay: "15m",
+                        delayData: {
+                            delay: 15,
+                            unit: "m"
+                        }
+                    }
                 }]
         }
 
@@ -287,8 +334,9 @@ const CreateCampaignPage = () => {
         const nodesWithoutClickedAddStep = workflow.nodes.filter(node => node.id !== selectedNodeId)
         const edgesWithoutClickedAddStep = workflow.edges.filter(edge => edge.target !== selectedNodeId)
 
-        // Generate new node ID
-        const newNodeId = String(Date.now())
+        // Generate new node ID in the reference format
+        const timestamp = Date.now()
+        const newNodeId = `${nodeType}-${timestamp}`
 
         // Create new action node at the position of the clicked AddStep node
         const newActionNode: WorkflowNode = {
@@ -301,11 +349,13 @@ const CreateCampaignPage = () => {
             data: {
                 type: nodeType,
                 label: getNodeLabel(nodeType),
-                config: {}
+                isConfigured: true,
+                config: {},
+                pathType: clickedPathType
             } as ActionNodeData,
             measured: {
-                width: 200,
-                height: 100
+                width: 220,
+                height: 54
             },
             deletable: true
         }
@@ -319,25 +369,27 @@ const CreateCampaignPage = () => {
             ...edgesWithoutClickedAddStep,
             // Edge from source to new action node (replace the edge that went to AddStep)
             {
-                id: `${sourceNodeId}-${newNodeId}`,
+                id: `e-${newNodeId}-${sourceNodeId}`,
                 source: sourceNodeId,
                 target: newNodeId,
-                type: 'conditional',
+                type: sourceEdge?.data?.isConditionalPath ? 'conditional' : 'buttonedge',
                 animated: true,
-                selected: false,
                 data: {
-                    delayData: sourceEdge?.data?.delayData || null,
+                    delay: sourceEdge?.data?.delay || "15m",
+                    delayData: sourceEdge?.data?.delayData || {
+                        delay: 15,
+                        unit: "m"
+                    },
                     isPositive: sourceEdge?.data?.isPositive,
                     isConditionalPath: sourceEdge?.data?.isConditionalPath
-                },
-                deletable: true
+                }
             } as WorkflowEdge
         ]
 
         if (hasConditionalPaths(nodeType)) {
             // Create two AddStep nodes for accepted and not-accepted paths
-            const acceptedAddStepNodeId = String(Date.now() + 1)
-            const notAcceptedAddStepNodeId = String(Date.now() + 2)
+            const acceptedAddStepNodeId = `add-step-accepted-${newNodeId}`
+            const notAcceptedAddStepNodeId = `add-step-not-accepted-${newNodeId}`
 
             const acceptedAddStepNode: WorkflowNode = {
                 id: acceptedAddStepNodeId,
@@ -350,8 +402,8 @@ const CreateCampaignPage = () => {
                     pathType: 'accepted'
                 },
                 measured: {
-                    width: 200,
-                    height: 60
+                    width: 220,
+                    height: 40
                 },
                 deletable: true
             }
@@ -367,8 +419,8 @@ const CreateCampaignPage = () => {
                     pathType: 'not-accepted'
                 },
                 measured: {
-                    width: 200,
-                    height: 60
+                    width: 220,
+                    height: 40
                 },
                 deletable: true
             }
@@ -376,42 +428,41 @@ const CreateCampaignPage = () => {
             nodes.push(acceptedAddStepNode, notAcceptedAddStepNode)
             edges.push(
                 {
-                    id: `${newNodeId}-${acceptedAddStepNodeId}`,
+                    id: `e-${acceptedAddStepNodeId}-${newNodeId}`,
                     source: newNodeId,
                     target: acceptedAddStepNodeId,
                     type: 'conditional',
                     animated: true,
-                    selected: false,
                     data: {
-                        delayData: null,
+                        delay: "15m",
+                        delayData: {
+                            delay: 15,
+                            unit: "m"
+                        },
                         isPositive: true,
                         isConditionalPath: true
-                    },
-                    deletable: true
+                    }
                 } as WorkflowEdge,
                 {
-                    id: `${newNodeId}-${notAcceptedAddStepNodeId}`,
+                    id: `e-${notAcceptedAddStepNodeId}-${newNodeId}`,
                     source: newNodeId,
                     target: notAcceptedAddStepNodeId,
                     type: 'conditional',
                     animated: true,
-                    selected: false,
-                    style: {
-                        stroke: '#ef4444',
-                        strokeWidth: 2,
-                        strokeDasharray: '5,5'
-                    },
                     data: {
-                        delayData: null,
+                        delay: "15m",
+                        delayData: {
+                            delay: 15,
+                            unit: "m"
+                        },
                         isPositive: false,
                         isConditionalPath: true
-                    },
-                    deletable: true
+                    }
                 } as WorkflowEdge
             )
         } else {
             // Single path for non-conditional nodes - continue the same path type
-            const newAddStepNodeId = String(Date.now() + 1)
+            const newAddStepNodeId = `add-step-${clickedPathType}-${newNodeId}`
             const newAddStepNode: WorkflowNode = {
                 id: newAddStepNodeId,
                 type: 'addStep',
@@ -423,31 +474,28 @@ const CreateCampaignPage = () => {
                     pathType: clickedPathType // Maintain the same path type (accepted or not-accepted)
                 },
                 measured: {
-                    width: 200,
-                    height: 60
+                    width: 220,
+                    height: 40
                 },
                 deletable: true
             }
 
             nodes.push(newAddStepNode)
             edges.push({
-                id: `${newNodeId}-${newAddStepNodeId}`,
+                id: `e-${newAddStepNodeId}-${newNodeId}`,
                 source: newNodeId,
                 target: newAddStepNodeId,
-                type: 'conditional',
+                type: sourceEdge?.data?.isConditionalPath ? 'conditional' : 'buttonedge',
                 animated: true,
-                selected: false,
-                style: {
-                    stroke: sourceEdge?.data?.isPositive ? '#22c55e' : (sourceEdge?.data?.isPositive === false ? '#ef4444' : '#6b7280'),
-                    strokeWidth: 2,
-                    strokeDasharray: sourceEdge?.data?.isPositive === false ? '5,5' : 'none'
-                },
                 data: {
-                    delayData: null,
+                    delay: "15m",
+                    delayData: {
+                        delay: 15,
+                        unit: "m"
+                    },
                     isPositive: sourceEdge?.data?.isPositive,
                     isConditionalPath: sourceEdge?.data?.isConditionalPath
-                },
-                deletable: true
+                }
             } as WorkflowEdge)
         }
 
@@ -556,7 +604,19 @@ const CreateCampaignPage = () => {
                     leadLists,
                     isLoadingLeadLists
                 })}
-                {tab === CampaignTabs.FLOW && renderFlowTab({ workflow, setWorkflow, onAddFirstNode: handleAddFirstNodeClick, onAddStepClick: handleAddStepClick, onDelayUpdate: handleDelayUpdate })}
+                {tab === CampaignTabs.FLOW && renderFlowTab({
+                    workflow,
+                    setWorkflow,
+                    onAddFirstNode: handleAddFirstNodeClick,
+                    onAddStepClick: handleAddStepClick,
+                    onDelayUpdate: handleDelayUpdate,
+                    onExportJSON: () => {
+                        const cleanJSON = exportWorkflowJSON();
+                        console.log('Clean Workflow JSON:', JSON.stringify(cleanJSON, null, 2));
+                        // Copy to clipboard for easy testing
+                        navigator.clipboard.writeText(JSON.stringify(cleanJSON, null, 2));
+                    }
+                })}
             </div>
 
             <NodeSelectionModal
@@ -759,14 +819,21 @@ const renderDetailsTab = ({
     </div>
 )
 
-const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: string }) => void }) => {
+const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: string }) => void, onExportJSON: () => void }) => {
 
     return (
         <div className="space-y-6">
             <Card>
                 <CardContent>
                     {workflow ? (
+                        <div className="space-y-4">
+                            <div className="flex justify-end">
+                                <Button variant="outline" onClick={onExportJSON}>
+                                    Export JSON
+                                </Button>
+                            </div>
                         <ReactFlowCard workflow={workflow} setWorkflow={setWorkflow} onAddStepClick={onAddStepClick} onDelayUpdate={onDelayUpdate} />
+                        </div>
                     ) : (
                         <div className="flex items-center justify-center w-full" style={{ height: '70vh' }}>
                             <Button onClick={onAddFirstNode}>Add First Node</Button>

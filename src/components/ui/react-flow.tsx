@@ -102,6 +102,7 @@ const ReactFlowCard = ({
     const edgeTypes = useMemo<EdgeTypes>(() => ({
         delay: DelayEdge,
         conditional: DelayEdge,
+        buttonedge: DelayEdge,
     }), []);
 
     // Track if we're updating from parent to prevent infinite loops
@@ -118,11 +119,42 @@ const ReactFlowCard = ({
     }, [workflow, onDelayUpdate]);
 
     // Update parent workflow state when local nodes/edges change (but not when updating from parent)
+    // Only update for structural changes, not selection changes
+    const prevNodesRef = useRef<Node[]>([]);
+    const prevEdgesRef = useRef<Edge[]>([]);
+
     useEffect(() => {
         if (!isUpdatingFromParent.current) {
-            const workflowNodes = nodes.map(convertReactFlowNodeToWorkflowNode);
-            const workflowEdges = edges.map(convertReactFlowEdgeToWorkflowEdge);
-            setWorkflow({ nodes: workflowNodes, edges: workflowEdges });
+            // Check if this is just a selection change by comparing structural properties
+            const structuralNodeChange = nodes.length !== prevNodesRef.current.length ||
+                nodes.some((node, index) => {
+                    const prevNode = prevNodesRef.current[index];
+                    return !prevNode ||
+                           node.id !== prevNode.id ||
+                           node.type !== prevNode.type ||
+                           node.position.x !== prevNode.position.x ||
+                           node.position.y !== prevNode.position.y;
+                });
+
+            const structuralEdgeChange = edges.length !== prevEdgesRef.current.length ||
+                edges.some((edge, index) => {
+                    const prevEdge = prevEdgesRef.current[index];
+                    return !prevEdge ||
+                           edge.id !== prevEdge.id ||
+                           edge.source !== prevEdge.source ||
+                           edge.target !== prevEdge.target;
+                });
+
+            // Only update parent if there are structural changes, not just selection changes
+            if (structuralNodeChange || structuralEdgeChange) {
+                const workflowNodes = nodes.map(convertReactFlowNodeToWorkflowNode);
+                const workflowEdges = edges.map(convertReactFlowEdgeToWorkflowEdge);
+                setWorkflow({ nodes: workflowNodes, edges: workflowEdges });
+            }
+
+            // Update refs for next comparison
+            prevNodesRef.current = [...nodes];
+            prevEdgesRef.current = [...edges];
         }
     }, [nodes, edges, setWorkflow]);
 

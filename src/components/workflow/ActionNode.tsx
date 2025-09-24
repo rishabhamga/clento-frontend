@@ -74,19 +74,6 @@ export const ActionNode = ({
                         )}
                     </div> */}
 
-                     {data.pathType && (
-                         <div className="mt-2">
-                             <Badge
-                                 variant="outline"
-                                 className={`text-xs ${data.pathType === 'accepted'
-                                         ? 'border-green-200 text-green-700'
-                                         : 'border-red-200 text-red-700'
-                                     }`}
-                             >
-                                 {data.pathType === 'accepted' ? 'Accepted Path' : 'Not Accepted Path'}
-                             </Badge>
-                         </div>
-                     )}
                 </CardContent>
             </Card>
 
