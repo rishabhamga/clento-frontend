@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Plus, Edit, Pause, Play, BarChart3, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const campaigns = [
   {
@@ -79,6 +80,8 @@ const getStatusBadge = (status: string) => {
 }
 
 export default function CampaignsPage() {
+  const router = useRouter();
+
   return (
     <div className="space-y-6">
         {/* Page Header */}
@@ -89,7 +92,7 @@ export default function CampaignsPage() {
               Manage and monitor your outreach campaigns
             </p>
           </div>
-          <Button className="bg-gradient-purple hover-glow-purple">
+          <Button className="bg-gradient-purple hover-glow-purple" onClick={() => router.push("/campaigns/create-campaign")}>
             <Plus className="w-4 h-4 mr-2" />
             Create Campaign
           </Button>

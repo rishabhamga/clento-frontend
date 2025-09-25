@@ -139,7 +139,7 @@ const NodeCard = ({ nodeType, onClick, isRecommended }: NodeCardProps) => {
 
     return (
         <Card
-            className="cursor-pointer hover:shadow-md transition-all duration-200 hover:ring-2 hover:ring-blue-500 relative"
+            className="cursor-pointer hover:shadow-md transition-all duration-200 hover:ring-2 hover:ring-primary relative"
             onClick={onClick}
         >
             {isRecommended && (

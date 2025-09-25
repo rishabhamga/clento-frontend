@@ -68,6 +68,9 @@ import { getTimezoneOptionsByRegion, getUserTimezone } from "../../../../lib/tim
 import ReactFlowCard from "../../../../components/ui/react-flow";
 import { NodeSelectionModal } from "../../../../components/workflow/NodeSelectionModal";
 import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
+import { CheckNever, makeAuthenticatedRequest } from "../../../../lib/axios-utils";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 enum CampaignTabs {
     DETAILS = 'DETAILS',
@@ -98,6 +101,8 @@ export interface BaseConfig {
     tone?: 'professional' | 'friendly' | 'casual' | 'enthusiastic' | 'supportive' | 'cold' | 'moderate' | 'warm';
     language?: 'english' | 'spanish' | 'french' | 'german' | 'portuguese';
     customGuidelines?: string;
+    customComment?: string;
+    customMessage?: string;
     // Connection request configuration options
     formality?: 'casual' | 'approachable' | 'professional';
     approach?: 'direct' | 'diplomatic' | 'indirect';
@@ -118,10 +123,6 @@ export interface ActionNodeData {
     label: string;
     isConfigured: boolean;
     config: BaseConfig;
-    pathType?: PathType;
-}
-
-export interface AddStepNodeData {
     pathType: PathType;
 }
 
@@ -132,7 +133,7 @@ export interface WorkflowNode {
         x: number;
         y: number;
     };
-    data: ActionNodeData | AddStepNodeData;
+    data: ActionNodeData;
     measured: {
         width: number;
         height: number;
@@ -172,11 +173,13 @@ type CampaignDetailsAction =
 
 const CreateCampaignPage = () => {
     const { data: connectedAccounts, isLoading: isLoadingAccounts } = useConnectedAccounts()
+    const router = useRouter()
 
     const [workflow, setWorkflow] = useState<WorkflowData | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
     const [isAddingStepNode, setIsAddingStepNode] = useState(false)
+    const { getToken } = useAuth()
 
     // Function to export workflow JSON in the exact reference format
     const exportWorkflowJSON = () => {
@@ -265,7 +268,7 @@ const CreateCampaignPage = () => {
         if (!cleanJSON) return;
 
         const dataStr = JSON.stringify(cleanJSON, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
         const exportFileDefaultName = `workflow-${new Date().toISOString().split('T')[0]}.json`;
 
@@ -274,6 +277,102 @@ const CreateCampaignPage = () => {
         linkElement.setAttribute('download', exportFileDefaultName);
         linkElement.click();
     };
+
+    const verifyDetailPage = (): boolean => {
+        const requiredFields: (keyof CampaignDetailsState)[] = [
+            'name',
+            'description',
+            'prospectList',
+            'senderAccount',
+            'startDate',
+            'endDate',
+            'startTime',
+            'endTime',
+            'timezone'
+        ];
+
+        // Helper function to check if a field is empty (including trimmed strings)
+        const isFieldEmpty = (field: keyof CampaignDetailsState): boolean => {
+            const value = detailsState[field];
+            if (value === null || value === undefined) return true;
+
+            // For string fields, also check if trimmed value is empty
+            if (typeof value === 'string') {
+                return value.trim() === '';
+            }
+
+            return !value;
+        };
+
+        const firstMissingField = requiredFields.find(field => isFieldEmpty(field));
+
+        if (firstMissingField) {
+            switch (firstMissingField) {
+                case 'name':
+                    toast.error("Campaign Name is required");
+                    break;
+                case 'prospectList':
+                    toast.error("Prospect List is required");
+                    break;
+                case 'senderAccount':
+                    toast.error("Sender Account is required");
+                    break;
+                case 'startDate':
+                    toast.error("Start Date is required");
+                    break;
+                case 'endDate':
+                    toast.error("End Date is required");
+                    break;
+                case 'startTime':
+                    toast.error("Start Time is required");
+                    break;
+                case 'endTime':
+                    toast.error("End Time is required");
+                    break;
+                case 'timezone':
+                    toast.error("Timezone is required");
+                    break;
+                case 'description':
+                    toast.error("Description is required");
+                    break;
+                default:
+                    CheckNever(firstMissingField);
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    const handleCreateCampaign = async() => {
+        if (!verifyDetailPage()) {
+            return;
+        }
+        if (!workflow) {
+            toast.error("No Workflow Created");
+            return;
+        }
+        const cleanJSON = exportWorkflowJSON();
+        const reqBody = {
+            detail: detailsState,
+            flow: cleanJSON
+        };
+        const token = await getToken();
+        if(!token){
+            toast.error("Please login to create a campaign");
+            return;
+        }
+        try {
+            const res = await makeAuthenticatedRequest('POST', '/campaigns/create', reqBody, token)
+            console.log(res);
+            toast.success("Campaign created successfully!");
+            // Redirect to campaigns page on successful creation
+            router.push('/campaigns');
+        } catch (error) {
+            console.error('Error creating campaign:', error);
+            toast.error("Failed to create campaign. Please try again.");
+        }
+    }
 
     // Function to delete a node and clean up connected edges intelligently
     const handleDeleteNode = (nodeId: string) => {
@@ -360,7 +459,7 @@ const CreateCampaignPage = () => {
         // Also clean up any AddStep nodes that were connected to the deleted node
         const connectedAddStepNodes = updatedNodes.filter(node =>
             node.type === 'addStep' &&
-            (node.data as AddStepNodeData).pathType &&
+            (node.data).pathType &&
             node.id.includes(nodeId)
         );
 
@@ -427,18 +526,18 @@ const CreateCampaignPage = () => {
 
         const firstNode: WorkflowNode = {
             id: firstNodeId,
-                type: 'action',
-                position: {
+            type: 'action',
+            position: {
                 x: 100,
                 y: 0
-                },
-                data: {
-                    type: nodeType,
+            },
+            data: {
+                type: nodeType,
                 label: getNodeLabel(nodeType),
                 isConfigured: true,
-                    config: {}
-                } as ActionNodeData,
-                measured: {
+                config: {}
+            } as ActionNodeData,
+            measured: {
                 width: 220,
                 height: 54
             },
@@ -459,7 +558,11 @@ const CreateCampaignPage = () => {
                     y: 150
                 },
                 data: {
-                    pathType: 'accepted'
+                    pathType: 'accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -477,7 +580,11 @@ const CreateCampaignPage = () => {
                     y: 150
                 },
                 data: {
-                    pathType: 'not-accepted'
+                    pathType: 'not-accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -532,7 +639,11 @@ const CreateCampaignPage = () => {
                     y: 150
                 },
                 data: {
-                    pathType: 'accepted'
+                    pathType: 'accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -543,19 +654,19 @@ const CreateCampaignPage = () => {
 
             nodes = [firstNode, addStepNode]
             edges = [{
-                    id: `e0-1`,
-                    source: firstNodeId,
-                    target: addStepNodeId,
-                    type: 'buttonedge',
-                    animated: true,
-                    data: {
-                        delay: "15m",
-                        delayData: {
-                            delay: 15,
-                            unit: "m"
-                        }
+                id: `e0-1`,
+                source: firstNodeId,
+                target: addStepNodeId,
+                type: 'buttonedge',
+                animated: true,
+                data: {
+                    delay: "15m",
+                    delayData: {
+                        delay: 15,
+                        unit: "m"
                     }
-                }]
+                }
+            }]
         }
 
         setWorkflow({
@@ -571,7 +682,7 @@ const CreateCampaignPage = () => {
         const clickedAddStepNode = workflow.nodes.find(node => node.id === selectedNodeId)
         if (!clickedAddStepNode) return
 
-        const clickedPathType = (clickedAddStepNode.data as AddStepNodeData).pathType
+        const clickedPathType = (clickedAddStepNode.data).pathType
 
         // Remove ONLY the clicked AddStepNode, preserve all other nodes including other AddStep nodes
         const nodesWithoutClickedAddStep = workflow.nodes.filter(node => node.id !== selectedNodeId)
@@ -594,7 +705,8 @@ const CreateCampaignPage = () => {
                 label: getNodeLabel(nodeType),
                 isConfigured: true,
                 config: getDefaultConfigForNodeType(nodeType),
-                pathType: clickedPathType
+                pathType: clickedPathType,
+
             } as ActionNodeData,
             measured: {
                 width: 220,
@@ -642,7 +754,11 @@ const CreateCampaignPage = () => {
                     y: clickedAddStepNode.position.y + 220
                 },
                 data: {
-                    pathType: 'accepted'
+                    pathType: 'accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -659,7 +775,11 @@ const CreateCampaignPage = () => {
                     y: clickedAddStepNode.position.y + 220
                 },
                 data: {
-                    pathType: 'not-accepted'
+                    pathType: 'not-accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -714,7 +834,11 @@ const CreateCampaignPage = () => {
                     y: clickedAddStepNode.position.y + 200
                 },
                 data: {
-                    pathType: clickedPathType // Maintain the same path type (accepted or not-accepted)
+                    pathType: clickedPathType, // Maintain the same path type (accepted or not-accepted)
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -821,7 +945,7 @@ const CreateCampaignPage = () => {
                                     key={tabItem.id}
                                     onClick={() => setTab(tabItem.id)}
                                     className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${tab === tabItem.id
-                                        ? 'border-blue-500 text-blue-600'
+                                        ? 'border-purple-500 text-purple-600'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }`}
                                 >
@@ -831,7 +955,7 @@ const CreateCampaignPage = () => {
                             )
                         })}
                     </nav>
-                    <Button>
+                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleCreateCampaign}>
                         Create Campaign
                     </Button>
                 </div>
