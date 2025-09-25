@@ -70,6 +70,7 @@ import { NodeSelectionModal } from "../../../../components/workflow/NodeSelectio
 import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
 import { CheckNever, makeAuthenticatedRequest } from "../../../../lib/axios-utils";
 import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 enum CampaignTabs {
     DETAILS = 'DETAILS',
@@ -122,10 +123,6 @@ export interface ActionNodeData {
     label: string;
     isConfigured: boolean;
     config: BaseConfig;
-    pathType?: PathType;
-}
-
-export interface AddStepNodeData {
     pathType: PathType;
 }
 
@@ -136,7 +133,7 @@ export interface WorkflowNode {
         x: number;
         y: number;
     };
-    data: ActionNodeData | AddStepNodeData;
+    data: ActionNodeData;
     measured: {
         width: number;
         height: number;
@@ -176,6 +173,7 @@ type CampaignDetailsAction =
 
 const CreateCampaignPage = () => {
     const { data: connectedAccounts, isLoading: isLoadingAccounts } = useConnectedAccounts()
+    const router = useRouter()
 
     const [workflow, setWorkflow] = useState<WorkflowData | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -364,9 +362,16 @@ const CreateCampaignPage = () => {
             toast.error("Please login to create a campaign");
             return;
         }
-        const res = await makeAuthenticatedRequest('POST', '/campaigns/create', reqBody, token)
-        console.log(res);
-        toast.success("Campaign created successfully!");
+        try {
+            const res = await makeAuthenticatedRequest('POST', '/campaigns/create', reqBody, token)
+            console.log(res);
+            toast.success("Campaign created successfully!");
+            // Redirect to campaigns page on successful creation
+            router.push('/campaigns');
+        } catch (error) {
+            console.error('Error creating campaign:', error);
+            toast.error("Failed to create campaign. Please try again.");
+        }
     }
 
     // Function to delete a node and clean up connected edges intelligently
@@ -454,7 +459,7 @@ const CreateCampaignPage = () => {
         // Also clean up any AddStep nodes that were connected to the deleted node
         const connectedAddStepNodes = updatedNodes.filter(node =>
             node.type === 'addStep' &&
-            (node.data as AddStepNodeData).pathType &&
+            (node.data).pathType &&
             node.id.includes(nodeId)
         );
 
@@ -553,7 +558,11 @@ const CreateCampaignPage = () => {
                     y: 150
                 },
                 data: {
-                    pathType: 'accepted'
+                    pathType: 'accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -571,7 +580,11 @@ const CreateCampaignPage = () => {
                     y: 150
                 },
                 data: {
-                    pathType: 'not-accepted'
+                    pathType: 'not-accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -626,7 +639,11 @@ const CreateCampaignPage = () => {
                     y: 150
                 },
                 data: {
-                    pathType: 'accepted'
+                    pathType: 'accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -665,7 +682,7 @@ const CreateCampaignPage = () => {
         const clickedAddStepNode = workflow.nodes.find(node => node.id === selectedNodeId)
         if (!clickedAddStepNode) return
 
-        const clickedPathType = (clickedAddStepNode.data as AddStepNodeData).pathType
+        const clickedPathType = (clickedAddStepNode.data).pathType
 
         // Remove ONLY the clicked AddStepNode, preserve all other nodes including other AddStep nodes
         const nodesWithoutClickedAddStep = workflow.nodes.filter(node => node.id !== selectedNodeId)
@@ -688,7 +705,8 @@ const CreateCampaignPage = () => {
                 label: getNodeLabel(nodeType),
                 isConfigured: true,
                 config: getDefaultConfigForNodeType(nodeType),
-                pathType: clickedPathType
+                pathType: clickedPathType,
+
             } as ActionNodeData,
             measured: {
                 width: 220,
@@ -736,7 +754,11 @@ const CreateCampaignPage = () => {
                     y: clickedAddStepNode.position.y + 220
                 },
                 data: {
-                    pathType: 'accepted'
+                    pathType: 'accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -753,7 +775,11 @@ const CreateCampaignPage = () => {
                     y: clickedAddStepNode.position.y + 220
                 },
                 data: {
-                    pathType: 'not-accepted'
+                    pathType: 'not-accepted',
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
@@ -808,7 +834,11 @@ const CreateCampaignPage = () => {
                     y: clickedAddStepNode.position.y + 200
                 },
                 data: {
-                    pathType: clickedPathType // Maintain the same path type (accepted or not-accepted)
+                    pathType: clickedPathType, // Maintain the same path type (accepted or not-accepted)
+                    type: nodeType,
+                    label: getNodeLabel(nodeType),
+                    isConfigured: true,
+                    config: {}
                 },
                 measured: {
                     width: 220,
