@@ -399,7 +399,7 @@ export default function LeadsPage() {
                                     variant={currentPage === page ? "default" : "outline"}
                                     size="sm"
                                     onClick={() => handlePageChange(page)}
-                                    className="w-8 h-8 p-0"
+                                    className="w-8 h-8 p-0 bg-gradient-purple"
                                 >
                                     {page}
                                 </Button>
