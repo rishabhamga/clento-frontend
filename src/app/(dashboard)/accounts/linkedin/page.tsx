@@ -47,8 +47,9 @@ export default function LinkedInAccountsPage() {
       throw new Error('Authentication required')
     }
     try {
-      // Use ngrok URL for webhooks so Unipile can reach our server
-      const baseUrl = 'https://0fe4ab0cee34.ngrok-free.app'
+      // Frontend URL for redirects, Backend URL for webhook
+      const frontendUrl = 'https://623751821a25.ngrok-free.app'  // Frontend (port 3000)
+      const backendUrl = 'https://45ecaf84c2ca.ngrok-free.app'   // Backend (port 3001)
 
       const response = await fetch('/api/accounts/connect', {
         method: 'POST',
@@ -58,9 +59,9 @@ export default function LinkedInAccountsPage() {
         body: JSON.stringify({
           provider: 'linkedin',
           token,
-          success_redirect_url: `${baseUrl}/accounts/linkedin?connected=true`,
-          failure_redirect_url: `${baseUrl}/accounts/linkedin?error=connection_failed`,
-          notify_url: `${baseUrl}/api/accounts/webhook`,
+          success_redirect_url: `${frontendUrl}/accounts/linkedin?connected=true`,
+          failure_redirect_url: `${frontendUrl}/accounts/linkedin?error=connection_failed`,
+          notify_url: `${backendUrl}/api/accounts/webhook`,
         }),
       })
 
@@ -69,14 +70,13 @@ export default function LinkedInAccountsPage() {
       }
 
       const data = await response.json()
-      console.log('Connection response:', data)
 
-      // Extract the URL from the response
-      const redirectUrl = data.data?.url || data.data?.connection_url || data.connection_url
+      // Extract the URL from the response and redirect to Unipile hosted auth
+      const redirectUrl = data.data?.url || data.url
       if (redirectUrl) {
         window.location.href = redirectUrl
       } else {
-        throw new Error('No redirect URL received')
+        throw new Error('No redirect URL received from server')
       }
     } catch (error) {
       console.error('Error connecting LinkedIn:', error)
