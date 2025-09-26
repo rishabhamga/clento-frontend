@@ -3,20 +3,21 @@ import { WorkflowNodeType } from '@/config/workflow-nodes'
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled'
 
 export interface Campaign {
-  id: string
-  name: string
-  description?: string
-  status: CampaignStatus
-  leadListId: string
-  accountId: string
-  workflowId?: string
-  workflowDefinition: WorkflowDefinition
-  schedule: CampaignSchedule
-  stats: CampaignStats
-  createdAt: string
-  updatedAt: string
-  startedAt?: string
-  completedAt?: string
+    id: string;
+    organization_id: string;
+    name: string;
+    description: string;
+    sender_account: string;
+    prospect_list: string;
+    start_date: string;
+    end_date: string
+    start_time: string;
+    end_time: string;
+    timezone: string;
+    file_name: string;
+    bucket: string;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface WorkflowDefinition {
