@@ -172,8 +172,8 @@ export function useUploadCsv() {
 
       const formData = new FormData()
       formData.append('csv_file', file)
-
-      return makeFormDataRequest<CsvPreviewResponse>('POST', '/lead-lists/upload-csv', formData, token)
+      const response = await makeFormDataRequest<{ data: CsvPreviewResponse }>('POST', '/lead-lists/upload-csv', formData, token)
+      return response.data
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to upload CSV file')

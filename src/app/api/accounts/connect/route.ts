@@ -1,37 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { apiConfig } from '@/config/site'
+import { makeAuthenticatedRequest } from '../../../../lib/axios-utils';
 
 export async function POST(request: NextRequest) {
   try {
     console.log('=== Frontend API: Account Connect Request ===')
     const body = await request.json()
-    console.log('Request body:', JSON.stringify(body, null, 2))
-    
-    const backendUrl = `${apiConfig.baseUrl}/accounts/connect`
-    console.log('Forwarding to backend URL:', backendUrl)
-    
-    // Forward the request to the backend
-    const response = await fetch(backendUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': request.headers.get('Authorization') || '',
-        'x-organization-id': request.headers.get('x-organization-id') || '',
-      },
-      body: JSON.stringify(body),
-    })
-
-    console.log('Backend response status:', response.status)
-    const data = await response.json()
-    console.log('Backend response data:', JSON.stringify(data, null, 2))
-    
-    if (!response.ok) {
-      console.error('Backend returned error:', data)
-      return NextResponse.json(data, { status: response.status })
+    const token = body['token'];
+    if(!token){
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    console.log('=== Frontend API: Success ===')
-    return NextResponse.json(data)
+    const backendUrl = `/accounts/connect`
+
+    try {
+        const res = await makeAuthenticatedRequest('POST', backendUrl, body, token);
+        const response = res.data
+        return NextResponse.json(response)
+    } catch (error) {
+        console.error('Backend returned error:', error)
+        return NextResponse.json(error, { status: 500 })
+    }
   } catch (error) {
     console.error('=== Frontend API: Error ===', error)
     return NextResponse.json(

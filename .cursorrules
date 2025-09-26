@@ -300,6 +300,12 @@ export type CreateCampaignData = z.infer<typeof createCampaignSchema>
 
 ## Code Quality
 
+### Indentation & Formatting
+- **ALWAYS use 4 spaces for indentation** - Never use tabs
+- Configure your editor to show spaces vs tabs to ensure consistency
+- Use consistent indentation throughout all files (TypeScript, JavaScript, CSS, JSON, etc.)
+- When editing existing files, maintain the existing indentation style if it's already established
+
 ### Naming Conventions
 - Use descriptive names for variables and functions
 - Use PascalCase for components and types

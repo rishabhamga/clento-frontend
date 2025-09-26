@@ -46,7 +46,7 @@ const getStatusBadge = (status: string) => {
   switch (status.toLowerCase()) {
     case "completed":
     case "active":
-      return <Badge className="bg-success text-black">Active</Badge>
+      return <Badge className="bg-success text-white">Active</Badge>
     case "draft":
       return <Badge variant="outline">Draft</Badge>
     case "processing":
@@ -195,7 +195,7 @@ export default function ProspectListsPage() {
           <h1 className="text-3xl font-bold text-foreground">Prospect lists</h1>
         </div>
         <Button
-          className="bg-purple-600 hover:bg-purple-700 text-white"
+          className="bg-gradient-purple hover-glow-purple text-white"
           onClick={() => window.location.href = '/prospect-lists/create'}
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -296,7 +296,7 @@ export default function ProspectListsPage() {
                       </div>
                       <Button
                         onClick={() => window.location.href = '/prospect-lists/create'}
-                        className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+                        className="bg-gradient-purple hover-glow-purple text-white gap-2"
                       >
                         <Plus className="w-4 h-4" />
                         Create Lead List
@@ -314,7 +314,7 @@ export default function ProspectListsPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-primary border-primary/20">
+                      <Badge variant="outline" className="bg-gradient-purple text-white">
                         {getSourceLabel(list.source)}
                       </Badge>
                     </TableCell>
@@ -450,7 +450,7 @@ export default function ProspectListsPage() {
                   variant={currentPage === page ? "default" : "outline"}
                   size="sm"
                   onClick={() => handlePageChange(page)}
-                  className="w-8 h-8 p-0"
+                  className="w-8 h-8 p-0 bg-gradient-purple"
                 >
                   {page}
                 </Button>

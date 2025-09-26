@@ -31,18 +31,21 @@ import {
   Clock
 } from "lucide-react"
 import { useConnectedAccounts } from "@/hooks/useConnectedAccounts"
+import { useAuth } from "@clerk/nextjs"
 export default function LinkedInAccountsPage() {
   const [isConnecting, setIsConnecting] = useState(false)
+  const { getToken } = useAuth()
 
   // Get connected LinkedIn accounts
   const { data: connectedAccountsData, isLoading } = useConnectedAccounts('linkedin')
   const connectedAccounts = connectedAccountsData?.data || []
 
-  console.log('LinkedIn accounts page - connected accounts:', connectedAccounts)
-  console.log('LinkedIn accounts page - accounts count:', connectedAccounts.length)
-
   const handleConnectLinkedIn = async () => {
     setIsConnecting(true)
+    const token = await getToken();
+    if(!token){
+      throw new Error('Authentication required')
+    }
     try {
       // Use ngrok URL for webhooks so Unipile can reach our server
       const baseUrl = 'https://0fe4ab0cee34.ngrok-free.app'
@@ -54,6 +57,7 @@ export default function LinkedInAccountsPage() {
         },
         body: JSON.stringify({
           provider: 'linkedin',
+          token,
           success_redirect_url: `${baseUrl}/accounts/linkedin?connected=true`,
           failure_redirect_url: `${baseUrl}/accounts/linkedin?error=connection_failed`,
           notify_url: `${baseUrl}/api/accounts/webhook`,
