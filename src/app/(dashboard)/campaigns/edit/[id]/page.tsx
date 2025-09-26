@@ -2,184 +2,77 @@
 
 import { Button } from "@/components/ui/button";
 import { WorkflowNodeType, getNodeLabel, hasConditionalPaths } from "@/config/workflow-nodes";
-
-// Function to get default configuration for each node type
-export const getDefaultConfigForNodeType = (nodeType: WorkflowNodeType): BaseConfig => {
-    switch (nodeType) {
-        case "like_post":
-            return {
-                numberOfPosts: 1,
-                recentPostDays: 7
-            };
-        case "comment_post":
-            return {
-                numberOfPosts: 1,
-                recentPostDays: 7,
-                configureWithAI: false,
-                commentLength: 'medium',
-                tone: 'professional',
-                language: 'english',
-                customGuidelines: ''
-            };
-        case "send_connection_request":
-            return {
-                useAI: false,
-                tone: 'moderate',
-                formality: 'approachable',
-                approach: 'diplomatic',
-                focus: 'relational',
-                intention: 'networking',
-                callToAction: 'confident',
-                personalization: 'specific',
-                language: 'english',
-                engageWithRecentActivity: false,
-                customGuidelines: ''
-            };
-        case "send_inmail":
-        case "send_followup":
-        case "send_invite":
-        case "withdraw_request":
-            return {
-                smartFollowups: false,
-                aiWritingAssistant: false,
-                messageLength: 'medium',
-                tone: 'professional',
-                language: 'english',
-                engageWithRecentActivity: false,
-                messagePurpose: ''
-            };
-        default:
-            return {};
-    }
-};
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
-import { Settings, Workflow } from "lucide-react";
+import { RefreshCw, Settings, Workflow } from "lucide-react";
 import { toast } from "sonner";
 import { ActionDispatch, useEffect, useReducer, useState } from "react";
-import { useConnectedAccounts, ConnectedAccount } from "../../../../hooks/useConnectedAccounts";
-import { useLeadLists } from "../../../../hooks/useLeadLists";
-import { LeadList } from "../../../../types/lead-list";
-import { getTimezoneOptionsByRegion, getUserTimezone } from "../../../../lib/timezone-utils";
-import ReactFlowCard from "../../../../components/ui/react-flow";
-import { NodeSelectionModal } from "../../../../components/workflow/NodeSelectionModal";
 import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
-import { CheckNever, makeAuthenticatedRequest } from "../../../../lib/axios-utils";
 import { useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { ConnectedAccount, useConnectedAccounts } from "../../../../../hooks/useConnectedAccounts";
+import { CheckNever, makeAuthenticatedRequest } from "../../../../../lib/axios-utils";
+import { useLeadLists } from "../../../../../hooks/useLeadLists";
+import { getTimezoneOptionsByRegion, getUserTimezone } from "../../../../../lib/timezone-utils";
+import { NodeSelectionModal } from "../../../../../components/workflow/NodeSelectionModal";
+import { LeadList } from "../../../../../types/lead-list";
+import ReactFlowCard from "../../../../../components/ui/react-flow";
+import { ActionNodeData, CampaignDetailsAction, CampaignDetailsState, CampaignTabs, getDefaultConfigForNodeType, WorkflowData, WorkflowEdge, WorkflowNode } from "../../create-campaign/page";
+import { Campaign } from "../../../../../types/campaign";
 
-export enum CampaignTabs {
-    DETAILS = 'DETAILS',
-    FLOW = 'FLOW'
+interface CampaignResponse {
+    campaign: Campaign
+    workflow: WorkflowData
 }
 
-export interface CampaignDetailsState {
-    name: string
-    description: string
-    senderAccount: string
-    prospectList: string
-    startDate: string | null
-    endDate: string | null
-    startTime: string | null
-    endTime: string | null
-    timezone: string
-}
-
-export type PathType = "accepted" | "not-accepted";
-
-export interface BaseConfig {
-    useAI?: boolean;
-    // Comment configuration options
-    numberOfPosts?: number;
-    recentPostDays?: number;
-    configureWithAI?: boolean;
-    commentLength?: 'short' | 'medium' | 'long';
-    tone?: 'professional' | 'friendly' | 'casual' | 'enthusiastic' | 'supportive' | 'cold' | 'moderate' | 'warm';
-    language?: 'english' | 'spanish' | 'french' | 'german' | 'portuguese';
-    customGuidelines?: string;
-    customComment?: string;
-    customMessage?: string;
-    // Connection request configuration options
-    formality?: 'casual' | 'approachable' | 'professional';
-    approach?: 'direct' | 'diplomatic' | 'indirect';
-    focus?: 'personal' | 'relational' | 'business';
-    intention?: 'networking' | 'partnership' | 'collaboration';
-    callToAction?: 'strong' | 'confident' | 'subtle';
-    personalization?: 'specific' | 'generic';
-    engageWithRecentActivity?: boolean;
-    // Message configuration options
-    smartFollowups?: boolean;
-    aiWritingAssistant?: boolean;
-    messageLength?: 'short' | 'medium' | 'long';
-    messagePurpose?: string;
-}
-
-export interface ActionNodeData {
-    type: WorkflowNodeType;
-    label: string;
-    isConfigured: boolean;
-    config: BaseConfig;
-    pathType: PathType;
-}
-
-export interface WorkflowNode {
-    id: string;
-    type: "action" | "addStep";
-    position: {
-        x: number;
-        y: number;
-    };
-    data: ActionNodeData;
-    measured: {
-        width: number;
-        height: number;
-    };
-    selected?: boolean;
-    deletable: boolean;
-}
-
-export interface WorkflowEdge {
-    id: string;
-    source: string;
-    target: string;
-    type: "buttonedge" | "conditional" | string;
-    animated: boolean;
-    selected?: boolean;
-    data: {
-        delay?: string; // "15m", "1d", etc
-        delayData?: {
-            delay: number;
-            unit: "m" | "d" | string;
-        };
-        isPositive?: boolean;
-        isConditionalPath?: boolean;
-    };
-    deletable?: boolean;
-}
-
-
-export interface WorkflowData {
-    nodes: WorkflowNode[],
-    edges: WorkflowEdge[]
-}
-
-export type CampaignDetailsAction =
-    | { type: 'SET_FIELD'; field: keyof CampaignDetailsState; value: string }
-    | { type: 'RESET' }
-
-const CreateCampaignPage = () => {
+const EditCampaignPage = () => {
     const { data: connectedAccounts, isLoading: isLoadingAccounts } = useConnectedAccounts()
-    const router = useRouter()
-
     const [workflow, setWorkflow] = useState<WorkflowData | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
-    const [isAddingStepNode, setIsAddingStepNode] = useState(false)
-    const { getToken } = useAuth()
+    const [isAddingStepNode, setIsAddingStepNode] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const campaignId = usePathname().split('/').pop();
+    const { getToken } = useAuth();
+    const router = useRouter();
+
+    const initialDetailsState: CampaignDetailsState = {
+        name: '',
+        description: '',
+        senderAccount: '',
+        prospectList: '',
+        startDate: null,
+        endDate: null,
+        startTime: null,
+        endTime: null,
+        timezone: getUserTimezone()
+    }
+
+    const [detailsState, dispatchDetails] = useReducer(
+        campaignDetailsReducer,
+        initialDetailsState
+    )
+
+    function campaignDetailsReducer(
+        state: CampaignDetailsState,
+        action: CampaignDetailsAction
+    ): CampaignDetailsState {
+        switch (action.type) {
+            case 'SET_FIELD':
+                return {
+                    ...state,
+                    [action.field]: action.value,
+                }
+            case 'RESET':
+                return initialDetailsState
+            default:
+                return state
+        }
+    }
 
     // Function to export workflow JSON in the exact reference format
     const exportWorkflowJSON = () => {
@@ -344,7 +237,7 @@ const CreateCampaignPage = () => {
         return true;
     }
 
-    const handleCreateCampaign = async() => {
+    const handleEditCampaign = async () => {
         if (!verifyDetailPage()) {
             return;
         }
@@ -354,18 +247,18 @@ const CreateCampaignPage = () => {
         }
         const cleanJSON = exportWorkflowJSON();
         const reqBody = {
+            campaignId,
             detail: detailsState,
             flow: cleanJSON
         };
         const token = await getToken();
-        if(!token){
+        if (!token) {
             toast.error("Please login to create a campaign");
             return;
         }
         try {
-            const res = await makeAuthenticatedRequest('POST', '/campaigns/create', reqBody, token)
-            console.log(res);
-            toast.success("Campaign created successfully!");
+            const res = await makeAuthenticatedRequest('POST', '/campaigns/edit', reqBody, token)
+            toast.success("Campaign Edited successfully!");
             // Redirect to campaigns page on successful creation
             router.push('/campaigns');
         } catch (error) {
@@ -416,10 +309,6 @@ const CreateCampaignPage = () => {
         const outgoers = getOutgoers(reactFlowNodeToDelete, reactFlowNodes, reactFlowEdges);
         const connectedEdges = getConnectedEdges([reactFlowNodeToDelete], reactFlowEdges);
 
-        console.log('Incomers:', incomers.map(n => n.id));
-        console.log('Outgoers:', outgoers.map(n => n.id));
-        console.log('Connected edges:', connectedEdges.map(e => `${e.source} -> ${e.target}`));
-
         // Remove the node
         const updatedNodes = workflow.nodes.filter(node => node.id !== nodeId);
 
@@ -454,8 +343,6 @@ const CreateCampaignPage = () => {
             })
         );
 
-        console.log('Created edges:', createdEdges.map(e => `${e.source} -> ${e.target}`));
-
         // Also clean up any AddStep nodes that were connected to the deleted node
         const connectedAddStepNodes = updatedNodes.filter(node =>
             node.type === 'addStep' &&
@@ -468,9 +355,6 @@ const CreateCampaignPage = () => {
         );
 
         const finalEdges = [...remainingEdges, ...createdEdges];
-
-        console.log('After deletion - nodes:', finalNodes.map(n => n.id));
-        console.log('After deletion - edges:', finalEdges.map(e => `${e.source} -> ${e.target}`));
 
         setWorkflow({
             nodes: finalNodes,
@@ -878,40 +762,6 @@ const CreateCampaignPage = () => {
     const { data: leadLists, isLoading: isLoadingLeadLists } = useLeadLists();
     const [tab, setTab] = useState<CampaignTabs>(CampaignTabs.DETAILS)
 
-    const initialDetailsState: CampaignDetailsState = {
-        name: '',
-        description: '',
-        senderAccount: '',
-        prospectList: '',
-        startDate: null,
-        endDate: null,
-        startTime: null,
-        endTime: null,
-        timezone: getUserTimezone()
-    }
-
-    function campaignDetailsReducer(
-        state: CampaignDetailsState,
-        action: CampaignDetailsAction
-    ): CampaignDetailsState {
-        switch (action.type) {
-            case 'SET_FIELD':
-                return {
-                    ...state,
-                    [action.field]: action.value,
-                }
-            case 'RESET':
-                return initialDetailsState
-            default:
-                return state
-        }
-    }
-
-    const [detailsState, dispatchDetails] = useReducer(
-        campaignDetailsReducer,
-        initialDetailsState
-    )
-
     const tabs = [
         {
             id: CampaignTabs.DETAILS,
@@ -928,8 +778,37 @@ const CreateCampaignPage = () => {
     ]
 
     useEffect(() => {
-        console.log(workflow)
-    }, [workflow])
+        const fetchCampaign = async () => {
+            setIsLoading(true)
+            const token = await getToken()
+            if (!token) {
+                toast.error("Please login to edit a campaign")
+                return
+            }
+            if (!campaignId) {
+                toast.error("No campaign ID found")
+                return
+            }
+            try {
+                const res = await makeAuthenticatedRequest<CampaignResponse>('POST', `/campaigns`, { campaignId }, token);
+                dispatchDetails({ type: 'SET_FIELD', field: 'name', value: res.campaign.name });
+                dispatchDetails({ type: 'SET_FIELD', field: 'description', value: res.campaign.description });
+                dispatchDetails({ type: 'SET_FIELD', field: 'senderAccount', value: res.campaign.sender_account });
+                dispatchDetails({ type: 'SET_FIELD', field: 'prospectList', value: res.campaign.prospect_list });
+                dispatchDetails({ type: 'SET_FIELD', field: 'startDate', value: res.campaign.start_date });
+                dispatchDetails({ type: 'SET_FIELD', field: 'endDate', value: res.campaign.end_date });
+                dispatchDetails({ type: 'SET_FIELD', field: 'startTime', value: res.campaign.start_time });
+                dispatchDetails({ type: 'SET_FIELD', field: 'endTime', value: res.campaign.end_time });
+                dispatchDetails({ type: 'SET_FIELD', field: 'timezone', value: res.campaign.timezone });
+                setWorkflow(res.workflow)
+            } catch (err) {
+                console.log(err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchCampaign()
+    }, [])
 
     return (
         <div className="container mx-auto py-6 space-y-6">
@@ -955,14 +834,20 @@ const CreateCampaignPage = () => {
                             )
                         })}
                     </nav>
-                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleCreateCampaign}>
-                        Create Campaign
+                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleEditCampaign}>
+                        Save Changes
                     </Button>
                 </div>
             </div>
 
             {/* Tab Content */}
-            <div className="py-6">
+            {isLoading && (
+                <div className="text-center py-8">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    <p className="text-muted-foreground">Loading Details...</p>
+                </div>
+            )}
+            {!isLoading && <div className="py-6">
                 {tab === CampaignTabs.DETAILS && renderDetailsTab({
                     state: detailsState,
                     setState: dispatchDetails,
@@ -982,7 +867,7 @@ const CreateCampaignPage = () => {
                     onDeleteNode: handleDeleteNode,
                     onResetWorkflow: () => setWorkflow(null)
                 })}
-            </div>
+            </div>}
 
             <NodeSelectionModal
                 isOpen={isModalOpen}
@@ -998,7 +883,7 @@ const CreateCampaignPage = () => {
     )
 }
 
-export default CreateCampaignPage;
+export default EditCampaignPage;
 
 
 const renderDetailsTab = ({

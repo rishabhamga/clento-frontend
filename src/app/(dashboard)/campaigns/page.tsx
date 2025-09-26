@@ -51,7 +51,29 @@ export default function CampaignsPage() {
     const router = useRouter();
     const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isDeleting, setIsDeleting] = useState<string[]>([]);
     const { getToken } = useAuth();
+
+    const handleDeleteCampaign = async (campaignId: string) => {
+        const token = await getToken()
+        setIsDeleting(prev => [...prev, campaignId]);
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+        try{
+            await makeAuthenticatedRequest('POST', `/campaigns/delete`, { campaignId }, token);
+            toast.success("Campaign deleted successfully");
+            setCampaigns(prev => prev.filter(campaign => campaign.id !== campaignId));
+        }catch(error){
+            toast.error("Failed to delete campaign");
+            console.error(error);
+        } finally {
+            setIsDeleting(prev => prev.filter(id => id !== campaignId));
+        }
+    }
+    const handleEditCampaign = async (campaignId: string) => {
+        router.push(`/campaigns/edit/${campaignId}`);
+    }
 
     useEffect(() => {
         const fetchCampaigns = async () => {
@@ -155,45 +177,45 @@ export default function CampaignsPage() {
                                         </TableCell>
                                         {/* <TableCell>{getStatusBadge(campaign.status)}</TableCell> */}
                                         <TableCell>
-                                        <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2 w-fit min-w-[160px]">
-                                            {campaign.senderData?.profile_picture_url ? (
-                                                <img
-                                                    src={campaign.senderData.profile_picture_url}
-                                                    alt={campaign.senderData.name || "Sender"}
-                                                    className="w-8 h-8 rounded-full object-cover border border-border"
-                                                />
-                                            ) : (
-                                                <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-muted-foreground">
-                                                    {campaign.senderData?.name
-                                                        ? campaign.senderData.name
-                                                            .split(" ")
-                                                            .map((n: string) => n[0])
-                                                            .join("")
-                                                            .toUpperCase()
-                                                        : "?"}
+                                            <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2 w-fit min-w-[160px]">
+                                                {campaign.senderData?.profile_picture_url ? (
+                                                    <img
+                                                        src={campaign.senderData.profile_picture_url}
+                                                        alt={campaign.senderData.name || "Sender"}
+                                                        className="w-8 h-8 rounded-full object-cover border border-border"
+                                                    />
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-muted-foreground">
+                                                        {campaign.senderData?.name
+                                                            ? campaign.senderData.name
+                                                                .split(" ")
+                                                                .map((n: string) => n[0])
+                                                                .join("")
+                                                                .toUpperCase()
+                                                            : "?"}
+                                                    </div>
+                                                )}
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-sm text-foreground">
+                                                        {campaign.senderData?.name || "Unknown"}
+                                                    </span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {campaign.senderData?.provider || "No provider"}
+                                                    </span>
                                                 </div>
-                                            )}
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-sm text-foreground">
-                                                    {campaign.senderData?.name || "Unknown"}
-                                                </span>
-                                                <span className="text-xs text-muted-foreground">
-                                                    {campaign.senderData?.provider || "No provider"}
-                                                </span>
                                             </div>
-                                        </div>
                                         </TableCell>
                                         <TableCell>{campaign?.list_data?.name}: {campaign?.list_data?.total} Leads</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
-                                                <Button size="sm" variant="outline">
+                                                <Button className="cursor-pointer" size="sm" variant="outline" onClick={() => handleEditCampaign(campaign.id)}>
                                                     <Edit className="w-4 h-4" />
                                                 </Button>
-                                                <Button size="sm" variant="outline">
+                                                {/* <Button size="sm" variant="outline">
                                                     <BarChart3 className="w-4 h-4" />
-                                                </Button>
-                                                <Button size="sm" variant="outline" className="text-error hover:text-error">
-                                                    <Trash2 className="w-4 h-4" />
+                                                </Button> */}
+                                                <Button size="sm" variant="outline" className="text-error hover:text-error" onClick={() => handleDeleteCampaign(campaign.id)} disabled={isDeleting.includes(campaign.id)}>
+                                                    {isDeleting.includes(campaign.id) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                                                 </Button>
                                             </div>
                                         </TableCell>
