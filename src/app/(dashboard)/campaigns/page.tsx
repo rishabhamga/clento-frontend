@@ -214,7 +214,7 @@ export default function CampaignsPage() {
                                                 {/* <Button size="sm" variant="outline">
                                                     <BarChart3 className="w-4 h-4" />
                                                 </Button> */}
-                                                <Button size="sm" variant="outline" className="text-error hover:text-error" onClick={() => handleDeleteCampaign(campaign.id)} disabled={isDeleting.includes(campaign.id)}>
+                                                <Button size="sm" variant="outline" className="text-error hover:text-error cursor-pointer" onClick={() => handleDeleteCampaign(campaign.id)} disabled={isDeleting.includes(campaign.id)}>
                                                     {isDeleting.includes(campaign.id) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                                                 </Button>
                                             </div>
