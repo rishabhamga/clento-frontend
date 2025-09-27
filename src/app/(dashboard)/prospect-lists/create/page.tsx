@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useUploadCsv, usePublishLeadList } from "@/hooks/useLeadLists"
+import { CsvPreviewResponse } from "@/types/lead-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -25,44 +26,21 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, Linkedin, Search, Database, FileSpreadsheet } from "lucide-react"
+import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, FileSpreadsheet, Eye } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useConnectedAccounts } from "../../../../hooks/useConnectedAccounts"
 
-type Step = "select-method" | "configure" | "upload" | "preview" | "publish"
-type ImportMethod = "linkedin-search" | "sales-navigator" | "b2b-data" | "csv-import"
-
 export default function CreateLeadListPage() {
     const router = useRouter()
-    const [currentStep, setCurrentStep] = useState<Step>("select-method")
-    const [selectedMethod, setSelectedMethod] = useState<ImportMethod | null>(null)
     const [formData, setFormData] = useState({
         name: "",
         description: "",
         connectedAccountId: "",
         csvFile: null as File | null,
-        linkedinSearchUrl: "",
-        salesNavigatorUrl: ""
     })
-    const [csvPreview, setCsvPreview] = useState<{
-        validation: {
-            isValid: boolean;
-            hasLinkedInColumn: boolean;
-            linkedInColumnName?: string;
-            emailColumns: string[];
-            phoneColumns: string[];
-            errors: string[];
-            warnings: string[];
-        };
-        preview: {
-            headers: string[];
-            data: Record<string, any>[];
-            totalRows: number;
-            showingRows: number;
-        };
-        mapping: Record<string, string>;
-    } | null>(null)
+    const [csvPreview, setCsvPreview] = useState<CsvPreviewResponse | null>(null)
     const [csvValidationError, setCsvValidationError] = useState<string>("")
+    const [showPreview, setShowPreview] = useState(false)
 
     // State for connected accounts
     const { data: connectedAccounts, isLoading: loadingAccounts } = useConnectedAccounts('linkedin');
@@ -97,22 +75,14 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
         account.display_name.trim().length > 0
     ) || []
 
-    const handleMethodSelect = (method: ImportMethod) => {
-        setSelectedMethod(method)
-        if (method === "csv-import") {
-            setCurrentStep("configure")
-        } else {
-            // For other methods, we'll implement them later
-            setCurrentStep("configure")
-        }
-    }
-
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
         if (!file) return
 
-        // Clear previous validation errors
+        // Clear previous validation errors and preview
         setCsvValidationError("")
+        setCsvPreview(null)
+        setShowPreview(false)
 
         // Validate file type
         if (!file.name.toLowerCase().endsWith('.csv')) {
@@ -138,13 +108,8 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                     return
                 }
 
-                // If validation passes, proceed with upload
+                // If validation passes, store the file
                 setFormData(prev => ({ ...prev, csvFile: file }))
-
-                const result = await uploadCsvMutation.mutateAsync(file)
-                console.log(result);
-                setCsvPreview(result)
-                setCurrentStep("preview")
             } catch (error) {
                 console.error('Error reading CSV:', error)
                 setCsvValidationError("Error reading CSV file. Please ensure it's a valid CSV format.")
@@ -153,6 +118,23 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
 
         reader.readAsText(file)
     }
+
+    const handlePreview = async () => {
+        if (!formData.csvFile || !formData.connectedAccountId) return
+
+        try {
+            const result = await uploadCsvMutation.mutateAsync({
+                file: formData.csvFile,
+                account_id: formData.connectedAccountId
+            })
+            setCsvPreview(result)
+            setShowPreview(true)
+        } catch (error) {
+            console.error('Error uploading CSV:', error)
+            setCsvValidationError("Error uploading CSV file. Please try again.")
+        }
+    }
+
 
     const handlePublish = async () => {
         if (!formData.csvFile || !csvPreview) return
@@ -169,8 +151,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                 name: formData.name,
                 description: formData.description,
                 connected_account_id: formData.connectedAccountId,
-                csv_data: csvData,
-                mapping: csvPreview.mapping
+                csv_data: csvData
             })
 
             router.push("/prospect-lists")
@@ -179,74 +160,11 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
         }
     }
 
-    const renderMethodSelection = () => (
+    const renderMainForm = () => (
         <div className="space-y-6">
             <div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">Create Lead List</h2>
-                <p className="text-muted-foreground">Choose how you&apos;d like to import your leads</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Import from CSV */}
-                <Card
-                    className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-purple-300"
-                    onClick={() => handleMethodSelect("csv-import")}
-                >
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-3">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                                <FileSpreadsheet className="w-6 h-6 text-green-600" />
-                            </div>
-                            Import from CSV
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground mb-4">
-                            Upload your own CSV file with lead data
-                        </p>
-                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                            <div className="text-sm text-gray-600">
-                                <div className="grid grid-cols-4 gap-2 mb-2 text-xs font-medium">
-                                    <div>Name</div>
-                                    <div>Title</div>
-                                    <div>Company</div>
-                                    <div>LinkedIn</div>
-                                </div>
-                                <div className="grid grid-cols-4 gap-2 text-xs">
-                                    <div>John Doe</div>
-                                    <div>CEO</div>
-                                    <div>Tech Corp</div>
-                                    <div>linkedin.com/in/johndoe</div>
-                                </div>
-                                <div className="grid grid-cols-4 gap-2 text-xs">
-                                    <div>Jane Smith</div>
-                                    <div>CTO</div>
-                                    <div>Startup Inc</div>
-                                    <div>linkedin.com/in/janesmith</div>
-                                </div>
-                            </div>
-                        </div>
-                        <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
-                            Select CSV Import
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <div className="flex justify-start">
-                <Button variant="outline" onClick={() => router.push("/prospect-lists")}>
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Lists
-                </Button>
-            </div>
-        </div>
-    )
-
-    const renderConfigureStep = () => (
-        <div className="space-y-6">
-            <div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Configure Lead List</h2>
-                <p className="text-muted-foreground">Enter the details for your new lead list</p>
+                <p className="text-muted-foreground">Import leads from your CSV file</p>
             </div>
 
             <div className="grid gap-6">
@@ -306,72 +224,79 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                     </Select>
                 </div>
 
-                {selectedMethod === "csv-import" && (
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <Label>CSV File (Max 10MB)</Label>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleDownloadSampleCsv}
-                                className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                            >
-                                <FileSpreadsheet className="w-4 h-4 mr-2" />
-                                Download Sample CSV
-                            </Button>
-                        </div>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <Label>CSV File (Max 10MB)</Label>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleDownloadSampleCsv}
+                            className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                        >
+                            <FileSpreadsheet className="w-4 h-4 mr-2" />
+                            Download Sample CSV
+                        </Button>
+                    </div>
 
-                        {csvValidationError && (
-                            <Alert variant="destructive">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertDescription>
-                                    {csvValidationError}
-                                </AlertDescription>
-                            </Alert>
-                        )}
+                    {csvValidationError && (
+                        <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                                {csvValidationError}
+                            </AlertDescription>
+                        </Alert>
+                    )}
 
-                        <Card className="border-2 border-dashed border-border/50 bg-background/50">
-                            <CardContent className="flex flex-col items-center justify-center py-12">
-                                {!formData.csvFile ? (
-                                    <>
-                                        <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-                                        <div className="text-center space-y-2">
-                                            <p className="text-lg font-medium">Choose File</p>
-                                            <p className="text-sm text-muted-foreground">no file selected</p>
-                                        </div>
-                                        <Button className="mt-4" onClick={() => document.getElementById('csv-upload')?.click()}>
-                                            <Upload className="w-4 h-4 mr-2" />
-                                            Choose File
-                                        </Button>
-                                    </>
-                                ) : (
+                    <Card className="border-2 border-dashed border-border/50 bg-background/50">
+                        <CardContent className="flex flex-col items-center justify-center py-12">
+                            {!formData.csvFile ? (
+                                <>
+                                    <FileText className="w-12 h-12 text-muted-foreground mb-4" />
                                     <div className="text-center space-y-2">
-                                        <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                                        <p className="text-lg font-medium">{formData.csvFile.name}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {(formData.csvFile.size / 1024).toFixed(2)} KB
-                                        </p>
+                                        <p className="text-lg font-medium">Choose File</p>
+                                        <p className="text-sm text-muted-foreground">no file selected</p>
+                                    </div>
+                                    <Button className="mt-4" onClick={() => document.getElementById('csv-upload')?.click()}>
+                                        <Upload className="w-4 h-4 mr-2" />
+                                        Choose File
+                                    </Button>
+                                </>
+                            ) : (
+                                <div className="text-center space-y-2">
+                                    <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                                    <p className="text-lg font-medium">{formData.csvFile.name}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {(formData.csvFile.size / 1024).toFixed(2)} KB
+                                    </p>
+                                    <div className="flex gap-2 mt-4">
                                         <Button
                                             variant="outline"
-                                            className="mt-4"
                                             onClick={() => document.getElementById('csv-upload')?.click()}
                                         >
                                             Choose Different File
                                         </Button>
+                                        <Button
+                                            onClick={handlePreview}
+                                            disabled={!formData.connectedAccountId || uploadCsvMutation.isPending}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                                        >
+                                            <Eye className="w-4 h-4 mr-2" />
+                                            {uploadCsvMutation.isPending ? "Processing..." : "Preview"}
+                                        </Button>
                                     </div>
-                                )}
-                                {/* Hidden file input - always present in DOM */}
-                                <input
-                                    id="csv-upload"
-                                    type="file"
-                                    accept=".csv"
-                                    className="hidden"
-                                    onChange={handleFileUpload}
-                                />
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
+                                </div>
+                            )}
+                            {/* Hidden file input - always present in DOM */}
+                            <input
+                                id="csv-upload"
+                                type="file"
+                                accept=".csv"
+                                className="hidden"
+                                onChange={handleFileUpload}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
 
             <Alert>
@@ -388,102 +313,13 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
             </Alert>
 
             <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setCurrentStep("select-method")}>
+                <Button variant="outline" onClick={() => router.push("/prospect-lists")}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
-                </Button>
-                <Button
-                    onClick={() => setCurrentStep("preview")}
-                    disabled={!formData.name || !formData.connectedAccountId || (selectedMethod === "csv-import" && !formData.csvFile)}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                    Next: Preview
-                </Button>
-            </div>
-        </div>
-    )
-
-    const renderPreviewStep = () => (
-        <div className="space-y-6">
-            <div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Lead List Preview</h2>
-                <p className="text-muted-foreground">Review your lead list before publishing</p>
-            </div>
-
-            {csvPreview?.validation?.isValid ? (
-                <Alert>
-                    <CheckCircle className="h-4 w-4" />
-                    <AlertDescription>
-                        <strong>CSV processed successfully!</strong>
-                        <br />
-                        ✅ Found LinkedIn URLs in your CSV
-                        <br />
-                        📊 Processed {csvPreview.preview?.totalRows} total rows
-                        <br />
-                        📧 {csvPreview.validation?.emailColumns?.length} emails 📞 {csvPreview.validation?.phoneColumns?.length} phones
-                    </AlertDescription>
-                </Alert>
-            ) : (
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                        CSV validation failed. Please check your file format.
-                    </AlertDescription>
-                </Alert>
-            )}
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                        <span>Lead List Preview</span>
-                        <Badge variant="outline">{csvPreview?.preview?.totalRows || 0} Total Leads</Badge>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Title</TableHead>
-                                <TableHead>Company</TableHead>
-                                <TableHead>LinkedIn</TableHead>
-                                <TableHead>Email</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {csvPreview?.preview?.data?.slice(0, 5).map((lead, index) => (
-                                <TableRow key={index}>
-                                    <TableCell className="font-medium">{lead.name || 'N/A'}</TableCell>
-                                    <TableCell>{lead.title || 'N/A'}</TableCell>
-                                    <TableCell>{lead.company || 'N/A'}</TableCell>
-                                    <TableCell>
-                                        {lead.linkedin_url ? (
-                                            <a
-                                                href={lead.linkedin_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-primary hover:underline"
-                                            >
-                                                LinkedIn Profile
-                                            </a>
-                                        ) : 'N/A'}
-                                    </TableCell>
-                                    <TableCell>{lead.email || 'N/A'}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-
-            <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setCurrentStep("configure")}>
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
+                    Back to Lists
                 </Button>
                 <Button
                     onClick={handlePublish}
-                    disabled={!csvPreview?.validation?.isValid || publishMutation.isPending}
+                    disabled={!formData.name || !formData.connectedAccountId || !formData.csvFile || !csvPreview?.found || publishMutation.isPending}
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                     {publishMutation.isPending ? "Publishing..." : "Publish List"}
@@ -492,37 +328,122 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
         </div>
     )
 
+    const renderPreview = () => {
+        if (!showPreview || !csvPreview) return null
+
+        return (
+            <div className="space-y-6 mt-8">
+                <div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">Lead List Preview</h3>
+                    <p className="text-muted-foreground">Review your lead list before publishing</p>
+                </div>
+
+                {csvPreview?.found > 0 ? (
+                    <Alert>
+                        <CheckCircle className="h-4 w-4" />
+                        <AlertDescription>
+                            <strong>CSV processed successfully!</strong>
+                            <br />
+                            ✅ Found {csvPreview.found} LinkedIn profiles
+                            <br />
+                            📊 Total rows: {csvPreview.total}
+                            <br />
+                            ❌ Not found: {csvPreview.notFound}
+                        </AlertDescription>
+                    </Alert>
+                ) : (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                            No LinkedIn profiles found. Please check your CSV format.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                            <span>Lead List Preview</span>
+                            <Badge variant="outline">{csvPreview?.found || 0} Found Profiles</Badge>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Headline</TableHead>
+                                    <TableHead>Premium</TableHead>
+                                    <TableHead>Followers</TableHead>
+                                    <TableHead>Connections</TableHead>
+                                    <TableHead>Websites</TableHead>
+                                    <TableHead>Profile Picture</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {csvPreview?.data?.slice(0, 5).map((lead, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell className="font-medium">{lead.name || 'N/A'}</TableCell>
+                                        <TableCell>{lead.headline || 'N/A'}</TableCell>
+                                        <TableCell>
+                                            {lead.isPremium ? (
+                                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                                                    Premium
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="outline">Free</Badge>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>{lead.followerCount?.toLocaleString() || 'N/A'}</TableCell>
+                                        <TableCell>{lead.connectionCount?.toLocaleString() || 'N/A'}</TableCell>
+                                        <TableCell>
+                                            {lead.websites && lead.websites.length > 0 ? (
+                                                <div className="space-y-1">
+                                                    {lead.websites.slice(0, 2).map((website, idx) => (
+                                                        <a
+                                                            key={idx}
+                                                            href={website}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-primary hover:underline text-sm block"
+                                                        >
+                                                            {website}
+                                                        </a>
+                                                    ))}
+                                                    {lead.websites.length > 2 && (
+                                                        <span className="text-xs text-muted-foreground">
+                                                            +{lead.websites.length - 2} more
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ) : 'N/A'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {lead.profilePictureUrl ? (
+                                                <Avatar className="w-8 h-8">
+                                                    <AvatarImage src={lead.profilePictureUrl} alt={lead.name || 'Profile'} />
+                                                    <AvatarFallback>
+                                                        {lead.name ? lead.name.split(' ').map(n => n[0]).join('') : 'P'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            ) : 'N/A'}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="max-w-6xl mx-auto space-y-6">
-            {/* Progress Steps */}
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center space-x-4">
-                    {["select-method", "configure", "preview"].map((step, index) => (
-                        <div key={step} className="flex items-center">
-                            <div className={`
-                w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                ${currentStep === step ? "bg-purple-600 text-white" :
-                                    ["select-method", "configure", "preview"].indexOf(currentStep) > index ? "bg-green-500 text-white" : "bg-muted text-muted-foreground"}
-              `}>
-                                {["select-method", "configure", "preview"].indexOf(currentStep) > index ? "✓" : index + 1}
-                            </div>
-                            {index < 2 && (
-                                <div className={`
-                  w-16 h-0.5 mx-2
-                  ${["select-method", "configure", "preview"].indexOf(currentStep) > index ? "bg-green-500" : "bg-muted"}
-                `} />
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Step Content */}
             <Card>
                 <CardContent className="p-6">
-                    {currentStep === "select-method" && renderMethodSelection()}
-                    {currentStep === "configure" && renderConfigureStep()}
-                    {currentStep === "preview" && renderPreviewStep()}
+                    {renderMainForm()}
+                    {renderPreview()}
                 </CardContent>
             </Card>
         </div>

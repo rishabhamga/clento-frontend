@@ -1,7 +1,6 @@
 import { makeAuthenticatedRequest, makeFormDataRequest } from '@/lib/axios-utils'
 import {
     CreateLeadListRequest,
-    CsvPreviewRequest,
     CsvPreviewResponse,
     LeadList,
     LeadListQuery,
@@ -166,13 +165,14 @@ export function useUploadCsv() {
   const { getToken } = useAuth()
 
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({ file, account_id }: { file: File; account_id: string }) => {
       const token = await getToken()
       if (!token) throw new Error('Authentication required')
 
       const formData = new FormData()
       formData.append('csv_file', file)
-      const response = await makeFormDataRequest<{ data: CsvPreviewResponse }>('POST', '/lead-lists/upload-csv', formData, token)
+      formData.append('account_id', account_id)
+      const response = await makeFormDataRequest<{ data: CsvPreviewResponse; message: string }>('POST', '/lead-lists/upload-csv', formData, token)
       return response.data
     },
     onError: (error: any) => {
@@ -181,22 +181,6 @@ export function useUploadCsv() {
   })
 }
 
-// Preview CSV
-export function usePreviewCsv() {
-  const { getToken } = useAuth()
-
-  return useMutation({
-    mutationFn: async (data: CsvPreviewRequest) => {
-      const token = await getToken()
-      if (!token) throw new Error('Authentication required')
-
-      return makeAuthenticatedRequest<CsvPreviewResponse>('POST', '/lead-lists/preview-csv', data, token)
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to preview CSV')
-    },
-  })
-}
 
 // Publish lead list
 export function usePublishLeadList() {

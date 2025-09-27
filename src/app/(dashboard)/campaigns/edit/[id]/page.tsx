@@ -271,10 +271,6 @@ const EditCampaignPage = () => {
     const handleDeleteNode = (nodeId: string) => {
         if (!workflow) return;
 
-        console.log('Deleting node:', nodeId);
-        console.log('Current workflow nodes:', workflow.nodes.map(n => n.id));
-        console.log('Current workflow edges:', workflow.edges.map(e => `${e.source} -> ${e.target}`));
-
         // Find the node to delete
         const nodeToDelete = workflow.nodes.find(node => node.id === nodeId);
         if (!nodeToDelete) return;
@@ -343,21 +339,45 @@ const EditCampaignPage = () => {
             })
         );
 
-        // Also clean up any AddStep nodes that were connected to the deleted node
-        const connectedAddStepNodes = updatedNodes.filter(node =>
-            node.type === 'addStep' &&
-            (node.data).pathType &&
-            node.id.includes(nodeId)
-        );
+        // Clean up any truly orphaned AddStep nodes (nodes with no connections at all)
+        const allEdgesAfterReconnection = [...remainingEdges, ...createdEdges];
+
+        const orphanedAddStepNodes = updatedNodes.filter(node => {
+            if (node.type !== 'addStep') return false;
+
+            // Check if this AddStep node has any connections (incoming or outgoing)
+            const hasAnyConnections = allEdgesAfterReconnection.some(edge =>
+                edge.source === node.id || edge.target === node.id
+            );
+
+            // Only remove if it has no connections at all (truly orphaned)
+            return !hasAnyConnections;
+        });
 
         const finalNodes = updatedNodes.filter(node =>
-            !connectedAddStepNodes.some(addStepNode => addStepNode.id === node.id)
+            !orphanedAddStepNodes.some(addStepNode => addStepNode.id === node.id)
         );
+
+        // Reposition nodes to fill the gap left by the deleted node
+        const repositionedNodes = finalNodes.map(node => {
+            // If this node is positioned below the deleted node, move it up
+            if (node.position.y > nodeToDelete.position.y) {
+                const newPosition = {
+                    x: node.position.x,
+                    y: node.position.y - 200 // Move up by 200px (standard node spacing)
+                };
+                return {
+                    ...node,
+                    position: newPosition
+                };
+            }
+            return node;
+        });
 
         const finalEdges = [...remainingEdges, ...createdEdges];
 
         setWorkflow({
-            nodes: finalNodes,
+            nodes: repositionedNodes,
             edges: finalEdges
         });
     };
@@ -413,7 +433,7 @@ const EditCampaignPage = () => {
             type: 'action',
             position: {
                 x: 100,
-                y: 0
+                y: 100
             },
             data: {
                 type: nodeType,
@@ -439,7 +459,7 @@ const EditCampaignPage = () => {
                 type: 'addStep',
                 position: {
                     x: 300,
-                    y: 150
+                    y: 300
                 },
                 data: {
                     pathType: 'accepted',
@@ -461,7 +481,7 @@ const EditCampaignPage = () => {
                 type: 'addStep',
                 position: {
                     x: -100,
-                    y: 150
+                    y: 300
                 },
                 data: {
                     pathType: 'not-accepted',
@@ -520,7 +540,7 @@ const EditCampaignPage = () => {
                 type: 'addStep',
                 position: {
                     x: 100,
-                    y: 150
+                    y: 300
                 },
                 data: {
                     pathType: 'accepted',
