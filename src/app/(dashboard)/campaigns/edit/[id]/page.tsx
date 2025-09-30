@@ -46,7 +46,7 @@ const EditCampaignPage = () => {
         senderAccount: '',
         prospectList: '',
         startDate: null,
-        endDate: null,
+        leadsPerDay: null,
         startTime: null,
         endTime: null,
         timezone: getUserTimezone()
@@ -178,7 +178,7 @@ const EditCampaignPage = () => {
             'prospectList',
             'senderAccount',
             'startDate',
-            'endDate',
+            'leadsPerDay',
             'startTime',
             'endTime',
             'timezone'
@@ -213,8 +213,8 @@ const EditCampaignPage = () => {
                 case 'startDate':
                     toast.error("Start Date is required");
                     break;
-                case 'endDate':
-                    toast.error("End Date is required");
+                case 'leadsPerDay':
+                    toast.error("Leads Per Day is required");
                     break;
                 case 'startTime':
                     toast.error("Start Time is required");
@@ -257,13 +257,12 @@ const EditCampaignPage = () => {
             return;
         }
         try {
-            const res = await makeAuthenticatedRequest('POST', '/campaigns/edit', reqBody, token)
+            await makeAuthenticatedRequest('POST', '/campaigns/edit', reqBody, token);
             toast.success("Campaign Edited successfully!");
             // Redirect to campaigns page on successful creation
             router.push('/campaigns');
         } catch (error) {
             console.error('Error creating campaign:', error);
-            toast.error("Failed to create campaign. Please try again.");
         }
     }
 
@@ -816,7 +815,7 @@ const EditCampaignPage = () => {
                 dispatchDetails({ type: 'SET_FIELD', field: 'senderAccount', value: res.campaign.sender_account });
                 dispatchDetails({ type: 'SET_FIELD', field: 'prospectList', value: res.campaign.prospect_list });
                 dispatchDetails({ type: 'SET_FIELD', field: 'startDate', value: res.campaign.start_date });
-                dispatchDetails({ type: 'SET_FIELD', field: 'endDate', value: res.campaign.end_date });
+                dispatchDetails({ type: 'SET_FIELD', field: 'leadsPerDay', value: res.campaign.leadsPerDay });
                 dispatchDetails({ type: 'SET_FIELD', field: 'startTime', value: res.campaign.start_time });
                 dispatchDetails({ type: 'SET_FIELD', field: 'endTime', value: res.campaign.end_time });
                 dispatchDetails({ type: 'SET_FIELD', field: 'timezone', value: res.campaign.timezone });
@@ -1018,12 +1017,8 @@ const renderDetailsTab = ({
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="end-date">End Date</Label>
-                        <DatePicker
-                            id="end-date"
-                            value={state.endDate || ''}
-                            onChange={(date) => setState({ type: 'SET_FIELD', field: 'endDate', value: date?.toISOString() || '' })}
-                        />
+                        <Label htmlFor="end-date">Leads Per Day</Label>
+                        <Input type="number" placeholder="Leads Per Day" onChange={(e) => setState({type: 'SET_FIELD', field: 'leadsPerDay', value: e.target.value})}/>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

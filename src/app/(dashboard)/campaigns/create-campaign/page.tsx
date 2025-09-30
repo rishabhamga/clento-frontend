@@ -83,7 +83,7 @@ export interface CampaignDetailsState {
     senderAccount: string
     prospectList: string
     startDate: string | null
-    endDate: string | null
+    leadsPerDay: number | null
     startTime: string | null
     endTime: string | null
     timezone: string
@@ -168,7 +168,7 @@ export interface WorkflowData {
 }
 
 export type CampaignDetailsAction =
-    | { type: 'SET_FIELD'; field: keyof CampaignDetailsState; value: string }
+    | { type: 'SET_FIELD'; field: keyof CampaignDetailsState; value: string | number }
     | { type: 'RESET' }
 
 const CreateCampaignPage = () => {
@@ -285,7 +285,7 @@ const CreateCampaignPage = () => {
             'prospectList',
             'senderAccount',
             'startDate',
-            'endDate',
+            'leadsPerDay',
             'startTime',
             'endTime',
             'timezone'
@@ -320,8 +320,8 @@ const CreateCampaignPage = () => {
                 case 'startDate':
                     toast.error("Start Date is required");
                     break;
-                case 'endDate':
-                    toast.error("End Date is required");
+                case 'leadsPerDay':
+                    toast.error("Lead Per Day is required");
                     break;
                 case 'startTime':
                     toast.error("Start Time is required");
@@ -370,7 +370,6 @@ const CreateCampaignPage = () => {
             router.push('/campaigns');
         } catch (error) {
             console.error('Error creating campaign:', error);
-            toast.error("Failed to create campaign. Please try again.");
         }
     }
 
@@ -895,7 +894,7 @@ const CreateCampaignPage = () => {
         senderAccount: '',
         prospectList: '',
         startDate: null,
-        endDate: null,
+        leadsPerDay: null,
         startTime: null,
         endTime: null,
         timezone: getUserTimezone()
@@ -937,10 +936,6 @@ const CreateCampaignPage = () => {
             description: "Campaign workflow and steps"
         }
     ]
-
-    useEffect(() => {
-        console.log(workflow)
-    }, [workflow])
 
     return (
         <div className="container mx-auto py-6 space-y-6">
@@ -1124,12 +1119,8 @@ const renderDetailsTab = ({
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="end-date">End Date</Label>
-                        <DatePicker
-                            id="end-date"
-                            value={state.endDate || ''}
-                            onChange={(date) => setState({ type: 'SET_FIELD', field: 'endDate', value: date?.toISOString() || '' })}
-                        />
+                        <Label htmlFor="end-date">Leads Per Day</Label>
+                        <Input type="number" placeholder="Leads Per Day" onChange={(e) => setState({type: 'SET_FIELD', field: 'leadsPerDay', value: e.target.value})}/>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
