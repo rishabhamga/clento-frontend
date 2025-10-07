@@ -118,11 +118,17 @@ export interface BaseConfig {
     messagePurpose?: string;
 }
 
+export type DelayUnit = 's' | 'm' | 'h' | 'd' | 'w';
+
 export interface ActionNodeData {
     type: WorkflowNodeType;
     label: string;
     isConfigured: boolean;
     config: BaseConfig;
+    pathType: PathType;
+}
+
+export interface AddStepNodeData extends ActionNodeData {
     pathType: PathType;
 }
 
@@ -153,7 +159,7 @@ export interface WorkflowEdge {
         delay?: string; // "15m", "1d", etc
         delayData?: {
             delay: number;
-            unit: "m" | "d" | string;
+            unit: DelayUnit;
         };
         isPositive?: boolean;
         isConditionalPath?: boolean;
@@ -438,7 +444,7 @@ const CreateCampaignPage = () => {
                         delay: originalEdge?.data?.delay || "15m",
                         delayData: originalEdge?.data?.delayData || {
                             delay: 15,
-                            unit: "minutes"
+                            unit: "m"
                         }
                     }
                 };
@@ -498,7 +504,7 @@ const CreateCampaignPage = () => {
         setIsModalOpen(true)
     }
 
-    const handleDelayUpdate = (edgeId: string, delayConfig: { delay: number; unit: string }) => {
+    const handleDelayUpdate = (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => {
         if (!workflow) return
 
         const updatedEdges = workflow.edges.map(edge => {
@@ -1186,7 +1192,7 @@ const renderDetailsTab = ({
     </div>
 )
 
-const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: string }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
+const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
 
     return (
         <div className="space-y-6">

@@ -21,7 +21,7 @@ import { getTimezoneOptionsByRegion, getUserTimezone } from "../../../../../lib/
 import { NodeSelectionModal } from "../../../../../components/workflow/NodeSelectionModal";
 import { LeadList } from "../../../../../types/lead-list";
 import ReactFlowCard from "../../../../../components/ui/react-flow";
-import { ActionNodeData, CampaignDetailsAction, CampaignDetailsState, CampaignTabs, getDefaultConfigForNodeType, WorkflowData, WorkflowEdge, WorkflowNode } from "../../create-campaign/page";
+import { ActionNodeData, CampaignDetailsAction, CampaignDetailsState, CampaignTabs, DelayUnit, getDefaultConfigForNodeType, WorkflowData, WorkflowEdge, WorkflowNode } from "../../create-campaign/page";
 import { Campaign } from "../../../../../types/campaign";
 
 interface CampaignResponse {
@@ -331,7 +331,7 @@ const EditCampaignPage = () => {
                         delay: originalEdge?.data?.delay || "15m",
                         delayData: originalEdge?.data?.delayData || {
                             delay: 15,
-                            unit: "minutes"
+                            unit: "m"
                         }
                     }
                 };
@@ -391,7 +391,7 @@ const EditCampaignPage = () => {
         setIsModalOpen(true)
     }
 
-    const handleDelayUpdate = (edgeId: string, delayConfig: { delay: number; unit: string }) => {
+    const handleDelayUpdate = (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => {
         if (!workflow) return
 
         const updatedEdges = workflow.edges.map(edge => {
@@ -1084,7 +1084,7 @@ const renderDetailsTab = ({
     </div>
 )
 
-const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: string }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
+const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
 
     return (
         <div className="space-y-6">
