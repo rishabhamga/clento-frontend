@@ -10,7 +10,7 @@ export interface Campaign {
     sender_account: string;
     prospect_list: string;
     start_date: string;
-    end_date: string
+    leadsPerDay: number;
     start_time: string;
     end_time: string;
     timezone: string;

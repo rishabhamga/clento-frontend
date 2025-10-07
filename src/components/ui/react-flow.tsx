@@ -1,12 +1,11 @@
-import { addEdge, applyEdgeChanges, applyNodeChanges, Background, BackgroundVariant, Connection, ConnectionLineType, Edge, EdgeChange, Node, NodeChange, ReactFlow, NodeTypes, EdgeTypes, EdgeLabelRenderer, getIncomers, getOutgoers, getConnectedEdges } from '@xyflow/react';
+import { addEdge, applyEdgeChanges, applyNodeChanges, Background, BackgroundVariant, Connection, ConnectionLineType, Edge, EdgeChange, EdgeTypes, getConnectedEdges, getIncomers, getOutgoers, Node, NodeChange, NodeTypes, ReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
-import { WorkflowData, WorkflowEdge, WorkflowNode, ActionNodeData, AddStepNodeData } from '../../app/(dashboard)/campaigns/create-campaign/page';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActionNodeData, AddStepNodeData, BaseConfig, DelayUnit, WorkflowData, WorkflowEdge, WorkflowNode } from '../../app/(dashboard)/campaigns/create-campaign/page';
 import { ActionNode } from '../workflow/ActionNode';
 import { AddStepNode } from '../workflow/AddStepNode';
 import DelayEdge from '../workflow/DelayEdge';
 import { NodeConfigurationDrawer } from '../workflow/NodeConfigurationDrawer';
-import { BaseConfig } from '../../app/(dashboard)/campaigns/create-campaign/page';
 
 // Convert WorkflowNode to React Flow Node
 const convertWorkflowNodeToReactFlowNode = (workflowNode: WorkflowNode): Node => ({
@@ -23,7 +22,7 @@ const convertWorkflowNodeToReactFlowNode = (workflowNode: WorkflowNode): Node =>
 });
 
 // Convert WorkflowEdge to React Flow Edge
-const convertWorkflowEdgeToReactFlowEdge = (workflowEdge: WorkflowEdge, onDelayUpdate?: (edgeId: string, delayConfig: { delay: number; unit: string }) => void): Edge => ({
+const convertWorkflowEdgeToReactFlowEdge = (workflowEdge: WorkflowEdge, onDelayUpdate?: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void): Edge => ({
     id: workflowEdge.id,
     source: workflowEdge.source,
     target: workflowEdge.target,
@@ -76,7 +75,7 @@ const ReactFlowCard = ({
     workflow: WorkflowData,
     setWorkflow: (workflow: WorkflowData) => void,
     onAddStepClick?: (nodeId: string) => void,
-    onDelayUpdate?: (edgeId: string, delayConfig: { delay: number; unit: string }) => void,
+    onDelayUpdate?: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void,
     onNodeClick?: (nodeData: ActionNodeData) => void,
     onDeleteNode?: (nodeId: string) => void
 }) => {

@@ -130,19 +130,15 @@ export const handleApiResponse = <T>(response: AxiosResponse<T> | null): T => {
 
     if (response.status >= 400) {
         const responseData = response.data as any
-        const errorMessage = responseData?.message || `HTTP ${response.status}: ${response.statusText}`
-        const errorCode = responseData?.code || response.status.toString()
-        const errorDetails = responseData?.details || {}
 
         // Handle 467 error code with toast notification
         if (response.status === 467) {
-            toast.error(errorMessage, {
-                description: errorDetails?.description || 'Please check your input and try again.',
+            toast.error(responseData.error, {
                 duration: 5000,
             })
         }
 
-        throw new ApiError(response.status, errorMessage, errorCode, errorDetails)
+        throw new ApiError(response.status, responseData.error);
     }
 
     // Handle wrapped API responses
