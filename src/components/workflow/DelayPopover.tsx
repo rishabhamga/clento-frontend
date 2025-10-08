@@ -105,9 +105,11 @@ export const DelayPopover = ({ currentDelay, onSave, children }: DelayPopoverPro
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="s">Seconds</SelectItem>
                                     <SelectItem value="m">Minutes</SelectItem>
                                     <SelectItem value="h">Hours</SelectItem>
                                     <SelectItem value="d">Days</SelectItem>
+                                    <SelectItem value="w">Weeks</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
