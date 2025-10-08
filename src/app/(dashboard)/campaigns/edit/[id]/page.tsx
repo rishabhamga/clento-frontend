@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
-import { RefreshCw, Settings, Workflow } from "lucide-react";
+import { Loader2, RefreshCw, Settings, Workflow } from "lucide-react";
 import { toast } from "sonner";
 import { ActionDispatch, useEffect, useReducer, useState } from "react";
 import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
@@ -37,6 +37,7 @@ const EditCampaignPage = () => {
     const [isAddingStepNode, setIsAddingStepNode] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const campaignId = usePathname().split('/').pop();
+    const [isEditingCampaign, setIsEditingCampaign] = useState(false)
     const { getToken } = useAuth();
     const router = useRouter();
 
@@ -238,6 +239,7 @@ const EditCampaignPage = () => {
     }
 
     const handleEditCampaign = async () => {
+        setIsEditingCampaign(true)
         if (!verifyDetailPage()) {
             return;
         }
@@ -263,6 +265,8 @@ const EditCampaignPage = () => {
             router.push('/campaigns');
         } catch (error) {
             console.error('Error creating campaign:', error);
+        } finally {
+            setIsEditingCampaign(false)
         }
     }
 
@@ -853,7 +857,8 @@ const EditCampaignPage = () => {
                             )
                         })}
                     </nav>
-                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleEditCampaign}>
+                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleEditCampaign} disabled={isEditingCampaign}>
+                        {isEditingCampaign ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
                         Save Changes
                     </Button>
                 </div>

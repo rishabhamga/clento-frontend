@@ -58,7 +58,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
-import { Settings, Workflow } from "lucide-react";
+import { Loader2, Settings, Workflow } from "lucide-react";
 import { toast } from "sonner";
 import { ActionDispatch, useEffect, useReducer, useState } from "react";
 import { useConnectedAccounts, ConnectedAccount } from "../../../../hooks/useConnectedAccounts";
@@ -185,6 +185,7 @@ const CreateCampaignPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
     const [isAddingStepNode, setIsAddingStepNode] = useState(false)
+    const [isCreatingCampaign, setIsCreatingCampaign] = useState(false)
     const { getToken } = useAuth()
 
     // Function to export workflow JSON in the exact reference format
@@ -351,6 +352,7 @@ const CreateCampaignPage = () => {
     }
 
     const handleCreateCampaign = async() => {
+        setIsCreatingCampaign(true)
         if (!verifyDetailPage()) {
             return;
         }
@@ -376,6 +378,8 @@ const CreateCampaignPage = () => {
             router.push('/campaigns');
         } catch (error) {
             console.error('Error creating campaign:', error);
+        } finally {
+            setIsCreatingCampaign(false)
         }
     }
 
@@ -967,7 +971,8 @@ const CreateCampaignPage = () => {
                             )
                         })}
                     </nav>
-                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleCreateCampaign}>
+                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleCreateCampaign} disabled={isCreatingCampaign}>
+                        {isCreatingCampaign ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Campaign'}
                         Create Campaign
                     </Button>
                 </div>
