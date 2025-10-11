@@ -19,15 +19,22 @@ import { LucideIcon } from "lucide-react";
 
 export type WorkflowNodeType =
   | "profile_visit"
-  | "follow_profile"
   | "like_post"
   | "comment_post"
-  | "send_invite"
   | "send_followup"
   | "withdraw_request"
   | "send_inmail"
-  | "follow_company"
   | "send_connection_request";
+
+  export enum EWorkflowNodeType {
+    profile_visit = 'profile_visit',
+    like_post = 'like_post',
+    comment_post = 'comment_post',
+    send_followup = 'send_followup',
+    withdraw_request = 'withdraw_request',
+    send_inmail = 'send_inmail',
+    send_connection_request = 'send_connection_request'
+}
 
 export interface WorkflowNodeConfig {
   type: WorkflowNodeType;
@@ -58,15 +65,6 @@ export const WORKFLOW_NODE_TYPES: WorkflowNodeConfig[] = [
     isLinkedInOnly: true
   },
   {
-    type: 'follow_profile',
-    label: 'Follow Profile',
-    description: 'Follow a LinkedIn profile',
-    icon: UserPlus,
-    color: 'bg-green-100 text-green-800 border-green-200',
-    category: 'engagement',
-    isLinkedInOnly: true
-  },
-  {
     type: 'like_post',
     label: 'Like Post',
     description: 'Like the most recent LinkedIn post',
@@ -84,17 +82,6 @@ export const WORKFLOW_NODE_TYPES: WorkflowNodeConfig[] = [
     category: 'engagement',
     requiresMessage: true,
     isLinkedInOnly: true
-  },
-  {
-    type: 'send_invite',
-    label: 'Send Invite',
-    description: 'Send a connection request with optional message',
-    icon: UserPlus,
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    category: 'connection',
-    requiresMessage: true,
-    isLinkedInOnly: true,
-    hasConditionalPaths: true
   },
   {
     type: 'send_connection_request',
@@ -138,15 +125,6 @@ export const WORKFLOW_NODE_TYPES: WorkflowNodeConfig[] = [
     requiresTemplate: true,
     isLinkedInOnly: true
   },
-  {
-    type: 'follow_company',
-    label: 'Follow Company',
-    description: 'Follow a company page on LinkedIn',
-    icon: Building2,
-    color: 'bg-teal-100 text-teal-800 border-teal-200',
-    category: 'company',
-    isLinkedInOnly: true
-  }
 ];
 
 /**

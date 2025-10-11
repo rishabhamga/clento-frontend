@@ -37,7 +37,6 @@ export const getDefaultConfigForNodeType = (nodeType: WorkflowNodeType): BaseCon
             };
         case "send_inmail":
         case "send_followup":
-        case "send_invite":
         case "withdraw_request":
             return {
                 smartFollowups: false,
@@ -352,7 +351,6 @@ const CreateCampaignPage = () => {
     }
 
     const handleCreateCampaign = async() => {
-        setIsCreatingCampaign(true)
         if (!verifyDetailPage()) {
             return;
         }
@@ -371,8 +369,8 @@ const CreateCampaignPage = () => {
             return;
         }
         try {
+            setIsCreatingCampaign(true);
             const res = await makeAuthenticatedRequest('POST', '/campaigns/create', reqBody, token)
-            console.log(res);
             toast.success("Campaign created successfully!");
             // Redirect to campaigns page on successful creation
             router.push('/campaigns');
@@ -973,7 +971,6 @@ const CreateCampaignPage = () => {
                     </nav>
                     <Button className="bg-gradient-purple hover-glow-purple" onClick={handleCreateCampaign} disabled={isCreatingCampaign}>
                         {isCreatingCampaign ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Campaign'}
-                        Create Campaign
                     </Button>
                 </div>
             </div>

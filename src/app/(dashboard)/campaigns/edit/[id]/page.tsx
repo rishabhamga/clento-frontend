@@ -239,7 +239,6 @@ const EditCampaignPage = () => {
     }
 
     const handleEditCampaign = async () => {
-        setIsEditingCampaign(true)
         if (!verifyDetailPage()) {
             return;
         }
@@ -259,6 +258,7 @@ const EditCampaignPage = () => {
             return;
         }
         try {
+            setIsEditingCampaign(true)
             await makeAuthenticatedRequest('POST', '/campaigns/edit', reqBody, token);
             toast.success("Campaign Edited successfully!");
             // Redirect to campaigns page on successful creation
