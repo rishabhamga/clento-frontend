@@ -37,7 +37,6 @@ export const getDefaultConfigForNodeType = (nodeType: WorkflowNodeType): BaseCon
             };
         case "send_inmail":
         case "send_followup":
-        case "send_invite":
         case "withdraw_request":
             return {
                 smartFollowups: false,
@@ -58,7 +57,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
-import { Settings, Workflow } from "lucide-react";
+import { Loader2, Settings, Workflow } from "lucide-react";
 import { toast } from "sonner";
 import { ActionDispatch, useEffect, useReducer, useState } from "react";
 import { useConnectedAccounts, ConnectedAccount } from "../../../../hooks/useConnectedAccounts";
@@ -83,7 +82,7 @@ export interface CampaignDetailsState {
     senderAccount: string
     prospectList: string
     startDate: string | null
-    endDate: string | null
+    leadsPerDay: number | null
     startTime: string | null
     endTime: string | null
     timezone: string
@@ -118,11 +117,17 @@ export interface BaseConfig {
     messagePurpose?: string;
 }
 
+export type DelayUnit = 's' | 'm' | 'h' | 'd' | 'w';
+
 export interface ActionNodeData {
     type: WorkflowNodeType;
     label: string;
     isConfigured: boolean;
     config: BaseConfig;
+    pathType: PathType;
+}
+
+export interface AddStepNodeData extends ActionNodeData {
     pathType: PathType;
 }
 
@@ -153,7 +158,7 @@ export interface WorkflowEdge {
         delay?: string; // "15m", "1d", etc
         delayData?: {
             delay: number;
-            unit: "m" | "d" | string;
+            unit: DelayUnit;
         };
         isPositive?: boolean;
         isConditionalPath?: boolean;
@@ -168,7 +173,7 @@ export interface WorkflowData {
 }
 
 export type CampaignDetailsAction =
-    | { type: 'SET_FIELD'; field: keyof CampaignDetailsState; value: string }
+    | { type: 'SET_FIELD'; field: keyof CampaignDetailsState; value: string | number }
     | { type: 'RESET' }
 
 const CreateCampaignPage = () => {
@@ -179,6 +184,7 @@ const CreateCampaignPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
     const [isAddingStepNode, setIsAddingStepNode] = useState(false)
+    const [isCreatingCampaign, setIsCreatingCampaign] = useState(false)
     const { getToken } = useAuth()
 
     // Function to export workflow JSON in the exact reference format
@@ -285,7 +291,7 @@ const CreateCampaignPage = () => {
             'prospectList',
             'senderAccount',
             'startDate',
-            'endDate',
+            'leadsPerDay',
             'startTime',
             'endTime',
             'timezone'
@@ -320,8 +326,8 @@ const CreateCampaignPage = () => {
                 case 'startDate':
                     toast.error("Start Date is required");
                     break;
-                case 'endDate':
-                    toast.error("End Date is required");
+                case 'leadsPerDay':
+                    toast.error("Lead Per Day is required");
                     break;
                 case 'startTime':
                     toast.error("Start Time is required");
@@ -363,14 +369,15 @@ const CreateCampaignPage = () => {
             return;
         }
         try {
+            setIsCreatingCampaign(true);
             const res = await makeAuthenticatedRequest('POST', '/campaigns/create', reqBody, token)
-            console.log(res);
             toast.success("Campaign created successfully!");
             // Redirect to campaigns page on successful creation
             router.push('/campaigns');
         } catch (error) {
             console.error('Error creating campaign:', error);
-            toast.error("Failed to create campaign. Please try again.");
+        } finally {
+            setIsCreatingCampaign(false)
         }
     }
 
@@ -439,7 +446,7 @@ const CreateCampaignPage = () => {
                         delay: originalEdge?.data?.delay || "15m",
                         delayData: originalEdge?.data?.delayData || {
                             delay: 15,
-                            unit: "minutes"
+                            unit: "m"
                         }
                     }
                 };
@@ -499,7 +506,7 @@ const CreateCampaignPage = () => {
         setIsModalOpen(true)
     }
 
-    const handleDelayUpdate = (edgeId: string, delayConfig: { delay: number; unit: string }) => {
+    const handleDelayUpdate = (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => {
         if (!workflow) return
 
         const updatedEdges = workflow.edges.map(edge => {
@@ -895,7 +902,7 @@ const CreateCampaignPage = () => {
         senderAccount: '',
         prospectList: '',
         startDate: null,
-        endDate: null,
+        leadsPerDay: null,
         startTime: null,
         endTime: null,
         timezone: getUserTimezone()
@@ -938,10 +945,6 @@ const CreateCampaignPage = () => {
         }
     ]
 
-    useEffect(() => {
-        console.log(workflow)
-    }, [workflow])
-
     return (
         <div className="container mx-auto py-6 space-y-6">
             {/* Tabs */}
@@ -966,8 +969,8 @@ const CreateCampaignPage = () => {
                             )
                         })}
                     </nav>
-                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleCreateCampaign}>
-                        Create Campaign
+                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleCreateCampaign} disabled={isCreatingCampaign}>
+                        {isCreatingCampaign ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Campaign'}
                     </Button>
                 </div>
             </div>
@@ -1124,12 +1127,8 @@ const renderDetailsTab = ({
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="end-date">End Date</Label>
-                        <DatePicker
-                            id="end-date"
-                            value={state.endDate || ''}
-                            onChange={(date) => setState({ type: 'SET_FIELD', field: 'endDate', value: date?.toISOString() || '' })}
-                        />
+                        <Label htmlFor="end-date">Leads Per Day</Label>
+                        <Input type="number" placeholder="Leads Per Day" onChange={(e) => setState({type: 'SET_FIELD', field: 'leadsPerDay', value: e.target.value})}/>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1195,7 +1194,7 @@ const renderDetailsTab = ({
     </div>
 )
 
-const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: string }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
+const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
 
     return (
         <div className="space-y-6">

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
-import { RefreshCw, Settings, Workflow } from "lucide-react";
+import { Loader2, RefreshCw, Settings, Workflow } from "lucide-react";
 import { toast } from "sonner";
 import { ActionDispatch, useEffect, useReducer, useState } from "react";
 import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
@@ -21,7 +21,7 @@ import { getTimezoneOptionsByRegion, getUserTimezone } from "../../../../../lib/
 import { NodeSelectionModal } from "../../../../../components/workflow/NodeSelectionModal";
 import { LeadList } from "../../../../../types/lead-list";
 import ReactFlowCard from "../../../../../components/ui/react-flow";
-import { ActionNodeData, CampaignDetailsAction, CampaignDetailsState, CampaignTabs, getDefaultConfigForNodeType, WorkflowData, WorkflowEdge, WorkflowNode } from "../../create-campaign/page";
+import { ActionNodeData, CampaignDetailsAction, CampaignDetailsState, CampaignTabs, DelayUnit, getDefaultConfigForNodeType, WorkflowData, WorkflowEdge, WorkflowNode } from "../../create-campaign/page";
 import { Campaign } from "../../../../../types/campaign";
 
 interface CampaignResponse {
@@ -37,6 +37,7 @@ const EditCampaignPage = () => {
     const [isAddingStepNode, setIsAddingStepNode] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const campaignId = usePathname().split('/').pop();
+    const [isEditingCampaign, setIsEditingCampaign] = useState(false)
     const { getToken } = useAuth();
     const router = useRouter();
 
@@ -46,7 +47,7 @@ const EditCampaignPage = () => {
         senderAccount: '',
         prospectList: '',
         startDate: null,
-        endDate: null,
+        leadsPerDay: null,
         startTime: null,
         endTime: null,
         timezone: getUserTimezone()
@@ -178,7 +179,7 @@ const EditCampaignPage = () => {
             'prospectList',
             'senderAccount',
             'startDate',
-            'endDate',
+            'leadsPerDay',
             'startTime',
             'endTime',
             'timezone'
@@ -213,8 +214,8 @@ const EditCampaignPage = () => {
                 case 'startDate':
                     toast.error("Start Date is required");
                     break;
-                case 'endDate':
-                    toast.error("End Date is required");
+                case 'leadsPerDay':
+                    toast.error("Leads Per Day is required");
                     break;
                 case 'startTime':
                     toast.error("Start Time is required");
@@ -257,13 +258,15 @@ const EditCampaignPage = () => {
             return;
         }
         try {
-            const res = await makeAuthenticatedRequest('POST', '/campaigns/edit', reqBody, token)
+            setIsEditingCampaign(true)
+            await makeAuthenticatedRequest('POST', '/campaigns/edit', reqBody, token);
             toast.success("Campaign Edited successfully!");
             // Redirect to campaigns page on successful creation
             router.push('/campaigns');
         } catch (error) {
             console.error('Error creating campaign:', error);
-            toast.error("Failed to create campaign. Please try again.");
+        } finally {
+            setIsEditingCampaign(false)
         }
     }
 
@@ -332,7 +335,7 @@ const EditCampaignPage = () => {
                         delay: originalEdge?.data?.delay || "15m",
                         delayData: originalEdge?.data?.delayData || {
                             delay: 15,
-                            unit: "minutes"
+                            unit: "m"
                         }
                     }
                 };
@@ -392,7 +395,7 @@ const EditCampaignPage = () => {
         setIsModalOpen(true)
     }
 
-    const handleDelayUpdate = (edgeId: string, delayConfig: { delay: number; unit: string }) => {
+    const handleDelayUpdate = (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => {
         if (!workflow) return
 
         const updatedEdges = workflow.edges.map(edge => {
@@ -816,7 +819,7 @@ const EditCampaignPage = () => {
                 dispatchDetails({ type: 'SET_FIELD', field: 'senderAccount', value: res.campaign.sender_account });
                 dispatchDetails({ type: 'SET_FIELD', field: 'prospectList', value: res.campaign.prospect_list });
                 dispatchDetails({ type: 'SET_FIELD', field: 'startDate', value: res.campaign.start_date });
-                dispatchDetails({ type: 'SET_FIELD', field: 'endDate', value: res.campaign.end_date });
+                dispatchDetails({ type: 'SET_FIELD', field: 'leadsPerDay', value: res.campaign.leadsPerDay });
                 dispatchDetails({ type: 'SET_FIELD', field: 'startTime', value: res.campaign.start_time });
                 dispatchDetails({ type: 'SET_FIELD', field: 'endTime', value: res.campaign.end_time });
                 dispatchDetails({ type: 'SET_FIELD', field: 'timezone', value: res.campaign.timezone });
@@ -854,7 +857,8 @@ const EditCampaignPage = () => {
                             )
                         })}
                     </nav>
-                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleEditCampaign}>
+                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleEditCampaign} disabled={isEditingCampaign}>
+                        {isEditingCampaign ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
                         Save Changes
                     </Button>
                 </div>
@@ -1018,12 +1022,8 @@ const renderDetailsTab = ({
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="end-date">End Date</Label>
-                        <DatePicker
-                            id="end-date"
-                            value={state.endDate || ''}
-                            onChange={(date) => setState({ type: 'SET_FIELD', field: 'endDate', value: date?.toISOString() || '' })}
-                        />
+                        <Label htmlFor="end-date">Leads Per Day</Label>
+                        <Input type="number" placeholder="Leads Per Day" onChange={(e) => setState({type: 'SET_FIELD', field: 'leadsPerDay', value: e.target.value})}/>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1089,7 +1089,7 @@ const renderDetailsTab = ({
     </div>
 )
 
-const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: string }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
+const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
 
     return (
         <div className="space-y-6">

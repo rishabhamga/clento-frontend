@@ -1,75 +1,97 @@
 "use client"
 
-import { DashboardLayout } from "@/components/layout/DashboardLayout"
+import { AnalyticsChart } from "@/components/dashboard/AnalyticsChart"
+import { CampaignWithSenderAccount, RecentCampaigns } from "@/components/dashboard/RecentCampaigns"
 import { StatCard } from "@/components/dashboard/StatCard"
-import { AnalyticsChart } from "@/components/dashboard/AnalyticsChart" 
-import { RecentCampaigns } from "@/components/dashboard/RecentCampaigns"
-import { 
-  TrendingUp, 
-  Send, 
-  CheckCircle, 
-  MessageCircle, 
-  Mail 
+import { DashboardLayout } from "@/components/layout/DashboardLayout"
+import { useAuth } from "@clerk/nextjs"
+import {
+    CheckCircle,
+    ListChecks,
+    Mail,
+    MessageCircle,
+    Send,
+    TrendingUp
 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { makeAuthenticatedRequest } from "../lib/axios-utils"
+
+interface IDashboardStats{
+    success_rate: number,
+    requests_sent: number,
+    total_steps: number
+}
 
 export default function HomePage() {
-  return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back! Here&apos;s what&apos;s happening with your campaigns.
-          </p>
-        </div>
+    const { getToken } = useAuth();
+    const [recentCampaigns, setRecentCampaigns] = useState<CampaignWithSenderAccount[]>([])
+    const [dashboardStats, setDashboardStats] = useState<IDashboardStats>();
+    const [loading, setLoading] = useState<boolean>(true);
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          <StatCard
-            title="Success Rate"
-            value="28.2%"
-            change="Acceptance rate"
-            changeType="neutral"
-            icon={TrendingUp}
-            gradient={true}
-          />
-          <StatCard
-            title="Requests Sent"
-            value="607"
-            change="Total requests sent"
-            changeType="neutral"
-            icon={Send}
-          />
-          <StatCard
-            title="Accepted"
-            value="171"
-            change="Total connections accepted"
-            changeType="neutral"
-            icon={CheckCircle}
-          />
-          <StatCard
-            title="Replied"
-            value="39"
-            change="Total replies received"
-            changeType="neutral"
-            icon={MessageCircle}
-          />
-          <StatCard
-            title="Email Sent"
-            value="0"
-            change="Total emails sent"
-            changeType="neutral"
-            icon={Mail}
-          />
-        </div>
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true)
+            const token = await getToken();
+            if (!token) {
+                toast.error("Please login to view the dashboard")
+                return;
+            }
+            try {
+                const response = await makeAuthenticatedRequest('GET', '/dashboard', {}, token)
+                setRecentCampaigns(response?.data?.recentCampaigns)
+                setDashboardStats(response?.data?.stats)
+            } catch (error) {
+                console.log(error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchData();
+    }, [])
+    return (
+        <DashboardLayout>
+            <div className="space-y-6">
+                {/* Page Header */}
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+                    <p className="text-muted-foreground">
+                        Welcome back! Here&apos;s what&apos;s happening with your campaigns.
+                    </p>
+                </div>
 
-        {/* Charts and Recent Activity */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          <AnalyticsChart />
-          <RecentCampaigns />
-        </div>
-      </div>
-    </DashboardLayout>
-  )
+                {/* Stats Cards */}
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <StatCard
+                        title="Success Rate"
+                        value={dashboardStats?.success_rate ? `${dashboardStats.success_rate}%` : '0%'}
+                        change="Acceptance rate"
+                        changeType="neutral"
+                        icon={TrendingUp}
+                        gradient={true}
+                    />
+                    <StatCard
+                        title="Requests Sent"
+                        value={dashboardStats?.requests_sent || 0}
+                        change="Total requests sent"
+                        changeType="neutral"
+                        icon={Send}
+                    />
+                    <StatCard
+                        title="Total Steps"
+                        value={dashboardStats?.total_steps || 0}
+                        change="Total steps"
+                        changeType="neutral"
+                        icon={ListChecks}
+                    />
+                </div>
+
+                {/* Charts and Recent Activity */}
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <AnalyticsChart />
+                    <RecentCampaigns recentCampaigns={recentCampaigns} loading={loading} />
+                </div>
+            </div>
+        </DashboardLayout>
+    )
 }

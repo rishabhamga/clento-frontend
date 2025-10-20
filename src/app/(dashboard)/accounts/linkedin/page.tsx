@@ -49,7 +49,7 @@ export default function LinkedInAccountsPage() {
     try {
       // Frontend URL for redirects, Backend URL for webhook
       const frontendUrl = 'https://623751821a25.ngrok-free.app'  // Frontend (port 3000)
-      const backendUrl = 'https://30e520df59f0.ngrok-free.app'   // Backend (port 3001)
+      const backendUrl = 'https://3d2e2c967315.ngrok-free.app'   // Backend (port 3001)
 
       const response = await fetch('/api/accounts/connect', {
         method: 'POST',

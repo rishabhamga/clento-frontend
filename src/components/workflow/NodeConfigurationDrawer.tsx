@@ -178,17 +178,13 @@ const renderConfiguration = ({
 }) => {
     switch (nodeData.type) {
         case "profile_visit":
-        case "follow_profile":
         case "withdraw_request":
             return <NoConfiguration />
         case "like_post":
             return <LikeConfiguration config={config} onConfigChange={onConfigChange} />
-        case "send_invite":
         case "send_followup":
         case "send_inmail":
             return <SendMessageConfiguration config={config} onConfigChange={onConfigChange} />
-        case "follow_company":
-            return <NoConfiguration />
         case "comment_post":
             return <CommentConfiguration config={config} onConfigChange={onConfigChange} />
         case "send_connection_request":
@@ -612,10 +608,13 @@ const SendMessageConfiguration = ({
     config: BaseConfig
     onConfigChange: (key: keyof BaseConfig, value: any) => void
 }) => {
+    const clickVariable = (variable: string) => {
+        navigator.clipboard.writeText(variable)
+        toast.success('Variable copied to clipboard')
+    }
+
     return (
         <div className="space-y-6">
-            <h4 className="text-sm font-medium text-gray-900">Message Settings</h4>
-
             {/* Smart Followups */}
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -629,95 +628,139 @@ const SendMessageConfiguration = ({
                 />
             </div>
 
-            {/* AI Writing Assistant */}
+            {/* Configure with AI */}
             <div className="flex items-center justify-between">
-                <Label htmlFor="ai-writing-assistant" className="text-sm font-medium">AI Writing Assistant</Label>
+                <div className="space-y-1">
+                    <Label htmlFor="configure-with-ai" className="text-sm font-medium">Configure with AI</Label>
+                    <p className="text-xs text-gray-500">Let AI help you generate engaging messages</p>
+                </div>
                 <Toggle
-                    id="ai-writing-assistant"
-                    checked={config.aiWritingAssistant || false}
-                    onCheckedChange={(checked) => onConfigChange('aiWritingAssistant', checked)}
+                    id="configure-with-ai"
+                    checked={config.configureWithAI || false}
+                    onCheckedChange={(checked) => onConfigChange('configureWithAI', checked)}
                 />
             </div>
 
-            {/* Message Length */}
-            <div className="flex items-center justify-between">
-                <Label htmlFor="message-length" className="text-sm font-medium">Message Length</Label>
-                <Select
-                    value={config.messageLength || 'medium'}
-                    onValueChange={(value) => onConfigChange('messageLength', value)}
-                >
-                    <SelectTrigger className="w-40">
-                        <SelectValue placeholder="Select message length" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="short">Short (1-2 sentences)</SelectItem>
-                        <SelectItem value="medium">Medium (2-3 sentences)</SelectItem>
-                        <SelectItem value="long">Long (3+ sentences)</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+            {/* AI-dependent fields - only show when AI is enabled */}
+            {config.configureWithAI && (
+                <>
+                    {/* Message Length */}
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="message-length" className="text-sm font-medium">Message Length</Label>
+                        <Select
+                            value={config.messageLength || 'medium'}
+                            onValueChange={(value) => onConfigChange('messageLength', value)}
+                        >
+                            <SelectTrigger className="w-40">
+                                <SelectValue placeholder="Select message length" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="short">Short (1-2 sentences)</SelectItem>
+                                <SelectItem value="medium">Medium (2-3 sentences)</SelectItem>
+                                <SelectItem value="long">Long (3+ sentences)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
 
-            {/* Tone */}
-            <div className="flex items-center justify-between">
-                <Label htmlFor="message-tone" className="text-sm font-medium">Tone</Label>
-                <Select
-                    value={config.tone || 'professional'}
-                    onValueChange={(value) => onConfigChange('tone', value)}
-                >
-                    <SelectTrigger className="w-40">
-                        <SelectValue placeholder="Select tone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="professional">Professional</SelectItem>
-                        <SelectItem value="friendly">Friendly</SelectItem>
-                        <SelectItem value="casual">Casual</SelectItem>
-                        <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
-                        <SelectItem value="supportive">Supportive</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+                    {/* Tone */}
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="message-tone" className="text-sm font-medium">Tone</Label>
+                        <Select
+                            value={config.tone || 'professional'}
+                            onValueChange={(value) => onConfigChange('tone', value)}
+                        >
+                            <SelectTrigger className="w-40">
+                                <SelectValue placeholder="Select tone" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="professional">Professional</SelectItem>
+                                <SelectItem value="friendly">Friendly</SelectItem>
+                                <SelectItem value="casual">Casual</SelectItem>
+                                <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
+                                <SelectItem value="supportive">Supportive</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
 
-            {/* Language */}
-            <div className="flex items-center justify-between">
-                <Label htmlFor="message-language" className="text-sm font-medium">Language</Label>
-                <Select
-                    value={config.language || 'english'}
-                    onValueChange={(value) => onConfigChange('language', value)}
-                >
-                    <SelectTrigger className="w-40">
-                        <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="spanish">Spanish</SelectItem>
-                        <SelectItem value="french">French</SelectItem>
-                        <SelectItem value="german">German</SelectItem>
-                        <SelectItem value="portuguese">Portuguese</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+                    {/* Language */}
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="message-language" className="text-sm font-medium">Language</Label>
+                        <Select
+                            value={config.language || 'english'}
+                            onValueChange={(value) => onConfigChange('language', value)}
+                        >
+                            <SelectTrigger className="w-40">
+                                <SelectValue placeholder="Select language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="english">English</SelectItem>
+                                <SelectItem value="spanish">Spanish</SelectItem>
+                                <SelectItem value="french">French</SelectItem>
+                                <SelectItem value="german">German</SelectItem>
+                                <SelectItem value="portuguese">Portuguese</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
 
-            {/* Engage with recent activity */}
-            <div className="flex items-center justify-between">
-                <Label htmlFor="message-engage-activity" className="text-sm font-medium">Engage with recent activity?</Label>
-                <Toggle
-                    id="message-engage-activity"
-                    checked={config.engageWithRecentActivity || false}
-                    onCheckedChange={(checked) => onConfigChange('engageWithRecentActivity', checked)}
-                />
-            </div>
+                    {/* Engage with recent activity */}
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="message-engage-activity" className="text-sm font-medium">Engage with recent activity?</Label>
+                        <Toggle
+                            id="message-engage-activity"
+                            checked={config.engageWithRecentActivity || false}
+                            onCheckedChange={(checked) => onConfigChange('engageWithRecentActivity', checked)}
+                        />
+                    </div>
 
-            {/* Message Purpose */}
-            <div className="space-y-2">
-                <Label htmlFor="message-purpose" className="text-sm font-medium">Message Purpose</Label>
-                <Textarea
-                    id="message-purpose"
-                    value={config.messagePurpose || ''}
-                    onChange={(e) => onConfigChange('messagePurpose', e.target.value)}
-                    placeholder="Explain to AI in your language what the purpose of this message is..."
-                    className="min-h-[80px] w-full"
-                />
-            </div>
+                    {/* Message Purpose */}
+                    <div className="space-y-2">
+                        <Label htmlFor="message-purpose" className="text-sm font-medium">Message Purpose</Label>
+                        <Textarea
+                            id="message-purpose"
+                            value={config.messagePurpose || ''}
+                            onChange={(e) => onConfigChange('messagePurpose', e.target.value)}
+                            placeholder="Explain to AI in your language what the purpose of this message is..."
+                            className="min-h-[80px] w-full"
+                        />
+                    </div>
+                </>
+            )}
+
+            {/* Conditional Content based on AI toggle */}
+            {config.configureWithAI ? (
+                /* Custom Guidelines - shown when AI is enabled */
+                <div className="space-y-2">
+                    <Label htmlFor="custom-guidelines" className="text-sm font-medium">Custom Guidelines</Label>
+                    <Textarea
+                        id="custom-guidelines"
+                        value={config.customGuidelines || ''}
+                        onChange={(e) => onConfigChange('customGuidelines', e.target.value)}
+                        placeholder="Enter any specific guidelines for message generation..."
+                        className="min-h-[80px] w-full"
+                    />
+                </div>
+            ) : (
+                /* Custom Message - shown when AI is disabled */
+                <div className="space-y-2">
+                    <Label htmlFor="custom-message" className="text-sm font-medium">Custom Message</Label>
+                    <Textarea
+                        id="custom-message"
+                        value={config.customMessage || ''}
+                        onChange={(e) => onConfigChange('customMessage', e.target.value)}
+                        placeholder="Type your message here. Use variables like {{first_name}}, {{last_name}}, {{company}}..."
+                        className="min-h-[100px] w-full"
+                    />
+                    <div className="text-xs text-gray-500 space-y-1">
+                        <p className="font-medium">Available variables:</p>
+                        <div className="flex flex-wrap gap-2">
+                            <span className="bg-gray-100 px-2 py-1 rounded text-xs font-mono cursor-pointer" onClick={() => clickVariable('{{first_name}}')}>{'{{first_name}}'}</span>
+                            <span className="bg-gray-100 px-2 py-1 rounded text-xs font-mono cursor-pointer" onClick={() => clickVariable('{{last_name}}')}>{'{{last_name}}'}</span>
+                            <span className="bg-gray-100 px-2 py-1 rounded text-xs font-mono cursor-pointer" onClick={() => clickVariable('{{company}}')}>{'{{company}}'}</span>
+                        </div>
+                        <p>These variables will be automatically replaced with the actual values when sending messages.</p>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
