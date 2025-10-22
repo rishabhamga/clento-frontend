@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -25,7 +25,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-export default function LeadsPage() {
+function LeadsPageContent() {
     const [searchTerm, setSearchTerm] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(10)
@@ -426,5 +426,22 @@ export default function LeadsPage() {
                 </div>
             )}
         </div>
+    )
+}
+
+export default function LeadsPage() {
+    return (
+        <Suspense fallback={
+            <div className="space-y-6">
+                <div className="flex items-center justify-center py-12">
+                    <div className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+                        <span className="text-muted-foreground font-medium">Loading leads...</span>
+                    </div>
+                </div>
+            </div>
+        }>
+            <LeadsPageContent />
+        </Suspense>
     )
 }
