@@ -56,7 +56,11 @@ images:
   - 'gcr.io/$PROJECT_ID/clento-frontend:$COMMIT_SHA'
   - 'gcr.io/$PROJECT_ID/clento-frontend:latest'
 
+# Substitution variables - these are passed to the build args
+substitutions:
+  _NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_YmVjb21pbmctbW9zcXVpdG8tODMuY2xlcmsuYWNjb3VudHMuZGV2JA'
+  _CLERK_SECRET_KEY: 'sk_test_El3pHN9Rqd1BlBzT2nOpllNOMEQzxoufh'
+
 options:
   logging: CLOUD_LOGGING_ONLY
   machineType: 'E2_HIGHCPU_8'
-
