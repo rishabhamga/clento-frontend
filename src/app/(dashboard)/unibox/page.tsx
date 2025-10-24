@@ -26,6 +26,7 @@ interface Accounts {
 }
 
 interface InboxResponse {
+    id: string,
     name: string | null,
     folder: ("INBOX" | "INBOX_LINKEDIN_CLASSIC" | "INBOX_LINKEDIN_RECRUITER" | "INBOX_LINKEDIN_SALES_NAVIGATOR" | "INBOX_LINKEDIN_ORGANIZATION")[] | undefined,
     unread_count: number,
@@ -44,15 +45,82 @@ interface Pagination {
     nextCursor: string
 }
 
+interface ChatMessages {
+    object: "Message" | undefined,
+    seen: 0 | 1 | undefined,
+    text: string | undefined | null,
+    edited: 0 | 1 | undefined,
+    hidden: 0 | 1 | undefined,
+    chat_id: string,
+    deleted: 0 | 1 | undefined,
+    seen_by: Record<string, string | boolean> | undefined,
+    subject: string | null,
+    behavior: string | null,
+    is_event: 0 | 1 | undefined,
+    original: string | undefined | null,
+    delivered: 0 | 1 | undefined,
+    is_sender: 1,
+    reactions: {
+        value: string;
+        sender_id: string;
+        is_sender: boolean;
+    }[] | undefined,
+    sender_id: string,
+    timestamp: string,
+    account_id: string,
+    attachments: [],
+    provider_id: string,
+    message_type: 'MESSAGE' | undefined,
+    attendee_type: 'MEMBER' | undefined,
+    chat_provider_id: string,
+    attendee_distance: number,
+    sender_attendee_id: string,
+    id: string
+}
+
 export default function UniboxPage() {
     const [loading, setLoading] = useState<boolean>(true);
+    const [loadingChat, setLoadingChat] = useState<boolean>(false);
     const [accounts, setAccounts] = useState<Accounts[]>([]);
     const [inbox, setInbox] = useState<InboxResponse[]>([]);
     const [pagination, setPagination] = useState<Pagination>();
+    const [chatMessages, setChatMessages] = useState<ChatMessages[]>([]);
+    const [selectedChat, setSelectedChat] = useState<InboxResponse | null>(null);
     const [selectedAccount, setSelectedAccount] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [filterStatus, setFilterStatus] = useState<string>("all");
     const { getToken } = useAuth();
+
+    const getChat = async (id: string) => {
+        setLoadingChat(true);
+        const token = await getToken();
+        if (!token) {
+            toast.error('Log In to See the Unibox');
+            return
+        }
+
+        // Find the selected chat from inbox
+        const chat = inbox.find(item => item.id === id);
+        setSelectedChat(chat || null);
+
+        const reqBody = {
+            chat_id: id,
+            account_id: selectedAccount
+        }
+        try {
+            const res = await makeAuthenticatedRequest('POST', `/inbox`, reqBody, token)
+            console.log(res?.chat?.items);
+            // Reverse the messages to show oldest first
+            const messages = res?.chat?.items || [];
+            setChatMessages(messages.reverse());
+        }
+        catch (error) {
+            console.log(error);
+            toast.error('Failed to load chat data');
+        } finally {
+            setLoadingChat(false);
+        }
+    }
 
     useEffect(() => {
         const getData = async () => {
@@ -247,8 +315,9 @@ export default function UniboxPage() {
                     ) : (
                         getFilteredInbox().map((conversation, index) => (
                             <div
-                                key={`${conversation.account_id}-${conversation.attendee_provider_id}-${conversation.timestamp}-${index}`}
+                                key={conversation.id}
                                 className="p-4 border-b border-border hover:bg-background/50 cursor-pointer transition-colors group"
+                                onClick={() => getChat(conversation.id)}
                             >
                                 <div className="flex items-start gap-3">
                                     <Avatar className="w-10 h-10">
@@ -298,18 +367,102 @@ export default function UniboxPage() {
             </div>
 
             {/* Right Content - Chat Area */}
-            <div className="flex-1 flex items-center justify-center bg-background">
-                <div className="text-center">
-                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Search className="w-8 h-8 text-muted-foreground" />
+            <div className="flex-1 flex flex-col bg-background">
+                {loadingChat ? (
+                    <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+                            </div>
+                            <h3 className="text-lg font-medium text-foreground mb-2">
+                                Loading messages...
+                            </h3>
+                            <p className="text-muted-foreground">
+                                Fetching chat messages...
+                            </p>
+                        </div>
                     </div>
-                    <h3 className="text-lg font-medium text-foreground mb-2">
-                        Select a chat to start messaging
-                    </h3>
-                    <p className="text-muted-foreground">
-                        Choose a conversation from the sidebar to view messages
-                    </p>
-                </div>
+                ) : chatMessages.length > 0 ? (
+                    <>
+                        {/* Chat Header */}
+                        <div className="p-4 border-b border-border bg-card">
+                            <div className="flex items-center gap-3">
+                                <Avatar className="w-10 h-10">
+                                    <AvatarImage
+                                        src={selectedChat?.attendee_profile?.profile_picture_url || undefined}
+                                        alt={selectedChat?.attendee_profile?.name || "Unknown"}
+                                    />
+                                    <AvatarFallback className="bg-gradient-purple text-white text-sm">
+                                        {selectedChat?.attendee_profile?.name?.charAt(0).toUpperCase() || "?"}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-foreground">
+                                        {selectedChat?.attendee_profile?.name || selectedChat?.name || "Unknown Contact"}
+                                    </h3>
+                                    {selectedChat?.folder && selectedChat.folder.length > 0 && (
+                                        <p className="text-sm text-muted-foreground">
+                                            {getFolderDisplayName(selectedChat.folder[0])}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Messages List */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                            {chatMessages.map((message) => (
+                                <div
+                                    key={message.id}
+                                    className={`flex ${message.is_sender ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div
+                                        className={`max-w-[70%] rounded-lg p-3 ${
+                                            message.is_sender
+                                                ? 'bg-purple-600 text-white'
+                                                : 'bg-muted text-foreground'
+                                        }`}
+                                    >
+                                        <div className="text-sm">
+                                            {message.text || message.subject || 'No content'}
+                                        </div>
+                                        <div className={`text-xs mt-1 ${
+                                            message.is_sender ? 'text-purple-100' : 'text-muted-foreground'
+                                        }`}>
+                                            {formatTimestamp(message.timestamp)}
+                                            {message.is_sender && message.delivered && (
+                                                <span className="ml-1">✓</span>
+                                            )}
+                                        </div>
+                                        {message.reactions && message.reactions.length > 0 && (
+                                            <div className="flex gap-1 mt-2">
+                                                {message.reactions.map((reaction, idx) => (
+                                                    <span key={idx} className="text-xs">
+                                                        {reaction.value}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Search className="w-8 h-8 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-lg font-medium text-foreground mb-2">
+                                Select a chat to start messaging
+                            </h3>
+                            <p className="text-muted-foreground">
+                                Choose a conversation from the sidebar to view messages
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )
