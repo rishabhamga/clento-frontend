@@ -57,9 +57,11 @@ images:
   - 'gcr.io/$PROJECT_ID/clento-frontend:latest'
 
 # Substitution variables - these are passed to the build args
+# IMPORTANT: These must be defined here because NEXT_PUBLIC_* variables are needed at BUILD TIME
 substitutions:
   _NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_YmVjb21pbmctbW9zcXVpdG8tODMuY2xlcmsuYWNjb3VudHMuZGV2JA'
   _CLERK_SECRET_KEY: 'sk_test_El3pHN9Rqd1BlBzT2nOpllNOMEQzxoufh'
+  _NEXT_PUBLIC_API_URL: 'http://localhost:3001/api'  # TODO: Replace with your actual backend API URL
 
 options:
   logging: CLOUD_LOGGING_ONLY
