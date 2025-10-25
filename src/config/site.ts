@@ -113,7 +113,7 @@ export const apiConfig = {
 
 // Clerk configuration (hardcoded for simplified deployment)
 export const clerkConfig = {
-  publishableKey: 'pk_test_YmVjb21pbmctbW9zcXVpdG8tODMuY2xlcmsuYWNjb3VudHMuZGV2JA',
+  publishableKey: 'pk_live_Y2xlcmsuY2xlbnRvLWZyb250ZW5kLTk1OTkyMTExMTY5NC5hc2lhLXNvdXRoMS5ydW4uYXBwJA',
   secretKey: process.env.CLERK_SECRET_KEY, // This is server-side only, so runtime env var is fine
 }
 

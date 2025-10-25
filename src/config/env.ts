@@ -8,8 +8,8 @@ const envSchema = z.object({
   NEXT_PUBLIC_API_URL: z.string().url('Invalid API URL').default('http://localhost:3001/api'),
   
   // Clerk Authentication (with defaults for simplified deployment)
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1).default('pk_test_YmVjb21pbmctbW9zcXVpdG8tODMuY2xlcmsuYWNjb3VudHMuZGV2JA'),
-  CLERK_SECRET_KEY: z.string().min(1).default('sk_test_El3pHN9Rqd1BlBzT2nOpllNOMEQzxoufh'),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1).default('pk_live_Y2xlcmsuY2xlbnRvLWZyb250ZW5kLTk1OTkyMTExMTY5NC5hc2lhLXNvdXRoMS5ydW4uYXBwJA'),
+  CLERK_SECRET_KEY: z.string().min(1), // No default - must be set as environment variable
   
   // App Configuration
   NEXT_PUBLIC_APP_URL: z.string().url('Invalid app URL').default('http://localhost:3000'),

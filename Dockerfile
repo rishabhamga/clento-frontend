@@ -19,7 +19,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set hardcoded environment variables for simplified deployment
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YmVjb21pbmctbW9zcXVpdG8tODMuY2xlcmsuYWNjb3VudHMuZGV2JA
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_Y2xlcmsuY2xlbnRvLWZyb250ZW5kLTk1OTkyMTExMTY5NC5hc2lhLXNvdXRoMS5ydW4uYXBwJA
 ENV NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ENV NEXT_PUBLIC_APP_NAME="Clento Clay"
 ENV NEXT_PUBLIC_ENABLE_ANALYTICS=true
