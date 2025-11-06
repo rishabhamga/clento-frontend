@@ -111,6 +111,12 @@ export const apiConfig = {
   retryDelay: 1000, // 1 second
 }
 
+// Clerk configuration (hardcoded for simplified deployment)
+export const clerkConfig = {
+  publishableKey: 'pk_live_Y2xlcmsuY2xlbnRvLWZyb250ZW5kLTk1OTkyMTExMTY5NC5hc2lhLXNvdXRoMS5ydW4uYXBwJA',
+  secretKey: process.env.CLERK_SECRET_KEY, // This is server-side only, so runtime env var is fine
+}
+
 // Feature flags
 export const featureFlags = {
   enableAnalytics: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true',

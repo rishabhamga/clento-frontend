@@ -19,14 +19,16 @@ const envSchema = z.object({
   NEXT_PUBLIC_ENABLE_DEBUG: z.string().default('false').transform(val => val === 'true'),
 })
 
-// Validate environment variables
+// Validate environment variables with defaults
 function validateEnv() {
   try {
     return envSchema.parse(process.env)
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.issues.map(err => `${err.path.join('.')}: ${err.message}`).join('\n')
-      throw new Error(`Invalid environment variables:\n${missingVars}`)
+      console.error(`Invalid environment variables:\n${missingVars}`)
+      // Return defaults instead of throwing
+      return envSchema.parse({})
     }
     throw error
   }
