@@ -19,7 +19,6 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set hardcoded environment variables for simplified deployment
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_Y2xlcmsuY2xlbnRvLWZyb250ZW5kLTk1OTkyMTExMTY5NC5hc2lhLXNvdXRoMS5ydW4uYXBwJA
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YmVjb21pbmctaGFtc3Rlci02OC5jbGVyay5hY2NvdW50cy5kZXYk
 ENV CLERK_SECRET_KEY=sk_test_EI3pHN9RGd1BIBzT2nOplINOMEQzxoufMGx71nBE9s
 ENV NEXT_PUBLIC_API_URL=http://localhost:3001/api
