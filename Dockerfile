@@ -21,7 +21,7 @@ COPY . .
 # Set hardcoded environment variables for simplified deployment
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YmVjb21pbmctaGFtc3Rlci02OC5jbGVyay5hY2NvdW50cy5kZXYk
 ENV CLERK_SECRET_KEY=sk_test_EI3pHN9RGd1BIBzT2nOplINOMEQzxoufMGx71nBE9s
-ENV NEXT_PUBLIC_API_URL=http://api-staging.clento.ai/api
+ENV NEXT_PUBLIC_API_URL=https://api-staging.clento.ai/api
 ENV NEXT_PUBLIC_APP_NAME="Clento Clay"
 ENV NEXT_PUBLIC_ENABLE_ANALYTICS=true
 ENV NEXT_PUBLIC_ENABLE_DEBUG=false
@@ -64,4 +64,3 @@ ENV HOSTNAME="0.0.0.0"
 
 # Start the application
 CMD ["node", "server.js"]
-
