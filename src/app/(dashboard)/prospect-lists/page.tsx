@@ -383,14 +383,6 @@ export default function ProspectListsPage() {
                               <Edit className="w-4 h-4 mr-2" />
                               Edit List
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteList(list.id, list.name)}
-                              className="cursor-pointer text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
