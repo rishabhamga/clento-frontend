@@ -48,8 +48,8 @@ export default function LinkedInAccountsPage() {
     }
     try {
       // Frontend URL for redirects, Backend URL for webhook
-      const frontendUrl = 'https://623751821a25.ngrok-free.app'  // Frontend (port 3000)
-      const backendUrl = 'https://0b25976fbfa4.ngrok-free.app'   // Backend (port 3001)
+      const frontendUrl = 'https://app.clento.ai'  // Frontend (port 3000)
+      const backendUrl = 'https://api-staging.clento.ai'   // Backend (port 3001)
 
       const response = await fetch('/api/accounts/connect', {
         method: 'POST',
