@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -24,18 +24,80 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { makeAuthenticatedRequest } from "../../../lib/axios-utils"
+import { useAuth } from "@clerk/nextjs"
+import { EWorkflowNodeType } from "../../../config/workflow-nodes"
+
+interface Leads {
+    id: string;
+    full_name: string;
+    email?: string;
+    phone?: string;
+    title?: string;
+    company?: string;
+    industry?: string;
+    location?: string;
+    linkedin_url: string;
+    status: string;
+    steps: Steps[];
+}
+
+interface Steps {
+    id: string;
+    campaign_id: string;
+    organization_id: string;
+    lead_id: string;
+    step_index: number;
+    type: EWorkflowNodeType;
+    config: Record<string, any> | null;
+    success: boolean;
+    result: Record<string, any> | null;
+    created_at: string;
+}
 
 function LeadsPageContent() {
     const [searchTerm, setSearchTerm] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(10)
     const listId = useSearchParams().get("list");
+    const { getToken, isLoaded, isSignedIn } = useAuth()
+    const [leads, setLeads] = useState<Leads[]>();
 
-    if (!listId) {
-        return <EmptyState title="No list selected" description="Please select a list to view leads" />
+    useEffect(() => {
+        if (listId) {
+            return
+        }
+        if (!isLoaded || !isSignedIn || !getToken) {
+            console.log("Please log in to fetch the leads")
+            return
+        }
+
+        const fetchLeads = async () => {
+            const token = await getToken()
+            if (!token) {
+                console.log("Please log in to fetch the leads")
+                return
+            }
+            const response = await makeAuthenticatedRequest("GET", `/leads`, {}, token)
+            setLeads(response?.recentLeads)
+        }
+
+        void fetchLeads()
+    }, [getToken, isLoaded, isSignedIn, listId])
+
+    if (!listId && leads) {
+        return (
+            <LeadsState leads={leads} />
+        )
     }
 
-    const { data: leadList, isLoading, error } = useLeadList(listId);
+    if (!listId && !leads) {
+        return (
+            <EmptyState title="No list selected" description="Please select a list to view leads" />
+        )
+    }
+
+    const { data: leadList, isLoading, error } = useLeadList(listId!);
 
     const leadsData = leadList?.csvData.data;
 
@@ -188,7 +250,7 @@ function LeadsPageContent() {
 
             {/* Leads Table */}
             <div className="bg-card rounded-lg border border-border/50">
-                <div className="overflow-x-auto" style={{width: '80vw'}}>
+                <div className="overflow-x-auto" style={{ width: '80vw' }}>
                     <Table>
                         <TableHeader>
                             <TableRow className="border-border/50">
@@ -418,6 +480,22 @@ function LeadsPageContent() {
                     </div>
                 </div>
             )}
+        </div>
+    )
+}
+
+const LeadsState = ({ leads }: { leads: Leads[] }) => {
+
+    return (
+        <div className="space-y-6 w-full max-w-full overflow-hidden">
+            {/* Page Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground">
+                        Leads
+                    </h1>
+                </div>
+            </div>
         </div>
     )
 }
