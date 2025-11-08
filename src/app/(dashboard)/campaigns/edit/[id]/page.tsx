@@ -819,7 +819,7 @@ const EditCampaignPage = () => {
                 dispatchDetails({ type: 'SET_FIELD', field: 'senderAccount', value: res.campaign.sender_account });
                 dispatchDetails({ type: 'SET_FIELD', field: 'prospectList', value: res.campaign.prospect_list });
                 dispatchDetails({ type: 'SET_FIELD', field: 'startDate', value: res.campaign.start_date });
-                dispatchDetails({ type: 'SET_FIELD', field: 'leadsPerDay', value: res.campaign.leadsPerDay });
+                dispatchDetails({ type: 'SET_FIELD', field: 'leadsPerDay', value: res.campaign.leads_per_day });
                 dispatchDetails({ type: 'SET_FIELD', field: 'startTime', value: res.campaign.start_time });
                 dispatchDetails({ type: 'SET_FIELD', field: 'endTime', value: res.campaign.end_time });
                 dispatchDetails({ type: 'SET_FIELD', field: 'timezone', value: res.campaign.timezone });

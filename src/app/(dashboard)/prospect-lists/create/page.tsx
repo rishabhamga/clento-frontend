@@ -90,11 +90,32 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
             return
         }
 
+        // Validate file size (10MB = 10 * 1024 * 1024 bytes)
+        const maxSize = 10 * 1024 * 1024 // 10MB in bytes
+        if (file.size > maxSize) {
+            setCsvValidationError(`File size (${(file.size / 1024 / 1024).toFixed(2)} MB) exceeds the maximum allowed size of 10 MB. Please upload a smaller file.`)
+            setFormData(prev => ({ ...prev, csvFile: null }))
+            return
+        }
+
         // Read and validate CSV content
         const reader = new FileReader()
+
+        reader.onerror = () => {
+            console.error('Error reading file')
+            setCsvValidationError("Error reading CSV file. The file may be corrupted or too large. Please try a different file.")
+            setFormData(prev => ({ ...prev, csvFile: null }))
+        }
+
         reader.onload = async (e) => {
             try {
                 const csvText = e.target?.result as string
+                if (!csvText) {
+                    setCsvValidationError("Error reading CSV file. Please ensure it's a valid CSV format.")
+                    setFormData(prev => ({ ...prev, csvFile: null }))
+                    return
+                }
+
                 const lines = csvText.split('\n')
                 const headers = lines[0]?.split(',').map(h => h.trim().toLowerCase())
 
@@ -105,6 +126,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
 
                 if (!hasLinkedInField) {
                     setCsvValidationError("CSV must contain a 'linkedin_url' or 'linkedinUrl' field. Please download the sample CSV for the correct format.")
+                    setFormData(prev => ({ ...prev, csvFile: null }))
                     return
                 }
 
@@ -113,6 +135,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
             } catch (error) {
                 console.error('Error reading CSV:', error)
                 setCsvValidationError("Error reading CSV file. Please ensure it's a valid CSV format.")
+                setFormData(prev => ({ ...prev, csvFile: null }))
             }
         }
 
@@ -266,7 +289,9 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                                     <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
                                     <p className="text-lg font-medium">{formData.csvFile.name}</p>
                                     <p className="text-sm text-muted-foreground">
-                                        {(formData.csvFile.size / 1024).toFixed(2)} KB
+                                        {formData.csvFile.size >= 1024 * 1024
+                                            ? `${(formData.csvFile.size / 1024 / 1024).toFixed(2)} MB`
+                                            : `${(formData.csvFile.size / 1024).toFixed(2)} KB`}
                                     </p>
                                     <div className="flex gap-2 mt-4">
                                         <Button
@@ -371,18 +396,28 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead> </TableHead>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Headline</TableHead>
                                     <TableHead>Premium</TableHead>
                                     <TableHead>Followers</TableHead>
                                     <TableHead>Connections</TableHead>
                                     <TableHead>Websites</TableHead>
-                                    <TableHead>Profile Picture</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {csvPreview?.data?.slice(0, 5).map((lead, index) => (
                                     <TableRow key={index}>
+                                        <TableCell>
+                                            {lead.profilePictureUrl ? (
+                                                <Avatar className="w-8 h-8">
+                                                    <AvatarImage src={lead.profilePictureUrl} alt={lead.name || 'Profile'} />
+                                                    <AvatarFallback>
+                                                        {lead.name ? lead.name.split(' ').map(n => n[0]).join('') : 'P'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            ) : 'N/A'}
+                                        </TableCell>
                                         <TableCell className="font-medium">{lead.name || 'N/A'}</TableCell>
                                         <TableCell>{lead.headline || 'N/A'}</TableCell>
                                         <TableCell>
@@ -416,16 +451,6 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                                                         </span>
                                                     )}
                                                 </div>
-                                            ) : 'N/A'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {lead.profilePictureUrl ? (
-                                                <Avatar className="w-8 h-8">
-                                                    <AvatarImage src={lead.profilePictureUrl} alt={lead.name || 'Profile'} />
-                                                    <AvatarFallback>
-                                                        {lead.name ? lead.name.split(' ').map(n => n[0]).join('') : 'P'}
-                                                    </AvatarFallback>
-                                                </Avatar>
                                             ) : 'N/A'}
                                         </TableCell>
                                     </TableRow>
