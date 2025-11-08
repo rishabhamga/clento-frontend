@@ -396,18 +396,28 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead> </TableHead>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Headline</TableHead>
                                     <TableHead>Premium</TableHead>
                                     <TableHead>Followers</TableHead>
                                     <TableHead>Connections</TableHead>
                                     <TableHead>Websites</TableHead>
-                                    <TableHead>Profile Picture</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {csvPreview?.data?.slice(0, 5).map((lead, index) => (
                                     <TableRow key={index}>
+                                        <TableCell>
+                                            {lead.profilePictureUrl ? (
+                                                <Avatar className="w-8 h-8">
+                                                    <AvatarImage src={lead.profilePictureUrl} alt={lead.name || 'Profile'} />
+                                                    <AvatarFallback>
+                                                        {lead.name ? lead.name.split(' ').map(n => n[0]).join('') : 'P'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            ) : 'N/A'}
+                                        </TableCell>
                                         <TableCell className="font-medium">{lead.name || 'N/A'}</TableCell>
                                         <TableCell>{lead.headline || 'N/A'}</TableCell>
                                         <TableCell>
@@ -441,16 +451,6 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                                                         </span>
                                                     )}
                                                 </div>
-                                            ) : 'N/A'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {lead.profilePictureUrl ? (
-                                                <Avatar className="w-8 h-8">
-                                                    <AvatarImage src={lead.profilePictureUrl} alt={lead.name || 'Profile'} />
-                                                    <AvatarFallback>
-                                                        {lead.name ? lead.name.split(' ').map(n => n[0]).join('') : 'P'}
-                                                    </AvatarFallback>
-                                                </Avatar>
                                             ) : 'N/A'}
                                         </TableCell>
                                     </TableRow>
