@@ -8,13 +8,13 @@ export function cn(...inputs: ClassValue[]) {
 // Date formatting utilities
 export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
-  
+
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   }
-  
+
   return dateObj.toLocaleDateString('en-US', { ...defaultOptions, ...options })
 }
 
@@ -32,12 +32,12 @@ export function formatRelativeTime(date: string | Date): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
   const now = new Date()
   const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000)
-  
+
   if (diffInSeconds < 60) return 'just now'
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
   if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`
-  
+
   return formatDate(dateObj)
 }
 
@@ -137,7 +137,7 @@ export function debounce<T extends (...args: any[]) => any>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
-  
+
   return (...args: Parameters<T>) => {
     if (timeout) clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
@@ -149,7 +149,7 @@ export function throttle<T extends (...args: any[]) => any>(
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean
-  
+
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
       func(...args)
@@ -162,7 +162,7 @@ export function throttle<T extends (...args: any[]) => any>(
 // Local storage utilities with error handling
 export function getFromStorage<T>(key: string, defaultValue: T): T {
   if (typeof window === 'undefined') return defaultValue
-  
+
   try {
     const item = window.localStorage.getItem(key)
     return item ? JSON.parse(item) : defaultValue
@@ -173,7 +173,7 @@ export function getFromStorage<T>(key: string, defaultValue: T): T {
 
 export function setToStorage<T>(key: string, value: T): void {
   if (typeof window === 'undefined') return
-  
+
   try {
     window.localStorage.setItem(key, JSON.stringify(value))
   } catch (error) {
@@ -183,10 +183,40 @@ export function setToStorage<T>(key: string, value: T): void {
 
 export function removeFromStorage(key: string): void {
   if (typeof window === 'undefined') return
-  
+
   try {
     window.localStorage.removeItem(key)
   } catch (error) {
     console.error('Failed to remove from localStorage:', error)
   }
 }
+
+export function extractLinkedInPublicIdentifier(url: string): string | null {
+    try {
+      const urlObj = new URL(url);
+
+      // Check if it's a LinkedIn URL
+      if (!urlObj.hostname.includes('linkedin.com')) {
+        return null;
+      }
+
+      // Extract pathname and remove leading/trailing slashes
+      let pathname = urlObj.pathname.replace(/^\/+|\/+$/g, '');
+
+      // Handle /in/ pattern for personal profiles
+      if (pathname.startsWith('in/')) {
+        const identifier = pathname.substring(3); // Remove 'in/' prefix
+        return identifier || null;
+      }
+
+      // Handle /company/ pattern for company profiles
+      if (pathname.startsWith('company/')) {
+        const identifier = pathname.substring(8); // Remove 'company/' prefix
+        return identifier || null;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }

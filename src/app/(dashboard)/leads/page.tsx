@@ -27,6 +27,7 @@ import {
 import { makeAuthenticatedRequest } from "../../../lib/axios-utils"
 import { useAuth } from "@clerk/nextjs"
 import { EWorkflowNodeType } from "../../../config/workflow-nodes"
+import { extractLinkedInPublicIdentifier } from "../../../lib/utils"
 
 interface Leads {
     id: string;
@@ -62,6 +63,7 @@ function LeadsPageContent() {
     const listId = useSearchParams().get("list");
     const { getToken, isLoaded, isSignedIn } = useAuth()
     const [leads, setLeads] = useState<Leads[]>();
+    const [loadingLeads, setLoadingLeads] = useState<boolean>(true);
 
     useEffect(() => {
         if (listId) {
@@ -71,19 +73,37 @@ function LeadsPageContent() {
             console.log("Please log in to fetch the leads")
             return
         }
-
         const fetchLeads = async () => {
             const token = await getToken()
             if (!token) {
                 console.log("Please log in to fetch the leads")
                 return
             }
-            const response = await makeAuthenticatedRequest("GET", `/leads`, {}, token)
-            setLeads(response?.recentLeads)
+            try {
+                const response = await makeAuthenticatedRequest("GET", `/leads`, {}, token)
+                setLeads(response?.recentLeads)
+            } catch (error) {
+                console.log(error)
+            } finally {
+                setLoadingLeads(false)
+            }
         }
 
         void fetchLeads()
     }, [getToken, isLoaded, isSignedIn, listId])
+
+    if (loadingLeads) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-center py-12">
+                    <div className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+                        <span className="text-muted-foreground font-medium">Loading leads...</span>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     if (!listId && leads) {
         return (
@@ -494,6 +514,82 @@ const LeadsState = ({ leads }: { leads: Leads[] }) => {
                     <h1 className="text-3xl font-bold text-foreground">
                         Leads
                     </h1>
+                </div>
+            </div>
+            <div className="bg-card rounded-lg border border-border/50">
+                <div className="overflow-x-auto" style={{ width: '80vw' }}>
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="border-border/50">
+                                <TableHead className="w-12 whitespace-nowrap">
+                                    <Checkbox />
+                                </TableHead>
+                                <TableHead className="text-muted-foreground capitalize whitespace-nowrap">
+                                    Name
+                                </TableHead>
+                                <TableHead className="text-muted-foreground capitalize whitespace-nowrap">
+                                    Company
+                                </TableHead>
+                                <TableHead className="text-muted-foreground capitalize whitespace-nowrap">
+                                    Email
+                                </TableHead>
+                                <TableHead className="text-muted-foreground capitalize whitespace-nowrap">
+                                    Industry
+                                </TableHead>
+                                <TableHead className="text-muted-foreground capitalize whitespace-nowrap">
+                                    Location
+                                </TableHead>
+                                <TableHead className="text-muted-foreground capitalize whitespace-nowrap">
+                                    LinkedIn URL
+                                </TableHead>
+                                <TableHead className="text-muted-foreground capitalize whitespace-nowrap">
+                                    Status
+                                </TableHead>
+                                <TableHead className="text-muted-foreground capitalize whitespace-nowrap text-center">
+                                    Steps
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {leads.map(it => (
+                                <TableRow key={it.id} className="border-border/50 hover:bg-background/50">
+                                    <TableCell><Checkbox /></TableCell>
+                                    <TableCell className="font-semibold text-muted-foreground">{it.full_name.trim() === 'undefined' ? '-' : it.full_name || '-'}</TableCell>
+                                    <TableCell className="font-semibold text-muted-foreground">{it.company}</TableCell>
+                                    <TableCell className="font-semibold text-muted-foreground">
+                                        {it.email ? (
+                                            <a
+                                                href={`mailto:${it.email}`}
+                                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                                            >
+                                                {it.email}
+                                            </a>
+                                        ) : (
+                                            'No Email Yet'
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="font-semibold text-muted-foreground">{it.industry || '-'}</TableCell>
+                                    <TableCell className="font-semibold text-muted-foreground">{it.location || '-'}</TableCell>
+                                    <TableCell className="whitespace-nowrap font-semibold text-muted-foreground">
+                                        <span className="text-blue-600">
+                                            {extractLinkedInPublicIdentifier(it.linkedin_url)}
+                                        </span>
+                                        <Button variant="ghost" size="sm" asChild>
+                                            <a href={it.linkedin_url} target="_blank" rel="noopener noreferrer">
+                                                <ExternalLink className="w-4 h-4 text-blue-600" />
+                                            </a>
+                                        </Button>
+                                    </TableCell>
+                                    <TableCell className="font-semibold text-muted-foreground">
+                                        <Badge variant={'default'}>
+                                            {it.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="font-semibold text-muted-foreground text-center">{it.steps.length}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
         </div>
