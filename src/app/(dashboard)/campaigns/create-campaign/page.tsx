@@ -285,12 +285,12 @@ const CreateCampaignPage = () => {
     };
 
     const verifyDetailPage = (): boolean => {
-        const requiredFields: (keyof CampaignDetailsState)[] = [
+        type RequiredField = 'name' | 'description' | 'prospectList' | 'senderAccount' | 'leadsPerDay' | 'startTime' | 'endTime' | 'timezone';
+        const requiredFields: RequiredField[] = [
             'name',
             'description',
             'prospectList',
             'senderAccount',
-            'startDate',
             'leadsPerDay',
             'startTime',
             'endTime',
@@ -298,7 +298,7 @@ const CreateCampaignPage = () => {
         ];
 
         // Helper function to check if a field is empty (including trimmed strings)
-        const isFieldEmpty = (field: keyof CampaignDetailsState): boolean => {
+        const isFieldEmpty = (field: RequiredField): boolean => {
             const value = detailsState[field];
             if (value === null || value === undefined) return true;
 
@@ -322,9 +322,6 @@ const CreateCampaignPage = () => {
                     break;
                 case 'senderAccount':
                     toast.error("Sender Account is required");
-                    break;
-                case 'startDate':
-                    toast.error("Start Date is required");
                     break;
                 case 'leadsPerDay':
                     toast.error("Lead Per Day is required");
@@ -1119,12 +1116,15 @@ const renderDetailsTab = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="start-date">Start Date</Label>
+                        <Label htmlFor="start-date">Start Date (Optional)</Label>
                         <DatePicker
                             id="start-date"
                             value={state.startDate || ''}
                             onChange={(date) => setState({ type: 'SET_FIELD', field: 'startDate', value: date?.toISOString() || '' })}
                         />
+                        <p className="text-sm text-muted-foreground">
+                            If not provided, the campaign will start immediately
+                        </p>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="end-date">Leads Per Day</Label>
