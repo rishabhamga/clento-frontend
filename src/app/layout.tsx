@@ -8,77 +8,78 @@ import { siteConfig } from "@/config/site";
 import { Toaster } from "sonner";
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+    variable: "--font-inter",
+    subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  keywords: siteConfig.keywords,
-  authors: [
-    {
-      name: siteConfig.creator.name,
-      url: siteConfig.url,
+    title: {
+        default: siteConfig.name,
+        template: `%s | ${siteConfig.name}`,
     },
-  ],
-  creator: siteConfig.creator.name,
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: siteConfig.url,
-    title: siteConfig.name,
     description: siteConfig.description,
-    siteName: siteConfig.name,
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
-        alt: siteConfig.name,
-      },
+    keywords: siteConfig.keywords,
+    authors: [
+        {
+            name: siteConfig.creator.name,
+            url: siteConfig.url,
+        },
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
-    images: [siteConfig.ogImage],
-    creator: siteConfig.creator.twitter,
-  },
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
-  },
-  manifest: "/site.webmanifest",
+    creator: siteConfig.creator.name,
+    openGraph: {
+        type: "website",
+        locale: "en_US",
+        url: siteConfig.url,
+        title: siteConfig.name,
+        description: siteConfig.description,
+        siteName: siteConfig.name,
+        images: [
+            {
+                url: siteConfig.ogImage,
+                width: 1200,
+                height: 630,
+                alt: siteConfig.name,
+            },
+        ],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: siteConfig.name,
+        description: siteConfig.description,
+        images: [siteConfig.ogImage],
+        creator: siteConfig.creator.twitter,
+    },
+    icons: {
+        icon: "/favicon.ico",
+        shortcut: "/favicon-16x16.png",
+        apple: "/apple-touch-icon.png",
+    },
+    manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body className={`${inter.variable} font-sans antialiased`}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <QueryProvider>
-              {children}
-              <Toaster />
-            </QueryProvider>
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
-  );
+    return (
+        <html lang="en" suppressHydrationWarning>
+            <body className={`${inter.variable} font-sans antialiased`}>
+
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="dark"
+                    enableSystem
+                    disableTransitionOnChange
+                >
+                    <ClerkProvider>
+                        <QueryProvider>
+                            {children}
+                            <Toaster />
+                        </QueryProvider>
+                    </ClerkProvider >
+                </ThemeProvider>
+            </body>
+        </html>
+    );
 }
