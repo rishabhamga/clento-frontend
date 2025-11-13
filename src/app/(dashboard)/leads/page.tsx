@@ -65,18 +65,26 @@ function LeadsPageContent() {
     const [leads, setLeads] = useState<Leads[]>();
     const [loadingLeads, setLoadingLeads] = useState<boolean>(true);
 
+    // Call useLeadList hook at the top level (before any conditional returns)
+    const { data: leadList, isLoading: isLoadingLeadList, error } = useLeadList(listId || "");
+
     useEffect(() => {
         if (listId) {
+            // When listId exists, we use the useLeadList hook's loading state
+            // So we can set loadingLeads to false immediately
+            setLoadingLeads(false)
             return
         }
         if (!isLoaded || !isSignedIn || !getToken) {
             console.log("Please log in to fetch the leads")
+            setLoadingLeads(false)
             return
         }
         const fetchLeads = async () => {
             const token = await getToken()
             if (!token) {
                 console.log("Please log in to fetch the leads")
+                setLoadingLeads(false)
                 return
             }
             try {
@@ -92,7 +100,8 @@ function LeadsPageContent() {
         void fetchLeads()
     }, [getToken, isLoaded, isSignedIn, listId])
 
-    if (loadingLeads) {
+    // Show loading state for recent leads (when no listId)
+    if (!listId && loadingLeads) {
         return (
             <div className="space-y-6">
                 <div className="flex items-center justify-center py-12">
@@ -117,12 +126,8 @@ function LeadsPageContent() {
         )
     }
 
-    const { data: leadList, isLoading, error } = useLeadList(listId!);
-
-    const leadsData = leadList?.csvData.data;
-
     // Show loading state while fetching lead list data
-    if (isLoading) {
+    if (isLoadingLeadList) {
         return (
             <div className="space-y-6">
                 <div className="flex items-center justify-center py-12">
@@ -134,6 +139,8 @@ function LeadsPageContent() {
             </div>
         )
     }
+
+    const leadsData = leadList?.csvData.data;
 
     if (!leadsData || leadsData.length === 0) {
         return (
@@ -235,9 +242,9 @@ function LeadsPageContent() {
                             <span>•</span>
                             <span>Errors: {leadList.csvData.errors.length}</span>
                             <span>•</span>
-                            <span>Success Rate: {leadList.leadList.stats?.success_rate ? `${(leadList.leadList.stats.success_rate * 100).toFixed(1)}%` : 'N/A'}</span>
+                            <span>Success Rate: {leadList.leadList.stats?.success_rate ? `${(leadList.leadList.stats.success_rate).toFixed(1)}%` : 'N/A'}</span>
                             <span>•</span>
-                            <Badge variant={leadList.leadList.status === 'completed' ? 'default' : 'secondary'}>
+                            <Badge variant={leadList.leadList.status === 'completed' ? 'default' : 'secondary'} className="bg-purple-600 text-white">
                                 {leadList.leadList.status}
                             </Badge>
                         </div>
@@ -285,7 +292,7 @@ function LeadsPageContent() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {isLoading ? (
+                            {isLoadingLeadList ? (
                                 <TableRow>
                                     <TableCell colSpan={getColumnCount()} className="text-center py-12">
                                         <div className="flex items-center justify-center gap-2">
@@ -366,7 +373,7 @@ function LeadsPageContent() {
                                                         return (
                                                             <a
                                                                 href={`mailto:${value}`}
-                                                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                                                                className="text-purple-600 hover:text-purple-800 hover:underline"
                                                             >
                                                                 {value}
                                                             </a>
@@ -389,7 +396,7 @@ function LeadsPageContent() {
                                                         return (
                                                             <a
                                                                 href={`tel:${value}`}
-                                                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                                                                className="text-purple-600 hover:text-purple-800 hover:underline"
                                                             >
                                                                 {value}
                                                             </a>
@@ -425,7 +432,7 @@ function LeadsPageContent() {
             </div>
 
             {/* Pagination */}
-            {!isLoading && !error && filteredLeads.length > 0 && (
+            {!isLoadingLeadList && !error && filteredLeads.length > 0 && (
                 <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
                         Showing {startIndex + 1} to {Math.min(endIndex, totalLeads)} of {totalLeads} leads
@@ -560,7 +567,7 @@ const LeadsState = ({ leads }: { leads: Leads[] }) => {
                                         {it.email ? (
                                             <a
                                                 href={`mailto:${it.email}`}
-                                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                                                className="text-purple-600 hover:text-purple-800 hover:underline"
                                             >
                                                 {it.email}
                                             </a>
@@ -571,17 +578,17 @@ const LeadsState = ({ leads }: { leads: Leads[] }) => {
                                     <TableCell className="font-semibold text-muted-foreground">{it.industry || '-'}</TableCell>
                                     <TableCell className="font-semibold text-muted-foreground">{it.location || '-'}</TableCell>
                                     <TableCell className="whitespace-nowrap font-semibold text-muted-foreground">
-                                        <span className="text-blue-600">
+                                        <span className="text-purple-600">
                                             {extractLinkedInPublicIdentifier(it.linkedin_url)}
                                         </span>
                                         <Button variant="ghost" size="sm" asChild>
                                             <a href={it.linkedin_url} target="_blank" rel="noopener noreferrer">
-                                                <ExternalLink className="w-4 h-4 text-blue-600" />
+                                                <ExternalLink className="w-4 h-4 text-purple-600" />
                                             </a>
                                         </Button>
                                     </TableCell>
                                     <TableCell className="font-semibold text-muted-foreground">
-                                        <Badge variant={'default'}>
+                                        <Badge variant={'default'} className="bg-purple-600 text-white">
                                             {it.status}
                                         </Badge>
                                     </TableCell>
