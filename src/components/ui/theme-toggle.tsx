@@ -1,19 +1,14 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
+import * as React from 'react';
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
-import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export function ThemeToggle() {
-    const { setTheme } = useTheme()
+    const { setTheme } = useTheme();
 
     return (
         <DropdownMenu>
@@ -25,19 +20,19 @@ export function ThemeToggle() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-card border-border">
-                <DropdownMenuItem onClick={() => setTheme("light")} className="hover:bg-accent cursor-pointer">
+                <DropdownMenuItem onClick={() => setTheme('light')} className="hover:bg-accent cursor-pointer">
                     <Sun className="mr-2 h-4 w-4" />
                     <span>Light</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")} className="hover:bg-accent cursor-pointer">
+                <DropdownMenuItem onClick={() => setTheme('dark')} className="hover:bg-accent cursor-pointer">
                     <Moon className="mr-2 h-4 w-4" />
                     <span>Dark</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")} className="hover:bg-accent cursor-pointer">
+                <DropdownMenuItem onClick={() => setTheme('system')} className="hover:bg-accent cursor-pointer">
                     <Sun className="mr-2 h-4 w-4" />
                     <span>System</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
-    )
+    );
 }

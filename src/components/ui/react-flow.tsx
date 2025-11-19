@@ -32,8 +32,8 @@ const convertWorkflowEdgeToReactFlowEdge = (workflowEdge: WorkflowEdge, onDelayU
     deletable: workflowEdge.deletable,
     data: {
         ...workflowEdge.data,
-        onDelayUpdate
-    }
+        onDelayUpdate,
+    },
 });
 
 // Convert React Flow Node back to WorkflowNode
@@ -64,28 +64,9 @@ const convertReactFlowEdgeToWorkflowEdge = (reactFlowEdge: Edge): WorkflowEdge =
     deletable: reactFlowEdge.deletable ?? false,
 });
 
-const ReactFlowCard = ({
-    workflow,
-    setWorkflow,
-    onAddStepClick,
-    onDelayUpdate,
-    onNodeClick,
-    onDeleteNode
-}: {
-    workflow: WorkflowData,
-    setWorkflow: (workflow: WorkflowData) => void,
-    onAddStepClick?: (nodeId: string) => void,
-    onDelayUpdate?: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void,
-    onNodeClick?: (nodeData: ActionNodeData) => void,
-    onDeleteNode?: (nodeId: string) => void
-}) => {
-
-    const [nodes, setNodes] = useState<Node[]>(
-        workflow.nodes.map(convertWorkflowNodeToReactFlowNode)
-    );
-    const [edges, setEdges] = useState<Edge[]>(
-        workflow.edges.map(edge => convertWorkflowEdgeToReactFlowEdge(edge, onDelayUpdate))
-    );
+const ReactFlowCard = ({ workflow, setWorkflow, onAddStepClick, onDelayUpdate, onNodeClick, onDeleteNode }: { workflow: WorkflowData; setWorkflow: (workflow: WorkflowData) => void; onAddStepClick?: (nodeId: string) => void; onDelayUpdate?: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void; onNodeClick?: (nodeData: ActionNodeData) => void; onDeleteNode?: (nodeId: string) => void }) => {
+    const [nodes, setNodes] = useState<Node[]>(workflow.nodes.map(convertWorkflowNodeToReactFlowNode));
+    const [edges, setEdges] = useState<Edge[]>(workflow.edges.map(edge => convertWorkflowEdgeToReactFlowEdge(edge, onDelayUpdate)));
 
     // Drawer state
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -102,30 +83,30 @@ const ReactFlowCard = ({
 
     // Handle configuration changes
     const handleConfigChange = (nodeId: string, config: BaseConfig) => {
-        setNodes((currentNodes) =>
-            currentNodes.map((node) => {
+        setNodes(currentNodes =>
+            currentNodes.map(node => {
                 if (node.id === nodeId) {
                     return {
                         ...node,
                         data: {
                             ...node.data,
-                            config: config
-                        }
+                            config: config,
+                        },
                     };
                 }
                 return node;
-            })
+            }),
         );
 
         // Also update the parent workflow
-        const updatedWorkflowNodes = workflow.nodes.map((workflowNode) => {
+        const updatedWorkflowNodes = workflow.nodes.map(workflowNode => {
             if (workflowNode.id === nodeId) {
                 return {
                     ...workflowNode,
                     data: {
                         ...workflowNode.data,
-                        config: config
-                    }
+                        config: config,
+                    },
                 };
             }
             return workflowNode;
@@ -133,37 +114,36 @@ const ReactFlowCard = ({
 
         setWorkflow({
             ...workflow,
-            nodes: updatedWorkflowNodes
+            nodes: updatedWorkflowNodes,
         });
     };
 
-    const nodeTypes = useMemo<NodeTypes>(() => ({
-        action: (props) => (
-            <ActionNode
-                data={props.data as ActionNodeData}
-                selected={props.selected}
-                onNodeClick={(nodeData) => {
-                    setSelectedNodeId(props.id);
-                    handleNodeClick(nodeData);
-                }}
-                onDeleteNode={() => onDeleteNode?.(props.id)}
-            />
-        ),
-        addStep: (props) => (
-            <AddStepNode
-                data={props.data as AddStepNodeData}
-                selected={props.selected}
-                nodeId={props.id}
-                onNodeClick={onAddStepClick}
-            />
-        ),
-    }), [onAddStepClick, handleNodeClick]);
+    const nodeTypes = useMemo<NodeTypes>(
+        () => ({
+            action: props => (
+                <ActionNode
+                    data={props.data as ActionNodeData}
+                    selected={props.selected}
+                    onNodeClick={nodeData => {
+                        setSelectedNodeId(props.id);
+                        handleNodeClick(nodeData);
+                    }}
+                    onDeleteNode={() => onDeleteNode?.(props.id)}
+                />
+            ),
+            addStep: props => <AddStepNode data={props.data as AddStepNodeData} selected={props.selected} nodeId={props.id} onNodeClick={onAddStepClick} />,
+        }),
+        [onAddStepClick, handleNodeClick],
+    );
 
-    const edgeTypes = useMemo<EdgeTypes>(() => ({
-        delay: DelayEdge,
-        conditional: DelayEdge,
-        buttonedge: DelayEdge,
-    }), []);
+    const edgeTypes = useMemo<EdgeTypes>(
+        () => ({
+            delay: DelayEdge,
+            conditional: DelayEdge,
+            buttonedge: DelayEdge,
+        }),
+        [],
+    );
 
     // Track if we're updating from parent to prevent infinite loops
     const isUpdatingFromParent = useRef(false);
@@ -191,23 +171,18 @@ const ReactFlowCard = ({
     useEffect(() => {
         if (!isUpdatingFromParent.current) {
             // Check if this is just a selection change by comparing structural properties
-            const structuralNodeChange = nodes.length !== prevNodesRef.current.length ||
+            const structuralNodeChange =
+                nodes.length !== prevNodesRef.current.length ||
                 nodes.some((node, index) => {
                     const prevNode = prevNodesRef.current[index];
-                    return !prevNode ||
-                           node.id !== prevNode.id ||
-                           node.type !== prevNode.type ||
-                           node.position.x !== prevNode.position.x ||
-                           node.position.y !== prevNode.position.y;
+                    return !prevNode || node.id !== prevNode.id || node.type !== prevNode.type || node.position.x !== prevNode.position.x || node.position.y !== prevNode.position.y;
                 });
 
-            const structuralEdgeChange = edges.length !== prevEdgesRef.current.length ||
+            const structuralEdgeChange =
+                edges.length !== prevEdgesRef.current.length ||
                 edges.some((edge, index) => {
                     const prevEdge = prevEdgesRef.current[index];
-                    return !prevEdge ||
-                           edge.id !== prevEdge.id ||
-                           edge.source !== prevEdge.source ||
-                           edge.target !== prevEdge.target;
+                    return !prevEdge || edge.id !== prevEdge.id || edge.source !== prevEdge.source || edge.target !== prevEdge.target;
                 });
 
             // Only update parent if there are structural changes, not just selection changes
@@ -223,26 +198,17 @@ const ReactFlowCard = ({
         }
     }, [nodes, edges, setWorkflow]);
 
-    const onNodesChange = useCallback(
-        (changes: NodeChange[]) => {
-            setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot));
-        },
-        [],
-    );
+    const onNodesChange = useCallback((changes: NodeChange[]) => {
+        setNodes(nodesSnapshot => applyNodeChanges(changes, nodesSnapshot));
+    }, []);
 
-    const onEdgesChange = useCallback(
-        (changes: EdgeChange[]) => {
-            setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot));
-        },
-        [],
-    );
+    const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+        setEdges(edgesSnapshot => applyEdgeChanges(changes, edgesSnapshot));
+    }, []);
 
-    const onConnect = useCallback(
-        (params: Connection) => {
-            setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
-        },
-        [],
-    );
+    const onConnect = useCallback((params: Connection) => {
+        setEdges(edgesSnapshot => addEdge(params, edgesSnapshot));
+    }, []);
 
     const onNodesDelete = useCallback(
         (deleted: Node[]) => {
@@ -258,11 +224,11 @@ const ReactFlowCard = ({
                     const outgoers = getOutgoers(node, remainingNodes, acc);
                     const connectedEdges = getConnectedEdges([node], acc);
 
-                    const remainingEdges = acc.filter((edge) => !connectedEdges.includes(edge));
+                    const remainingEdges = acc.filter(edge => !connectedEdges.includes(edge));
 
                     // Create new edges connecting incomers to outgoers
-                    const createdEdges = incomers.flatMap((incomer) =>
-                        outgoers.map((outgoer) => ({
+                    const createdEdges = incomers.flatMap(incomer =>
+                        outgoers.map(outgoer => ({
                             id: `${incomer.id}-${outgoer.id}-reconnect`,
                             source: incomer.id,
                             target: outgoer.id,
@@ -272,12 +238,12 @@ const ReactFlowCard = ({
                             deletable: true,
                             data: {
                                 delay: '0',
-                                delayData: { delay: 0, unit: 'm' }
-                            }
-                        }))
+                                delayData: { delay: 0, unit: 'm' },
+                            },
+                        })),
                     );
 
-                    remainingNodes = remainingNodes.filter((rn) => rn.id !== node.id);
+                    remainingNodes = remainingNodes.filter(rn => rn.id !== node.id);
 
                     return [...remainingEdges, ...createdEdges];
                 }, edges),
@@ -304,11 +270,10 @@ const ReactFlowCard = ({
                 nodesFocusable={true}
                 edgesFocusable={true}
                 elementsSelectable={true}
-                className='border rounded-lg'
+                className="border rounded-lg"
                 style={{
-                    borderRadius: '0.5rem'
-                }}
-            >
+                    borderRadius: '0.5rem',
+                }}>
                 <Background color="skyblue" variant={BackgroundVariant.Dots} />
             </ReactFlow>
             {selectedNodeId && (
@@ -325,6 +290,6 @@ const ReactFlowCard = ({
                 />
             )}
         </div>
-    )
-}
-export default ReactFlowCard
+    );
+};
+export default ReactFlowCard;

@@ -1,10 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WorkflowNodeType, NODE_CATEGORIES } from "@/config/workflow-nodes";
-import { getNodesGroupedByCategory, getRecommendedNextSteps } from "@/config/workflow-config";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { WorkflowNodeType, NODE_CATEGORIES } from '@/config/workflow-nodes';
+import { getNodesGroupedByCategory, getRecommendedNextSteps } from '@/config/workflow-config';
 
 interface NodeSelectionModalProps {
     isOpen: boolean;
@@ -13,12 +13,7 @@ interface NodeSelectionModalProps {
     currentWorkflowTypes?: string[];
 }
 
-export const NodeSelectionModal = ({
-    isOpen,
-    onClose,
-    onSelectNodeType,
-    currentWorkflowTypes = []
-}: NodeSelectionModalProps) => {
+export const NodeSelectionModal = ({ isOpen, onClose, onSelectNodeType, currentWorkflowTypes = [] }: NodeSelectionModalProps) => {
     const handleSelectNode = (nodeType: WorkflowNodeType) => {
         onSelectNodeType(nodeType);
         onClose();
@@ -55,17 +50,10 @@ export const NodeSelectionModal = ({
                             <div className="grid grid-cols-2 gap-3">
                                 {Object.entries(nodesByCategory).map(([category, nodes]) => (
                                     <div key={category} className="col-span-2">
-                                        <h3 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
-                                            {NODE_CATEGORIES[category as keyof typeof NODE_CATEGORIES]?.label}
-                                        </h3>
+                                        <h3 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide">{NODE_CATEGORIES[category as keyof typeof NODE_CATEGORIES]?.label}</h3>
                                         <div className="grid grid-cols-2 gap-3 mb-4">
-                                            {nodes.map((nodeType) => (
-                                                <NodeCard
-                                                    key={nodeType.type}
-                                                    nodeType={nodeType}
-                                                    onClick={() => handleSelectNode(nodeType.type)}
-                                                    isRecommended={recommendedNodes.some(n => n.type === nodeType.type)}
-                                                />
+                                            {nodes.map(nodeType => (
+                                                <NodeCard key={nodeType.type} nodeType={nodeType} onClick={() => handleSelectNode(nodeType.type)} isRecommended={recommendedNodes.some(n => n.type === nodeType.type)} />
                                             ))}
                                         </div>
                                     </div>
@@ -76,13 +64,8 @@ export const NodeSelectionModal = ({
                         <TabsContent value="recommended">
                             {recommendedNodes.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-3">
-                                    {recommendedNodes.map((nodeType) => (
-                                        <NodeCard
-                                            key={nodeType.type}
-                                            nodeType={nodeType}
-                                            onClick={() => handleSelectNode(nodeType.type)}
-                                            isRecommended={true}
-                                        />
+                                    {recommendedNodes.map(nodeType => (
+                                        <NodeCard key={nodeType.type} nodeType={nodeType} onClick={() => handleSelectNode(nodeType.type)} isRecommended={true} />
                                     ))}
                                 </div>
                             ) : (
@@ -96,13 +79,8 @@ export const NodeSelectionModal = ({
                         {Object.entries(nodesByCategory).map(([category, nodes]) => (
                             <TabsContent key={category} value={category}>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {nodes.map((nodeType) => (
-                                        <NodeCard
-                                            key={nodeType.type}
-                                            nodeType={nodeType}
-                                            onClick={() => handleSelectNode(nodeType.type)}
-                                            isRecommended={recommendedNodes.some(n => n.type === nodeType.type)}
-                                        />
+                                    {nodes.map(nodeType => (
+                                        <NodeCard key={nodeType.type} nodeType={nodeType} onClick={() => handleSelectNode(nodeType.type)} isRecommended={recommendedNodes.some(n => n.type === nodeType.type)} />
                                     ))}
                                 </div>
                             </TabsContent>
@@ -138,15 +116,9 @@ const NodeCard = ({ nodeType, onClick, isRecommended }: NodeCardProps) => {
     const Icon = nodeType.icon;
 
     return (
-        <Card
-            className="cursor-pointer hover:shadow-md transition-all duration-200 hover:ring-2 hover:ring-primary relative"
-            onClick={onClick}
-        >
+        <Card className="cursor-pointer hover:shadow-md transition-all duration-200 hover:ring-2 hover:ring-primary relative" onClick={onClick}>
             {isRecommended && (
-                <Badge
-                    variant="secondary"
-                    className="absolute -top-2 -right-2 z-10 bg-green-100 text-green-800 border-green-200"
-                >
+                <Badge variant="secondary" className="absolute -top-2 -right-2 z-10 bg-green-100 text-green-800 border-green-200">
                     Recommended
                 </Badge>
             )}
@@ -164,9 +136,7 @@ const NodeCard = ({ nodeType, onClick, isRecommended }: NodeCardProps) => {
                                 </Badge>
                             )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {nodeType.description}
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">{nodeType.description}</p>
                     </div>
                 </div>
             </CardContent>

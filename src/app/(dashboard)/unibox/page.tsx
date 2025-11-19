@@ -1,81 +1,77 @@
-"use client"
+'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { useAuth } from "@clerk/nextjs"
-import { Loader2, Search, MoreHorizontal, MessageCircle } from "lucide-react"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
-import { makeAuthenticatedRequest } from "../../../lib/axios-utils"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@clerk/nextjs';
+import { Loader2, Search, MoreHorizontal, MessageCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { makeAuthenticatedRequest } from '../../../lib/axios-utils';
 
 interface Accounts {
-    id: string,
-    name: string,
-    email: string,
-    profile_picture_url: string,
-    status: string
+    id: string;
+    name: string;
+    email: string;
+    profile_picture_url: string;
+    status: string;
 }
 
 interface InboxResponse {
-    id: string,
-    name: string | null,
-    folder: ("INBOX" | "INBOX_LINKEDIN_CLASSIC" | "INBOX_LINKEDIN_RECRUITER" | "INBOX_LINKEDIN_SALES_NAVIGATOR" | "INBOX_LINKEDIN_ORGANIZATION")[] | undefined,
-    unread_count: number,
-    timestamp: string | null,
-    account_id: string,
-    attendee_provider_id: string | null,
+    id: string;
+    name: string | null;
+    folder: ('INBOX' | 'INBOX_LINKEDIN_CLASSIC' | 'INBOX_LINKEDIN_RECRUITER' | 'INBOX_LINKEDIN_SALES_NAVIGATOR' | 'INBOX_LINKEDIN_ORGANIZATION')[] | undefined;
+    unread_count: number;
+    timestamp: string | null;
+    account_id: string;
+    attendee_provider_id: string | null;
     attendee_profile: {
-        name: string,
-        profile_picture_url: string | null
-    } | null
+        name: string;
+        profile_picture_url: string | null;
+    } | null;
 }
 interface Pagination {
-    limit: number,
-    cursor: string,
-    hasMore: boolean,
-    nextCursor: string
+    limit: number;
+    cursor: string;
+    hasMore: boolean;
+    nextCursor: string;
 }
 
 interface ChatMessages {
-    object: "Message" | undefined,
-    seen: 0 | 1 | undefined,
-    text: string | undefined | null,
-    edited: 0 | 1 | undefined,
-    hidden: 0 | 1 | undefined,
-    chat_id: string,
-    deleted: 0 | 1 | undefined,
-    seen_by: Record<string, string | boolean> | undefined,
-    subject: string | null,
-    behavior: string | null,
-    is_event: 0 | 1 | undefined,
-    original: string | undefined | null,
-    delivered: 0 | 1 | undefined,
-    is_sender: 1,
-    reactions: {
-        value: string;
-        sender_id: string;
-        is_sender: boolean;
-    }[] | undefined,
-    sender_id: string,
-    timestamp: string,
-    account_id: string,
-    attachments: [],
-    provider_id: string,
-    message_type: 'MESSAGE' | undefined,
-    attendee_type: 'MEMBER' | undefined,
-    chat_provider_id: string,
-    attendee_distance: number,
-    sender_attendee_id: string,
-    id: string
+    object: 'Message' | undefined;
+    seen: 0 | 1 | undefined;
+    text: string | undefined | null;
+    edited: 0 | 1 | undefined;
+    hidden: 0 | 1 | undefined;
+    chat_id: string;
+    deleted: 0 | 1 | undefined;
+    seen_by: Record<string, string | boolean> | undefined;
+    subject: string | null;
+    behavior: string | null;
+    is_event: 0 | 1 | undefined;
+    original: string | undefined | null;
+    delivered: 0 | 1 | undefined;
+    is_sender: 1;
+    reactions:
+        | {
+              value: string;
+              sender_id: string;
+              is_sender: boolean;
+          }[]
+        | undefined;
+    sender_id: string;
+    timestamp: string;
+    account_id: string;
+    attachments: [];
+    provider_id: string;
+    message_type: 'MESSAGE' | undefined;
+    attendee_type: 'MEMBER' | undefined;
+    chat_provider_id: string;
+    attendee_distance: number;
+    sender_attendee_id: string;
+    id: string;
 }
 
 export default function UniboxPage() {
@@ -86,9 +82,9 @@ export default function UniboxPage() {
     const [pagination, setPagination] = useState<Pagination>();
     const [chatMessages, setChatMessages] = useState<ChatMessages[]>([]);
     const [selectedChat, setSelectedChat] = useState<InboxResponse | null>(null);
-    const [selectedAccount, setSelectedAccount] = useState<string>("");
-    const [searchTerm, setSearchTerm] = useState<string>("");
-    const [filterStatus, setFilterStatus] = useState<string>("all");
+    const [selectedAccount, setSelectedAccount] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [filterStatus, setFilterStatus] = useState<string>('all');
     const { getToken } = useAuth();
 
     const getChat = async (id: string) => {
@@ -96,7 +92,7 @@ export default function UniboxPage() {
         const token = await getToken();
         if (!token) {
             toast.error('Log In to See the Unibox');
-            return
+            return;
         }
 
         // Find the selected chat from inbox
@@ -105,22 +101,21 @@ export default function UniboxPage() {
 
         const reqBody = {
             chat_id: id,
-            account_id: selectedAccount
-        }
+            account_id: selectedAccount,
+        };
         try {
-            const res = await makeAuthenticatedRequest('POST', `/inbox`, reqBody, token)
+            const res = await makeAuthenticatedRequest('POST', `/inbox`, reqBody, token);
             console.log(res?.chat?.items);
             // Reverse the messages to show oldest first
             const messages = res?.chat?.items || [];
             setChatMessages(messages.reverse());
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             toast.error('Failed to load chat data');
         } finally {
             setLoadingChat(false);
         }
-    }
+    };
 
     useEffect(() => {
         const getData = async () => {
@@ -128,10 +123,10 @@ export default function UniboxPage() {
             const token = await getToken();
             if (!token) {
                 toast.error('Log In to See the Unibox');
-                return
+                return;
             }
             try {
-                const res = await makeAuthenticatedRequest('GET', '/inbox', {}, token)
+                const res = await makeAuthenticatedRequest('GET', '/inbox', {}, token);
                 setAccounts(res?.accounts || []);
                 setInbox(res?.inbox || []);
                 setPagination(res?.pagination);
@@ -146,63 +141,67 @@ export default function UniboxPage() {
             } finally {
                 setLoading(false);
             }
-        }
+        };
         getData();
-    }, [])
+    }, []);
 
     // Helper functions
     const getSelectedAccount = () => {
         return accounts.find(account => account.id === selectedAccount);
-    }
+    };
 
     const getFilteredInbox = () => {
         let filtered = inbox;
 
         // Filter by search term
         if (searchTerm) {
-            filtered = filtered.filter(item =>
-                item.attendee_profile?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.name?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            filtered = filtered.filter(item => item.attendee_profile?.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.name?.toLowerCase().includes(searchTerm.toLowerCase()));
         }
 
         // Filter by status
-        if (filterStatus === "unread") {
+        if (filterStatus === 'unread') {
             filtered = filtered.filter(item => item.unread_count > 0);
-        } else if (filterStatus === "read") {
+        } else if (filterStatus === 'read') {
             filtered = filtered.filter(item => item.unread_count === 0);
         }
 
         return filtered;
-    }
+    };
 
     const formatTimestamp = (timestamp: string | null) => {
-        if (!timestamp) return "";
+        if (!timestamp) return '';
         const date = new Date(timestamp);
         const now = new Date();
         const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
         if (diffInHours < 1) {
-            return "Just now";
+            return 'Just now';
         } else if (diffInHours < 24) {
             return `${Math.floor(diffInHours)}h ago`;
-        } else if (diffInHours < 168) { // 7 days
+        } else if (diffInHours < 168) {
+            // 7 days
             return `${Math.floor(diffInHours / 24)}d ago`;
         } else {
             return date.toLocaleDateString();
         }
-    }
+    };
 
     const getFolderDisplayName = (folder: string) => {
         switch (folder) {
-            case "INBOX": return "Inbox";
-            case "INBOX_LINKEDIN_CLASSIC": return "LinkedIn Classic";
-            case "INBOX_LINKEDIN_RECRUITER": return "LinkedIn Recruiter";
-            case "INBOX_LINKEDIN_SALES_NAVIGATOR": return "Sales Navigator";
-            case "INBOX_LINKEDIN_ORGANIZATION": return "LinkedIn Organization";
-            default: return folder;
+            case 'INBOX':
+                return 'Inbox';
+            case 'INBOX_LINKEDIN_CLASSIC':
+                return 'LinkedIn Classic';
+            case 'INBOX_LINKEDIN_RECRUITER':
+                return 'LinkedIn Recruiter';
+            case 'INBOX_LINKEDIN_SALES_NAVIGATOR':
+                return 'Sales Navigator';
+            case 'INBOX_LINKEDIN_ORGANIZATION':
+                return 'LinkedIn Organization';
+            default:
+                return folder;
         }
-    }
+    };
 
     // Show loading state while fetching data
     if (loading) {
@@ -212,15 +211,11 @@ export default function UniboxPage() {
                     <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                         <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
                     </div>
-                    <h3 className="text-lg font-medium text-foreground mb-2">
-                        Loading Unibox
-                    </h3>
-                    <p className="text-muted-foreground">
-                        Fetching your messages and conversations...
-                    </p>
+                    <h3 className="text-lg font-medium text-foreground mb-2">Loading Unibox</h3>
+                    <p className="text-muted-foreground">Fetching your messages and conversations...</p>
                 </div>
             </div>
-        )
+        );
     }
 
     return (
@@ -238,13 +233,8 @@ export default function UniboxPage() {
                                 {getSelectedAccount() && (
                                     <>
                                         <Avatar className="w-6 h-6">
-                                            <AvatarImage
-                                                src={getSelectedAccount()?.profile_picture_url}
-                                                alt={getSelectedAccount()?.name}
-                                            />
-                                            <AvatarFallback className="bg-gradient-purple text-white text-xs">
-                                                {getSelectedAccount()?.name?.charAt(0).toUpperCase()}
-                                            </AvatarFallback>
+                                            <AvatarImage src={getSelectedAccount()?.profile_picture_url} alt={getSelectedAccount()?.name} />
+                                            <AvatarFallback className="bg-gradient-purple text-white text-xs">{getSelectedAccount()?.name?.charAt(0).toUpperCase()}</AvatarFallback>
                                         </Avatar>
                                         <SelectValue placeholder="Select account" />
                                     </>
@@ -252,7 +242,7 @@ export default function UniboxPage() {
                             </div>
                         </SelectTrigger>
                         <SelectContent>
-                            {accounts.map((account) => (
+                            {accounts.map(account => (
                                 <SelectItem key={account.id} value={account.id}>
                                     <div className="flex items-center justify-between w-full">
                                         <div className="flex flex-col min-w-0 flex-1">
@@ -261,10 +251,7 @@ export default function UniboxPage() {
                                                 {account.email.length > 20 ? `${account.email.substring(0, 20)}...` : account.email}
                                             </span>
                                         </div>
-                                        <Badge
-                                            variant={account.status === 'connected' ? 'default' : 'secondary'}
-                                            className="ml-2 flex-shrink-0"
-                                        >
+                                        <Badge variant={account.status === 'connected' ? 'default' : 'secondary'} className="ml-2 flex-shrink-0">
                                             {account.status}
                                         </Badge>
                                     </div>
@@ -277,12 +264,7 @@ export default function UniboxPage() {
                     <div className="flex gap-2">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                            <Input
-                                placeholder="Search messages"
-                                className="pl-10 bg-background"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                            <Input placeholder="Search messages" className="pl-10 bg-background" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                         </div>
                         <Select value={filterStatus} onValueChange={setFilterStatus}>
                             <SelectTrigger className="w-20 bg-background">
@@ -302,47 +284,27 @@ export default function UniboxPage() {
                     {getFilteredInbox().length === 0 ? (
                         <div className="p-8 text-center">
                             <MessageCircle className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-foreground mb-2">
-                                {searchTerm ? "No conversations found" : "No conversations yet"}
-                            </h3>
-                            <p className="text-muted-foreground text-sm">
-                                {searchTerm
-                                    ? "Try adjusting your search terms"
-                                    : "Your conversations will appear here when you receive messages"
-                                }
-                            </p>
+                            <h3 className="text-lg font-medium text-foreground mb-2">{searchTerm ? 'No conversations found' : 'No conversations yet'}</h3>
+                            <p className="text-muted-foreground text-sm">{searchTerm ? 'Try adjusting your search terms' : 'Your conversations will appear here when you receive messages'}</p>
                         </div>
                     ) : (
                         getFilteredInbox().map((conversation, index) => (
-                            <div
-                                key={conversation.id}
-                                className="p-4 border-b border-border hover:bg-background/50 cursor-pointer transition-colors group"
-                                onClick={() => getChat(conversation.id)}
-                            >
+                            <div key={conversation.id} className="p-4 border-b border-border hover:bg-background/50 cursor-pointer transition-colors group" onClick={() => getChat(conversation.id)}>
                                 <div className="flex items-start gap-3">
                                     <Avatar className="w-10 h-10">
-                                        <AvatarImage
-                                            src={conversation.attendee_profile?.profile_picture_url || undefined}
-                                            alt={conversation.attendee_profile?.name || "Unknown"}
-                                        />
-                                        <AvatarFallback className="bg-gradient-purple text-white text-sm">
-                                            {conversation.attendee_profile?.name?.charAt(0).toUpperCase() || "?"}
-                                        </AvatarFallback>
+                                        <AvatarImage src={conversation.attendee_profile?.profile_picture_url || undefined} alt={conversation.attendee_profile?.name || 'Unknown'} />
+                                        <AvatarFallback className="bg-gradient-purple text-white text-sm">{conversation.attendee_profile?.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between">
-                                            <h3 className="font-medium text-foreground truncate">
-                                                {conversation.attendee_profile?.name || conversation.name || "Unknown Contact"}
-                                            </h3>
+                                            <h3 className="font-medium text-foreground truncate">{conversation.attendee_profile?.name || conversation.name || 'Unknown Contact'}</h3>
                                             <div className="flex items-center gap-2">
                                                 {conversation.unread_count > 0 && (
                                                     <Badge variant="default" className="bg-purple-600 text-white text-xs">
                                                         {conversation.unread_count}
                                                     </Badge>
                                                 )}
-                                                <span className="text-xs text-muted-foreground">
-                                                    {formatTimestamp(conversation.timestamp)}
-                                                </span>
+                                                <span className="text-xs text-muted-foreground">{formatTimestamp(conversation.timestamp)}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 mt-1">
@@ -351,9 +313,7 @@ export default function UniboxPage() {
                                                     {getFolderDisplayName(conversation.folder[0])}
                                                 </Badge>
                                             )}
-                                            <span className="text-sm text-muted-foreground truncate">
-                                                {conversation.unread_count > 0 ? `${conversation.unread_count} unread message${conversation.unread_count > 1 ? 's' : ''}` : 'No unread messages'}
-                                            </span>
+                                            <span className="text-sm text-muted-foreground truncate">{conversation.unread_count > 0 ? `${conversation.unread_count} unread message${conversation.unread_count > 1 ? 's' : ''}` : 'No unread messages'}</span>
                                         </div>
                                     </div>
                                     <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100">
@@ -374,12 +334,8 @@ export default function UniboxPage() {
                             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
                             </div>
-                            <h3 className="text-lg font-medium text-foreground mb-2">
-                                Loading messages...
-                            </h3>
-                            <p className="text-muted-foreground">
-                                Fetching chat messages...
-                            </p>
+                            <h3 className="text-lg font-medium text-foreground mb-2">Loading messages...</h3>
+                            <p className="text-muted-foreground">Fetching chat messages...</p>
                         </div>
                     </div>
                 ) : chatMessages.length > 0 ? (
@@ -388,51 +344,25 @@ export default function UniboxPage() {
                         <div className="p-4 border-b border-border bg-card">
                             <div className="flex items-center gap-3">
                                 <Avatar className="w-10 h-10">
-                                    <AvatarImage
-                                        src={selectedChat?.attendee_profile?.profile_picture_url || undefined}
-                                        alt={selectedChat?.attendee_profile?.name || "Unknown"}
-                                    />
-                                    <AvatarFallback className="bg-gradient-purple text-white text-sm">
-                                        {selectedChat?.attendee_profile?.name?.charAt(0).toUpperCase() || "?"}
-                                    </AvatarFallback>
+                                    <AvatarImage src={selectedChat?.attendee_profile?.profile_picture_url || undefined} alt={selectedChat?.attendee_profile?.name || 'Unknown'} />
+                                    <AvatarFallback className="bg-gradient-purple text-white text-sm">{selectedChat?.attendee_profile?.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-foreground">
-                                        {selectedChat?.attendee_profile?.name || selectedChat?.name || "Unknown Contact"}
-                                    </h3>
-                                    {selectedChat?.folder && selectedChat.folder.length > 0 && (
-                                        <p className="text-sm text-muted-foreground">
-                                            {getFolderDisplayName(selectedChat.folder[0])}
-                                        </p>
-                                    )}
+                                    <h3 className="text-lg font-semibold text-foreground">{selectedChat?.attendee_profile?.name || selectedChat?.name || 'Unknown Contact'}</h3>
+                                    {selectedChat?.folder && selectedChat.folder.length > 0 && <p className="text-sm text-muted-foreground">{getFolderDisplayName(selectedChat.folder[0])}</p>}
                                 </div>
                             </div>
                         </div>
 
                         {/* Messages List */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                            {chatMessages.map((message) => (
-                                <div
-                                    key={message.id}
-                                    className={`flex ${message.is_sender ? 'justify-end' : 'justify-start'}`}
-                                >
-                                    <div
-                                        className={`max-w-[70%] rounded-lg p-3 ${
-                                            message.is_sender
-                                                ? 'bg-purple-600 text-white'
-                                                : 'bg-muted text-foreground'
-                                        }`}
-                                    >
-                                        <div className="text-sm">
-                                            {message.text || message.subject || 'No content'}
-                                        </div>
-                                        <div className={`text-xs mt-1 ${
-                                            message.is_sender ? 'text-purple-100' : 'text-muted-foreground'
-                                        }`}>
+                            {chatMessages.map(message => (
+                                <div key={message.id} className={`flex ${message.is_sender ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[70%] rounded-lg p-3 ${message.is_sender ? 'bg-purple-600 text-white' : 'bg-muted text-foreground'}`}>
+                                        <div className="text-sm">{message.text || message.subject || 'No content'}</div>
+                                        <div className={`text-xs mt-1 ${message.is_sender ? 'text-purple-100' : 'text-muted-foreground'}`}>
                                             {formatTimestamp(message.timestamp)}
-                                            {message.is_sender && message.delivered && (
-                                                <span className="ml-1">✓</span>
-                                            )}
+                                            {message.is_sender && message.delivered && <span className="ml-1">✓</span>}
                                         </div>
                                         {message.reactions && message.reactions.length > 0 && (
                                             <div className="flex gap-1 mt-2">
@@ -454,16 +384,12 @@ export default function UniboxPage() {
                             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Search className="w-8 h-8 text-muted-foreground" />
                             </div>
-                            <h3 className="text-lg font-medium text-foreground mb-2">
-                                Select a chat to start messaging
-                            </h3>
-                            <p className="text-muted-foreground">
-                                Choose a conversation from the sidebar to view messages
-                            </p>
+                            <h3 className="text-lg font-medium text-foreground mb-2">Select a chat to start messaging</h3>
+                            <p className="text-muted-foreground">Choose a conversation from the sidebar to view messages</p>
                         </div>
                     </div>
                 )}
             </div>
         </div>
-    )
+    );
 }

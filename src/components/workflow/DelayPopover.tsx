@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { useState, useEffect } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 interface DelayPopoverProps {
     currentDelay: {
@@ -41,29 +41,23 @@ export const DelayPopover = ({ currentDelay, onSave, children }: DelayPopoverPro
         { delay: 30, unit: 'm', label: '30m' },
         { delay: 1, unit: 'h', label: '1h' },
         { delay: 2, unit: 'h', label: '2h' },
-        { delay: 1, unit: 'd', label: '1d' }
+        { delay: 1, unit: 'd', label: '1d' },
     ];
 
     return (
         <Popover open={isOpen} onOpenChange={handleOpenChange}>
-            <PopoverTrigger asChild>
-                {children}
-            </PopoverTrigger>
+            <PopoverTrigger asChild>{children}</PopoverTrigger>
             <PopoverContent
                 className="w-64 p-3"
                 align="center"
-                onPointerDownOutside={(e) => {
+                onPointerDownOutside={e => {
                     // Prevent closing when clicking on React Flow elements
                     const target = e.target as Element;
                     if (target.closest('.react-flow')) {
                         e.preventDefault();
                     }
-                }}
-            >
-                <div
-                    className="space-y-3"
-                    onClick={(e) => e.stopPropagation()}
-                >
+                }}>
+                <div className="space-y-3" onClick={e => e.stopPropagation()}>
                     <div>
                         <Label className="text-sm font-medium">Delay Duration</Label>
                         <p className="text-xs text-muted-foreground">Set the waiting time before the next action.</p>
@@ -71,17 +65,16 @@ export const DelayPopover = ({ currentDelay, onSave, children }: DelayPopoverPro
 
                     {/* Quick presets */}
                     <div className="flex flex-wrap gap-1">
-                        {presetDelays.map((preset) => (
+                        {presetDelays.map(preset => (
                             <Button
                                 key={`${preset.delay}-${preset.unit}`}
-                                variant={delay === preset.delay && unit === preset.unit ? "default" : "outline"}
+                                variant={delay === preset.delay && unit === preset.unit ? 'default' : 'outline'}
                                 size="sm"
                                 onClick={() => {
                                     setDelay(preset.delay);
                                     setUnit(preset.unit);
                                 }}
-                                className="text-xs h-7 px-2"
-                            >
+                                className="text-xs h-7 px-2">
                                 {preset.label}
                             </Button>
                         ))}
@@ -90,14 +83,7 @@ export const DelayPopover = ({ currentDelay, onSave, children }: DelayPopoverPro
                     {/* Custom input */}
                     <div className="flex gap-2">
                         <div className="flex-1">
-                            <Input
-                                type="number"
-                                min="0"
-                                value={delay}
-                                onChange={(e) => setDelay(Number(e.target.value))}
-                                placeholder="0"
-                                className="h-8 text-sm"
-                            />
+                            <Input type="number" min="0" value={delay} onChange={e => setDelay(Number(e.target.value))} placeholder="0" className="h-8 text-sm" />
                         </div>
                         <div className="w-20">
                             <Select value={unit} onValueChange={setUnit}>

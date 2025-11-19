@@ -1,43 +1,43 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { WorkflowNodeType, getNodeLabel, hasConditionalPaths } from "@/config/workflow-nodes";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
-import { TimePicker } from "@/components/ui/time-picker";
-import { Loader2, RefreshCw, Settings, Workflow } from "lucide-react";
-import { toast } from "sonner";
-import { ActionDispatch, useEffect, useReducer, useState } from "react";
+import { Button } from '@/components/ui/button';
+import { WorkflowNodeType, getNodeLabel, hasConditionalPaths } from '@/config/workflow-nodes';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
+import { TimePicker } from '@/components/ui/time-picker';
+import { Loader2, RefreshCw, Settings, Workflow } from 'lucide-react';
+import { toast } from 'sonner';
+import { ActionDispatch, useEffect, useReducer, useState } from 'react';
 import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
-import { useAuth } from "@clerk/nextjs";
-import { usePathname, useRouter } from "next/navigation";
-import { ConnectedAccount, useConnectedAccounts } from "../../../../../hooks/useConnectedAccounts";
-import { CheckNever, makeAuthenticatedRequest } from "../../../../../lib/axios-utils";
-import { useLeadLists } from "../../../../../hooks/useLeadLists";
-import { getTimezoneOptionsByRegion, getUserTimezone } from "../../../../../lib/timezone-utils";
-import { NodeSelectionModal } from "../../../../../components/workflow/NodeSelectionModal";
-import { LeadList } from "../../../../../types/lead-list";
-import ReactFlowCard from "../../../../../components/ui/react-flow";
-import { ActionNodeData, CampaignDetailsAction, CampaignDetailsState, CampaignTabs, DelayUnit, getDefaultConfigForNodeType, WorkflowData, WorkflowEdge, WorkflowNode } from "../../create-campaign/page";
-import { Campaign } from "../../../../../types/campaign";
+import { useAuth } from '@clerk/nextjs';
+import { usePathname, useRouter } from 'next/navigation';
+import { ConnectedAccount, useConnectedAccounts } from '../../../../../hooks/useConnectedAccounts';
+import { CheckNever, makeAuthenticatedRequest } from '../../../../../lib/axios-utils';
+import { useLeadLists } from '../../../../../hooks/useLeadLists';
+import { getTimezoneOptionsByRegion, getUserTimezone } from '../../../../../lib/timezone-utils';
+import { NodeSelectionModal } from '../../../../../components/workflow/NodeSelectionModal';
+import { LeadList } from '../../../../../types/lead-list';
+import ReactFlowCard from '../../../../../components/ui/react-flow';
+import { ActionNodeData, CampaignDetailsAction, CampaignDetailsState, CampaignTabs, DelayUnit, getDefaultConfigForNodeType, WorkflowData, WorkflowEdge, WorkflowNode } from '../../create-campaign/page';
+import { Campaign } from '../../../../../types/campaign';
 
 interface CampaignResponse {
-    campaign: Campaign
-    workflow: WorkflowData
+    campaign: Campaign;
+    workflow: WorkflowData;
 }
 
 const EditCampaignPage = () => {
-    const { data: connectedAccounts, isLoading: isLoadingAccounts } = useConnectedAccounts()
-    const [workflow, setWorkflow] = useState<WorkflowData | null>(null)
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
-    const [isAddingStepNode, setIsAddingStepNode] = useState<boolean>(false)
+    const { data: connectedAccounts, isLoading: isLoadingAccounts } = useConnectedAccounts();
+    const [workflow, setWorkflow] = useState<WorkflowData | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    const [isAddingStepNode, setIsAddingStepNode] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const campaignId = usePathname().split('/').pop();
-    const [isEditingCampaign, setIsEditingCampaign] = useState(false)
+    const [isEditingCampaign, setIsEditingCampaign] = useState(false);
     const { getToken } = useAuth();
     const router = useRouter();
 
@@ -50,28 +50,22 @@ const EditCampaignPage = () => {
         leadsPerDay: null,
         startTime: null,
         endTime: null,
-        timezone: getUserTimezone()
-    }
+        timezone: getUserTimezone(),
+    };
 
-    const [detailsState, dispatchDetails] = useReducer(
-        campaignDetailsReducer,
-        initialDetailsState
-    )
+    const [detailsState, dispatchDetails] = useReducer(campaignDetailsReducer, initialDetailsState);
 
-    function campaignDetailsReducer(
-        state: CampaignDetailsState,
-        action: CampaignDetailsAction
-    ): CampaignDetailsState {
+    function campaignDetailsReducer(state: CampaignDetailsState, action: CampaignDetailsAction): CampaignDetailsState {
         switch (action.type) {
             case 'SET_FIELD':
                 return {
                     ...state,
                     [action.field]: action.value,
-                }
+                };
             case 'RESET':
-                return initialDetailsState
+                return initialDetailsState;
             default:
-                return state
+                return state;
         }
     }
 
@@ -86,7 +80,7 @@ const EditCampaignPage = () => {
             data: node.data,
             measured: node.measured,
             selected: node.selected || false,
-            ...(node.deletable !== undefined && { deletable: node.deletable })
+            ...(node.deletable !== undefined && { deletable: node.deletable }),
         }));
 
         const cleanEdges = workflow.edges.map(edge => ({
@@ -97,13 +91,13 @@ const EditCampaignPage = () => {
             animated: edge.animated,
             data: edge.data,
             ...(edge.selected !== undefined && { selected: edge.selected }),
-            ...(edge.deletable !== undefined && { deletable: edge.deletable })
+            ...(edge.deletable !== undefined && { deletable: edge.deletable }),
         }));
 
         return {
             nodes: cleanNodes,
             edges: cleanEdges,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         };
     };
 
@@ -113,15 +107,13 @@ const EditCampaignPage = () => {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = e => {
             try {
                 const jsonContent = e.target?.result as string;
                 const importedWorkflow = JSON.parse(jsonContent);
 
                 // Validate the imported workflow structure
-                if (importedWorkflow.nodes && Array.isArray(importedWorkflow.nodes) &&
-                    importedWorkflow.edges && Array.isArray(importedWorkflow.edges)) {
-
+                if (importedWorkflow.nodes && Array.isArray(importedWorkflow.nodes) && importedWorkflow.edges && Array.isArray(importedWorkflow.edges)) {
                     // Ensure all nodes have default configs if missing
                     const nodesWithDefaults = importedWorkflow.nodes.map((node: any) => {
                         if (node.data && node.data.type && !node.data.config) {
@@ -129,8 +121,8 @@ const EditCampaignPage = () => {
                                 ...node,
                                 data: {
                                     ...node.data,
-                                    config: getDefaultConfigForNodeType(node.data.type)
-                                }
+                                    config: getDefaultConfigForNodeType(node.data.type),
+                                },
                             };
                         }
                         return node;
@@ -138,7 +130,7 @@ const EditCampaignPage = () => {
 
                     setWorkflow({
                         nodes: nodesWithDefaults,
-                        edges: importedWorkflow.edges
+                        edges: importedWorkflow.edges,
                     });
 
                     toast.success('Workflow imported successfully!');
@@ -173,17 +165,7 @@ const EditCampaignPage = () => {
     };
 
     const verifyDetailPage = (): boolean => {
-        const requiredFields: (keyof CampaignDetailsState)[] = [
-            'name',
-            'description',
-            'prospectList',
-            'senderAccount',
-            'startDate',
-            'leadsPerDay',
-            'startTime',
-            'endTime',
-            'timezone'
-        ];
+        const requiredFields: (keyof CampaignDetailsState)[] = ['name', 'description', 'prospectList', 'senderAccount', 'startDate', 'leadsPerDay', 'startTime', 'endTime', 'timezone'];
 
         // Helper function to check if a field is empty (including trimmed strings)
         const isFieldEmpty = (field: keyof CampaignDetailsState): boolean => {
@@ -203,31 +185,31 @@ const EditCampaignPage = () => {
         if (firstMissingField) {
             switch (firstMissingField) {
                 case 'name':
-                    toast.error("Campaign Name is required");
+                    toast.error('Campaign Name is required');
                     break;
                 case 'prospectList':
-                    toast.error("Prospect List is required");
+                    toast.error('Prospect List is required');
                     break;
                 case 'senderAccount':
-                    toast.error("Sender Account is required");
+                    toast.error('Sender Account is required');
                     break;
                 case 'startDate':
-                    toast.error("Start Date is required");
+                    toast.error('Start Date is required');
                     break;
                 case 'leadsPerDay':
-                    toast.error("Leads Per Day is required");
+                    toast.error('Leads Per Day is required');
                     break;
                 case 'startTime':
-                    toast.error("Start Time is required");
+                    toast.error('Start Time is required');
                     break;
                 case 'endTime':
-                    toast.error("End Time is required");
+                    toast.error('End Time is required');
                     break;
                 case 'timezone':
-                    toast.error("Timezone is required");
+                    toast.error('Timezone is required');
                     break;
                 case 'description':
-                    toast.error("Description is required");
+                    toast.error('Description is required');
                     break;
                 default:
                     CheckNever(firstMissingField);
@@ -236,39 +218,39 @@ const EditCampaignPage = () => {
         }
 
         return true;
-    }
+    };
 
     const handleEditCampaign = async () => {
         if (!verifyDetailPage()) {
             return;
         }
         if (!workflow) {
-            toast.error("No Workflow Created");
+            toast.error('No Workflow Created');
             return;
         }
         const cleanJSON = exportWorkflowJSON();
         const reqBody = {
             campaignId,
             detail: detailsState,
-            flow: cleanJSON
+            flow: cleanJSON,
         };
         const token = await getToken();
         if (!token) {
-            toast.error("Please login to create a campaign");
+            toast.error('Please login to create a campaign');
             return;
         }
         try {
-            setIsEditingCampaign(true)
+            setIsEditingCampaign(true);
             await makeAuthenticatedRequest('POST', '/campaigns/edit', reqBody, token);
-            toast.success("Campaign Edited successfully!");
+            toast.success('Campaign Edited successfully!');
             // Redirect to campaigns page on successful creation
             router.push('/campaigns');
         } catch (error) {
             console.error('Error creating campaign:', error);
         } finally {
-            setIsEditingCampaign(false)
+            setIsEditingCampaign(false);
         }
-    }
+    };
 
     // Function to delete a node and clean up connected edges intelligently
     const handleDeleteNode = (nodeId: string) => {
@@ -283,7 +265,7 @@ const EditCampaignPage = () => {
             id: node.id,
             type: node.type,
             position: node.position,
-            data: node.data as unknown as Record<string, unknown>
+            data: node.data as unknown as Record<string, unknown>,
         }));
 
         const reactFlowEdges = workflow.edges.map(edge => ({
@@ -292,7 +274,7 @@ const EditCampaignPage = () => {
             target: edge.target,
             type: edge.type,
             animated: edge.animated,
-            data: edge.data
+            data: edge.data,
         }));
 
         // Convert the node to delete to React Flow format
@@ -300,7 +282,7 @@ const EditCampaignPage = () => {
             id: nodeToDelete.id,
             type: nodeToDelete.type,
             position: nodeToDelete.position,
-            data: nodeToDelete.data as unknown as Record<string, unknown>
+            data: nodeToDelete.data as unknown as Record<string, unknown>,
         };
 
         // Use React Flow utilities to find connected nodes and edges
@@ -312,17 +294,13 @@ const EditCampaignPage = () => {
         const updatedNodes = workflow.nodes.filter(node => node.id !== nodeId);
 
         // Remove edges connected to the deleted node
-        const remainingEdges = workflow.edges.filter(edge =>
-            !connectedEdges.some(connectedEdge => connectedEdge.id === edge.id)
-        );
+        const remainingEdges = workflow.edges.filter(edge => !connectedEdges.some(connectedEdge => connectedEdge.id === edge.id));
 
         // Create new edges connecting incomers to outgoers
         const createdEdges = incomers.flatMap(({ id: source }) =>
             outgoers.map(({ id: target }) => {
                 // Find the original edge to copy its properties
-                const originalEdge = workflow.edges.find(edge =>
-                    edge.source === nodeId && edge.target === target
-                );
+                const originalEdge = workflow.edges.find(edge => edge.source === nodeId && edge.target === target);
 
                 return {
                     id: `e-${source}-${target}`,
@@ -332,14 +310,14 @@ const EditCampaignPage = () => {
                     animated: originalEdge?.animated || true,
                     data: {
                         ...originalEdge?.data,
-                        delay: originalEdge?.data?.delay || "15m",
+                        delay: originalEdge?.data?.delay || '15m',
                         delayData: originalEdge?.data?.delayData || {
                             delay: 15,
-                            unit: "m"
-                        }
-                    }
+                            unit: 'm',
+                        },
+                    },
                 };
-            })
+            }),
         );
 
         // Clean up any truly orphaned AddStep nodes (nodes with no connections at all)
@@ -349,17 +327,13 @@ const EditCampaignPage = () => {
             if (node.type !== 'addStep') return false;
 
             // Check if this AddStep node has any connections (incoming or outgoing)
-            const hasAnyConnections = allEdgesAfterReconnection.some(edge =>
-                edge.source === node.id || edge.target === node.id
-            );
+            const hasAnyConnections = allEdgesAfterReconnection.some(edge => edge.source === node.id || edge.target === node.id);
 
             // Only remove if it has no connections at all (truly orphaned)
             return !hasAnyConnections;
         });
 
-        const finalNodes = updatedNodes.filter(node =>
-            !orphanedAddStepNodes.some(addStepNode => addStepNode.id === node.id)
-        );
+        const finalNodes = updatedNodes.filter(node => !orphanedAddStepNodes.some(addStepNode => addStepNode.id === node.id));
 
         // Reposition nodes to fill the gap left by the deleted node
         const repositionedNodes = finalNodes.map(node => {
@@ -367,11 +341,11 @@ const EditCampaignPage = () => {
             if (node.position.y > nodeToDelete.position.y) {
                 const newPosition = {
                     x: node.position.x,
-                    y: node.position.y - 200 // Move up by 200px (standard node spacing)
+                    y: node.position.y - 200, // Move up by 200px (standard node spacing)
                 };
                 return {
                     ...node,
-                    position: newPosition
+                    position: newPosition,
                 };
             }
             return node;
@@ -381,22 +355,22 @@ const EditCampaignPage = () => {
 
         setWorkflow({
             nodes: repositionedNodes,
-            edges: finalEdges
+            edges: finalEdges,
         });
     };
 
     const handleAddFirstNodeClick = () => {
-        setIsModalOpen(true)
-    }
+        setIsModalOpen(true);
+    };
 
     const handleAddStepClick = (nodeId: string) => {
-        setSelectedNodeId(nodeId)
-        setIsAddingStepNode(true)
-        setIsModalOpen(true)
-    }
+        setSelectedNodeId(nodeId);
+        setIsAddingStepNode(true);
+        setIsModalOpen(true);
+    };
 
     const handleDelayUpdate = (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => {
-        if (!workflow) return
+        if (!workflow) return;
 
         const updatedEdges = workflow.edges.map(edge => {
             if (edge.id === edgeId) {
@@ -405,102 +379,101 @@ const EditCampaignPage = () => {
                     data: {
                         ...edge.data,
                         delay: delayConfig.delay === 0 ? '0' : `${delayConfig.delay}${delayConfig.unit}`,
-                        delayData: delayConfig
-                    }
-                }
+                        delayData: delayConfig,
+                    },
+                };
             }
-            return edge
-        })
+            return edge;
+        });
 
         setWorkflow({
             ...workflow,
-            edges: updatedEdges
-        })
-    }
-
+            edges: updatedEdges,
+        });
+    };
 
     const handleSelectNodeType = (nodeType: WorkflowNodeType) => {
         if (isAddingStepNode && workflow && selectedNodeId) {
-            addStepToWorkflow(nodeType)
+            addStepToWorkflow(nodeType);
         } else {
-            createFirstNode(nodeType)
+            createFirstNode(nodeType);
         }
-    }
+    };
 
     const createFirstNode = (nodeType: WorkflowNodeType) => {
-        const timestamp = Date.now()
-        const firstNodeId = `${nodeType}-${timestamp}`
+        const timestamp = Date.now();
+        const firstNodeId = `${nodeType}-${timestamp}`;
 
         const firstNode: WorkflowNode = {
             id: firstNodeId,
             type: 'action',
             position: {
                 x: 100,
-                y: 100
+                y: 100,
             },
             data: {
                 type: nodeType,
                 label: getNodeLabel(nodeType),
                 isConfigured: true,
-                config: {}
+                config: {},
             } as ActionNodeData,
             measured: {
                 width: 220,
-                height: 54
+                height: 54,
             },
-            deletable: false
-        }
+            deletable: false,
+        };
 
-        let nodes: WorkflowNode[] = [firstNode]
-        let edges: WorkflowEdge[] = []
+        let nodes: WorkflowNode[] = [firstNode];
+        let edges: WorkflowEdge[] = [];
 
         if (hasConditionalPaths(nodeType)) {
             // Create two AddStep nodes for accepted and not-accepted paths
-            const acceptedAddStepNodeId = `add-step-accepted-${firstNodeId}`
+            const acceptedAddStepNodeId = `add-step-accepted-${firstNodeId}`;
             const acceptedAddStepNode: WorkflowNode = {
                 id: acceptedAddStepNodeId,
                 type: 'addStep',
                 position: {
                     x: 300,
-                    y: 300
+                    y: 300,
                 },
                 data: {
                     pathType: 'accepted',
                     type: nodeType,
                     label: getNodeLabel(nodeType),
                     isConfigured: true,
-                    config: {}
+                    config: {},
                 },
                 measured: {
                     width: 220,
-                    height: 40
+                    height: 40,
                 },
-                deletable: false
-            }
+                deletable: false,
+            };
 
-            const notAcceptedAddStepNodeId = `add-step-not-accepted-${firstNodeId}`
+            const notAcceptedAddStepNodeId = `add-step-not-accepted-${firstNodeId}`;
             const notAcceptedAddStepNode: WorkflowNode = {
                 id: notAcceptedAddStepNodeId,
                 type: 'addStep',
                 position: {
                     x: -100,
-                    y: 300
+                    y: 300,
                 },
                 data: {
                     pathType: 'not-accepted',
                     type: nodeType,
                     label: getNodeLabel(nodeType),
                     isConfigured: true,
-                    config: {}
+                    config: {},
                 },
                 measured: {
                     width: 220,
-                    height: 40
+                    height: 40,
                 },
-                deletable: false
-            }
+                deletable: false,
+            };
 
-            nodes = [firstNode, acceptedAddStepNode, notAcceptedAddStepNode]
+            nodes = [firstNode, acceptedAddStepNode, notAcceptedAddStepNode];
             edges = [
                 {
                     id: `e-${firstNodeId}-accepted`,
@@ -509,14 +482,14 @@ const EditCampaignPage = () => {
                     type: 'conditional',
                     animated: true,
                     data: {
-                        delay: "15m",
+                        delay: '15m',
                         delayData: {
                             delay: 15,
-                            unit: "m"
+                            unit: 'm',
                         },
                         isPositive: true,
-                        isConditionalPath: true
-                    }
+                        isConditionalPath: true,
+                    },
                 } as WorkflowEdge,
                 {
                     id: `e-${firstNodeId}-not-accepted`,
@@ -525,79 +498,81 @@ const EditCampaignPage = () => {
                     type: 'conditional',
                     animated: true,
                     data: {
-                        delay: "15m",
+                        delay: '15m',
                         delayData: {
                             delay: 15,
-                            unit: "m"
+                            unit: 'm',
                         },
                         isPositive: false,
-                        isConditionalPath: true
-                    }
-                } as WorkflowEdge
-            ]
+                        isConditionalPath: true,
+                    },
+                } as WorkflowEdge,
+            ];
         } else {
             // Single path for non-conditional nodes
-            const addStepNodeId = `add-step-${firstNodeId}`
+            const addStepNodeId = `add-step-${firstNodeId}`;
             const addStepNode: WorkflowNode = {
                 id: addStepNodeId,
                 type: 'addStep',
                 position: {
                     x: 100,
-                    y: 300
+                    y: 300,
                 },
                 data: {
                     pathType: 'accepted',
                     type: nodeType,
                     label: getNodeLabel(nodeType),
                     isConfigured: true,
-                    config: {}
+                    config: {},
                 },
                 measured: {
                     width: 220,
-                    height: 40
+                    height: 40,
                 },
-                deletable: false
-            }
+                deletable: false,
+            };
 
-            nodes = [firstNode, addStepNode]
-            edges = [{
-                id: `e0-1`,
-                source: firstNodeId,
-                target: addStepNodeId,
-                type: 'buttonedge',
-                animated: true,
-                data: {
-                    delay: "15m",
-                    delayData: {
-                        delay: 15,
-                        unit: "m"
-                    }
-                }
-            }]
+            nodes = [firstNode, addStepNode];
+            edges = [
+                {
+                    id: `e0-1`,
+                    source: firstNodeId,
+                    target: addStepNodeId,
+                    type: 'buttonedge',
+                    animated: true,
+                    data: {
+                        delay: '15m',
+                        delayData: {
+                            delay: 15,
+                            unit: 'm',
+                        },
+                    },
+                },
+            ];
         }
 
         setWorkflow({
             nodes,
-            edges
-        })
-    }
+            edges,
+        });
+    };
 
     const addStepToWorkflow = (nodeType: WorkflowNodeType) => {
-        if (!workflow || !selectedNodeId) return
+        if (!workflow || !selectedNodeId) return;
 
         // Find the clicked AddStepNode
-        const clickedAddStepNode = workflow.nodes.find(node => node.id === selectedNodeId)
-        if (!clickedAddStepNode) return
+        const clickedAddStepNode = workflow.nodes.find(node => node.id === selectedNodeId);
+        if (!clickedAddStepNode) return;
 
-        const clickedPathType = (clickedAddStepNode.data).pathType
+        const clickedPathType = clickedAddStepNode.data.pathType;
 
         // Remove ONLY the clicked AddStepNode, preserve all other nodes including other AddStep nodes
-        const nodesWithoutClickedAddStep = workflow.nodes.filter(node => node.id !== selectedNodeId)
-        const edgesWithoutClickedAddStep = workflow.edges.filter(edge => edge.target !== selectedNodeId)
+        const nodesWithoutClickedAddStep = workflow.nodes.filter(node => node.id !== selectedNodeId);
+        const edgesWithoutClickedAddStep = workflow.edges.filter(edge => edge.target !== selectedNodeId);
 
         // Generate new node ID in the reference format
-        const timestamp = Date.now()
-        const newNodeId = `${nodeType}-${timestamp}`
+        const timestamp = Date.now();
+        const newNodeId = `${nodeType}-${timestamp}`;
 
         // Create new action node at the position of the clicked AddStep node
         const newActionNode: WorkflowNode = {
@@ -605,7 +580,7 @@ const EditCampaignPage = () => {
             type: 'action',
             position: {
                 x: clickedAddStepNode.position.x,
-                y: clickedAddStepNode.position.y
+                y: clickedAddStepNode.position.y,
             },
             data: {
                 type: nodeType,
@@ -613,20 +588,19 @@ const EditCampaignPage = () => {
                 isConfigured: true,
                 config: getDefaultConfigForNodeType(nodeType),
                 pathType: clickedPathType,
-
             } as ActionNodeData,
             measured: {
                 width: 220,
-                height: 54
+                height: 54,
             },
-            deletable: true
-        }
+            deletable: true,
+        };
 
         // Find the edge that was leading to the clicked AddStepNode
-        const sourceEdge = workflow.edges.find(edge => edge.target === selectedNodeId)
-        const sourceNodeId = sourceEdge?.source || '1'
+        const sourceEdge = workflow.edges.find(edge => edge.target === selectedNodeId);
+        const sourceNodeId = sourceEdge?.source || '1';
 
-        let nodes: WorkflowNode[] = [...nodesWithoutClickedAddStep, newActionNode]
+        let nodes: WorkflowNode[] = [...nodesWithoutClickedAddStep, newActionNode];
         let edges: WorkflowEdge[] = [
             ...edgesWithoutClickedAddStep,
             // Edge from source to new action node (replace the edge that went to AddStep)
@@ -637,65 +611,65 @@ const EditCampaignPage = () => {
                 type: sourceEdge?.data?.isConditionalPath ? 'conditional' : 'buttonedge',
                 animated: true,
                 data: {
-                    delay: sourceEdge?.data?.delay || "15m",
+                    delay: sourceEdge?.data?.delay || '15m',
                     delayData: sourceEdge?.data?.delayData || {
                         delay: 15,
-                        unit: "m"
+                        unit: 'm',
                     },
                     isPositive: sourceEdge?.data?.isPositive,
-                    isConditionalPath: sourceEdge?.data?.isConditionalPath
-                }
-            } as WorkflowEdge
-        ]
+                    isConditionalPath: sourceEdge?.data?.isConditionalPath,
+                },
+            } as WorkflowEdge,
+        ];
 
         if (hasConditionalPaths(nodeType)) {
             // Create two AddStep nodes for accepted and not-accepted paths
-            const acceptedAddStepNodeId = `add-step-accepted-${newNodeId}`
-            const notAcceptedAddStepNodeId = `add-step-not-accepted-${newNodeId}`
+            const acceptedAddStepNodeId = `add-step-accepted-${newNodeId}`;
+            const notAcceptedAddStepNodeId = `add-step-not-accepted-${newNodeId}`;
 
             const acceptedAddStepNode: WorkflowNode = {
                 id: acceptedAddStepNodeId,
                 type: 'addStep',
                 position: {
                     x: clickedAddStepNode.position.x + 150,
-                    y: clickedAddStepNode.position.y + 220
+                    y: clickedAddStepNode.position.y + 220,
                 },
                 data: {
                     pathType: 'accepted',
                     type: nodeType,
                     label: getNodeLabel(nodeType),
                     isConfigured: true,
-                    config: {}
+                    config: {},
                 },
                 measured: {
                     width: 220,
-                    height: 40
+                    height: 40,
                 },
-                deletable: true
-            }
+                deletable: true,
+            };
 
             const notAcceptedAddStepNode: WorkflowNode = {
                 id: notAcceptedAddStepNodeId,
                 type: 'addStep',
                 position: {
                     x: clickedAddStepNode.position.x - 150,
-                    y: clickedAddStepNode.position.y + 220
+                    y: clickedAddStepNode.position.y + 220,
                 },
                 data: {
                     pathType: 'not-accepted',
                     type: nodeType,
                     label: getNodeLabel(nodeType),
                     isConfigured: true,
-                    config: {}
+                    config: {},
                 },
                 measured: {
                     width: 220,
-                    height: 40
+                    height: 40,
                 },
-                deletable: true
-            }
+                deletable: true,
+            };
 
-            nodes.push(acceptedAddStepNode, notAcceptedAddStepNode)
+            nodes.push(acceptedAddStepNode, notAcceptedAddStepNode);
             edges.push(
                 {
                     id: `e-${acceptedAddStepNodeId}-${newNodeId}`,
@@ -704,14 +678,14 @@ const EditCampaignPage = () => {
                     type: 'conditional',
                     animated: true,
                     data: {
-                        delay: "15m",
+                        delay: '15m',
                         delayData: {
                             delay: 15,
-                            unit: "m"
+                            unit: 'm',
                         },
                         isPositive: true,
-                        isConditionalPath: true
-                    }
+                        isConditionalPath: true,
+                    },
                 } as WorkflowEdge,
                 {
                     id: `e-${notAcceptedAddStepNodeId}-${newNodeId}`,
@@ -720,41 +694,41 @@ const EditCampaignPage = () => {
                     type: 'conditional',
                     animated: true,
                     data: {
-                        delay: "15m",
+                        delay: '15m',
                         delayData: {
                             delay: 15,
-                            unit: "m"
+                            unit: 'm',
                         },
                         isPositive: false,
-                        isConditionalPath: true
-                    }
-                } as WorkflowEdge
-            )
+                        isConditionalPath: true,
+                    },
+                } as WorkflowEdge,
+            );
         } else {
             // Single path for non-conditional nodes - continue the same path type
-            const newAddStepNodeId = `add-step-${clickedPathType}-${newNodeId}`
+            const newAddStepNodeId = `add-step-${clickedPathType}-${newNodeId}`;
             const newAddStepNode: WorkflowNode = {
                 id: newAddStepNodeId,
                 type: 'addStep',
                 position: {
                     x: clickedAddStepNode.position.x,
-                    y: clickedAddStepNode.position.y + 200
+                    y: clickedAddStepNode.position.y + 200,
                 },
                 data: {
                     pathType: clickedPathType, // Maintain the same path type (accepted or not-accepted)
                     type: nodeType,
                     label: getNodeLabel(nodeType),
                     isConfigured: true,
-                    config: {}
+                    config: {},
                 },
                 measured: {
                     width: 220,
-                    height: 40
+                    height: 40,
                 },
-                deletable: true
-            }
+                deletable: true,
+            };
 
-            nodes.push(newAddStepNode)
+            nodes.push(newAddStepNode);
             edges.push({
                 id: `e-${newAddStepNodeId}-${newNodeId}`,
                 source: newNodeId,
@@ -762,55 +736,55 @@ const EditCampaignPage = () => {
                 type: sourceEdge?.data?.isConditionalPath ? 'conditional' : 'buttonedge',
                 animated: true,
                 data: {
-                    delay: "15m",
+                    delay: '15m',
                     delayData: {
                         delay: 15,
-                        unit: "m"
+                        unit: 'm',
                     },
                     isPositive: sourceEdge?.data?.isPositive,
-                    isConditionalPath: sourceEdge?.data?.isConditionalPath
-                }
-            } as WorkflowEdge)
+                    isConditionalPath: sourceEdge?.data?.isConditionalPath,
+                },
+            } as WorkflowEdge);
         }
 
         setWorkflow({
             nodes,
-            edges
-        })
+            edges,
+        });
 
-        setIsAddingStepNode(false)
-        setSelectedNodeId(null)
-    }
+        setIsAddingStepNode(false);
+        setSelectedNodeId(null);
+    };
 
     const { data: leadLists, isLoading: isLoadingLeadLists } = useLeadLists();
-    const [tab, setTab] = useState<CampaignTabs>(CampaignTabs.DETAILS)
+    const [tab, setTab] = useState<CampaignTabs>(CampaignTabs.DETAILS);
 
     const tabs = [
         {
             id: CampaignTabs.DETAILS,
-            label: "Details",
+            label: 'Details',
             icon: Settings,
-            description: "Basic campaign information"
+            description: 'Basic campaign information',
         },
         {
             id: CampaignTabs.FLOW,
-            label: "Flow",
+            label: 'Flow',
             icon: Workflow,
-            description: "Campaign workflow and steps"
-        }
-    ]
+            description: 'Campaign workflow and steps',
+        },
+    ];
 
     useEffect(() => {
         const fetchCampaign = async () => {
-            setIsLoading(true)
-            const token = await getToken()
+            setIsLoading(true);
+            const token = await getToken();
             if (!token) {
-                toast.error("Please login to edit a campaign")
-                return
+                toast.error('Please login to edit a campaign');
+                return;
             }
             if (!campaignId) {
-                toast.error("No campaign ID found")
-                return
+                toast.error('No campaign ID found');
+                return;
             }
             try {
                 const res = await makeAuthenticatedRequest<CampaignResponse>('POST', `/campaigns`, { campaignId }, token);
@@ -823,38 +797,30 @@ const EditCampaignPage = () => {
                 dispatchDetails({ type: 'SET_FIELD', field: 'startTime', value: res.campaign.start_time });
                 dispatchDetails({ type: 'SET_FIELD', field: 'endTime', value: res.campaign.end_time });
                 dispatchDetails({ type: 'SET_FIELD', field: 'timezone', value: res.campaign.timezone });
-                setWorkflow(res.workflow)
+                setWorkflow(res.workflow);
             } catch (err) {
-                console.log(err)
+                console.log(err);
             } finally {
-                setIsLoading(false)
+                setIsLoading(false);
             }
-        }
-        fetchCampaign()
-    }, [])
+        };
+        fetchCampaign();
+    }, []);
 
     return (
         <div className="container mx-auto py-6 space-y-6">
             {/* Tabs */}
             <div className="border-b">
                 <div className="flex row items-center justify-between">
-
                     <nav className="flex space-x-8">
-                        {tabs.map((tabItem) => {
-                            const Icon = tabItem.icon
+                        {tabs.map(tabItem => {
+                            const Icon = tabItem.icon;
                             return (
-                                <button
-                                    key={tabItem.id}
-                                    onClick={() => setTab(tabItem.id)}
-                                    className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${tab === tabItem.id
-                                        ? 'border-purple-500 text-purple-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                        }`}
-                                >
+                                <button key={tabItem.id} onClick={() => setTab(tabItem.id)} className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${tab === tabItem.id ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
                                     <Icon className="h-4 w-4" />
                                     <span>{tabItem.label}</span>
                                 </button>
-                            )
+                            );
                         })}
                     </nav>
                     <Button className="bg-gradient-purple hover-glow-purple" onClick={handleEditCampaign} disabled={isEditingCampaign}>
@@ -871,44 +837,47 @@ const EditCampaignPage = () => {
                     <p className="text-muted-foreground">Loading Details...</p>
                 </div>
             )}
-            {!isLoading && <div className="py-6">
-                {tab === CampaignTabs.DETAILS && renderDetailsTab({
-                    state: detailsState,
-                    setState: dispatchDetails,
-                    connectedAccounts,
-                    isLoadingAccounts,
-                    leadLists,
-                    isLoadingLeadLists
-                })}
-                {tab === CampaignTabs.FLOW && renderFlowTab({
-                    workflow,
-                    setWorkflow,
-                    onAddFirstNode: handleAddFirstNodeClick,
-                    onAddStepClick: handleAddStepClick,
-                    onDelayUpdate: handleDelayUpdate,
-                    onExportJSON: downloadWorkflowJSON,
-                    onImportJSON: importWorkflowJSON,
-                    onDeleteNode: handleDeleteNode,
-                    onResetWorkflow: () => setWorkflow(null)
-                })}
-            </div>}
+            {!isLoading && (
+                <div className="py-6">
+                    {tab === CampaignTabs.DETAILS &&
+                        renderDetailsTab({
+                            state: detailsState,
+                            setState: dispatchDetails,
+                            connectedAccounts,
+                            isLoadingAccounts,
+                            leadLists,
+                            isLoadingLeadLists,
+                        })}
+                    {tab === CampaignTabs.FLOW &&
+                        renderFlowTab({
+                            workflow,
+                            setWorkflow,
+                            onAddFirstNode: handleAddFirstNodeClick,
+                            onAddStepClick: handleAddStepClick,
+                            onDelayUpdate: handleDelayUpdate,
+                            onExportJSON: downloadWorkflowJSON,
+                            onImportJSON: importWorkflowJSON,
+                            onDeleteNode: handleDeleteNode,
+                            onResetWorkflow: () => setWorkflow(null),
+                        })}
+                </div>
+            )}
 
             <NodeSelectionModal
                 isOpen={isModalOpen}
                 onClose={() => {
-                    setIsModalOpen(false)
-                    setIsAddingStepNode(false)
-                    setSelectedNodeId(null)
+                    setIsModalOpen(false);
+                    setIsAddingStepNode(false);
+                    setSelectedNodeId(null);
                 }}
                 onSelectNodeType={handleSelectNodeType}
                 currentWorkflowTypes={workflow?.nodes.filter(n => n.type === 'action').map(n => (n.data as ActionNodeData).type) || []}
             />
         </div>
-    )
-}
+    );
+};
 
 export default EditCampaignPage;
-
 
 const renderDetailsTab = ({
     state,
@@ -916,65 +885,52 @@ const renderDetailsTab = ({
     connectedAccounts,
     isLoadingAccounts,
     leadLists,
-    isLoadingLeadLists
+    isLoadingLeadLists,
 }: {
-    state: CampaignDetailsState
-    setState: ActionDispatch<[action: CampaignDetailsAction]>
-    connectedAccounts?: { data: ConnectedAccount[] }
-    isLoadingAccounts: boolean
+    state: CampaignDetailsState;
+    setState: ActionDispatch<[action: CampaignDetailsAction]>;
+    connectedAccounts?: { data: ConnectedAccount[] };
+    isLoadingAccounts: boolean;
     leadLists?: {
-        data: LeadList[]
+        data: LeadList[];
         pagination: {
-            page: number
-            limit: number
-            total: number
-            totalPages: number
-        }
-        message: string
-    }
-    isLoadingLeadLists: boolean
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+        };
+        message: string;
+    };
+    isLoadingLeadLists: boolean;
 }) => (
     <div className="space-y-6">
         <Card>
             <CardHeader>
                 <CardTitle>Campaign Information</CardTitle>
-                <CardDescription>
-                    Set up the basic details for your campaign
-                </CardDescription>
+                <CardDescription>Set up the basic details for your campaign</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="campaign-name">Campaign Name</Label>
-                        <Input
-                            id="campaign-name"
-                            value={state.name}
-                            onChange={(e) => setState({ type: 'SET_FIELD', field: 'name', value: e.target.value })}
-                            placeholder="Enter campaign name"
-                        />
+                        <Input id="campaign-name" value={state.name} onChange={e => setState({ type: 'SET_FIELD', field: 'name', value: e.target.value })} placeholder="Enter campaign name" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="description">Description</Label>
-                        <Input
-                            id="description"
-                            value={state.description}
-                            onChange={(e) => setState({ type: 'SET_FIELD', field: 'description', value: e.target.value })}
-                            placeholder="Campaign description"
-                        />
+                        <Input id="description" value={state.description} onChange={e => setState({ type: 'SET_FIELD', field: 'description', value: e.target.value })} placeholder="Campaign description" />
                     </div>
                 </div>
                 <div className="space-y-2 w-80">
                     <Label htmlFor="sender-account">Sender Account</Label>
-                    <Select
-                        value={state.senderAccount}
-                        onValueChange={(value) => setState({ type: 'SET_FIELD', field: 'senderAccount', value })}
-                    >
+                    <Select value={state.senderAccount} onValueChange={value => setState({ type: 'SET_FIELD', field: 'senderAccount', value })}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select account" />
                         </SelectTrigger>
                         <SelectContent>
                             {isLoadingAccounts ? (
-                                <SelectItem value="loading" disabled>Loading accounts...</SelectItem>
+                                <SelectItem value="loading" disabled>
+                                    Loading accounts...
+                                </SelectItem>
                             ) : connectedAccounts?.data && connectedAccounts.data.length > 0 ? (
                                 connectedAccounts.data.map((account: ConnectedAccount) => (
                                     <SelectItem key={account.id} value={account.id}>
@@ -982,23 +938,24 @@ const renderDetailsTab = ({
                                     </SelectItem>
                                 ))
                             ) : (
-                                <SelectItem value="no-accounts" disabled>No accounts connected</SelectItem>
+                                <SelectItem value="no-accounts" disabled>
+                                    No accounts connected
+                                </SelectItem>
                             )}
                         </SelectContent>
                     </Select>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="prospect-list">Prospect List</Label>
-                    <Select
-                        value={state.prospectList}
-                        onValueChange={(value) => setState({ type: 'SET_FIELD', field: 'prospectList', value })}
-                    >
+                    <Select value={state.prospectList} onValueChange={value => setState({ type: 'SET_FIELD', field: 'prospectList', value })}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select prospect list" />
                         </SelectTrigger>
                         <SelectContent>
                             {isLoadingLeadLists ? (
-                                <SelectItem value="loading" disabled>Loading lead lists...</SelectItem>
+                                <SelectItem value="loading" disabled>
+                                    Loading lead lists...
+                                </SelectItem>
                             ) : leadLists?.data && leadLists.data.length > 0 ? (
                                 leadLists.data.map((list: LeadList) => (
                                     <SelectItem key={list.id} value={list.id}>
@@ -1006,7 +963,9 @@ const renderDetailsTab = ({
                                     </SelectItem>
                                 ))
                             ) : (
-                                <SelectItem value="no-lists" disabled>No lead lists available</SelectItem>
+                                <SelectItem value="no-lists" disabled>
+                                    No lead lists available
+                                </SelectItem>
                             )}
                         </SelectContent>
                     </Select>
@@ -1015,15 +974,11 @@ const renderDetailsTab = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="start-date">Start Date</Label>
-                        <DatePicker
-                            id="start-date"
-                            value={state.startDate || ''}
-                            onChange={(date) => setState({ type: 'SET_FIELD', field: 'startDate', value: date?.toISOString() || '' })}
-                        />
+                        <DatePicker id="start-date" value={state.startDate || ''} onChange={date => setState({ type: 'SET_FIELD', field: 'startDate', value: date?.toISOString() || '' })} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="end-date">Leads Per Day</Label>
-                        <Input type="number" placeholder="Leads Per Day" onChange={(e) => setState({type: 'SET_FIELD', field: 'leadsPerDay', value: e.target.value})}/>
+                        <Input type="number" placeholder="Leads Per Day" onChange={e => setState({ type: 'SET_FIELD', field: 'leadsPerDay', value: e.target.value })} />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1032,7 +987,7 @@ const renderDetailsTab = ({
                         <TimePicker
                             id="start-time"
                             value={state.startTime || ''}
-                            onChange={(time) =>
+                            onChange={time =>
                                 setState({
                                     type: 'SET_FIELD',
                                     field: 'startTime',
@@ -1047,7 +1002,7 @@ const renderDetailsTab = ({
                         <TimePicker
                             id="end-time"
                             value={state.endTime || ''}
-                            onChange={(time) =>
+                            onChange={time =>
                                 setState({
                                     type: 'SET_FIELD',
                                     field: 'endTime',
@@ -1061,20 +1016,15 @@ const renderDetailsTab = ({
 
                 <div className="space-y-2">
                     <Label htmlFor="timezone">Timezone</Label>
-                    <Select
-                        value={state.timezone}
-                        onValueChange={(value) => setState({ type: 'SET_FIELD', field: 'timezone', value })}
-                    >
+                    <Select value={state.timezone} onValueChange={value => setState({ type: 'SET_FIELD', field: 'timezone', value })}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select timezone" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60">
                             {Object.entries(getTimezoneOptionsByRegion()).map(([region, timezones]) => (
                                 <div key={region}>
-                                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
-                                        {region}
-                                    </div>
-                                    {timezones.map((timezone) => (
+                                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">{region}</div>
+                                    {timezones.map(timezone => (
                                         <SelectItem key={timezone.value} value={timezone.value}>
                                             {timezone.label}
                                         </SelectItem>
@@ -1087,10 +1037,9 @@ const renderDetailsTab = ({
             </CardContent>
         </Card>
     </div>
-)
+);
 
-const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null, setWorkflow: (workflow: WorkflowData) => void, onAddFirstNode: () => void, onAddStepClick: (nodeId: string) => void, onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void, onExportJSON: () => void, onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void, onDeleteNode: (nodeId: string) => void, onResetWorkflow: () => void }) => {
-
+const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null; setWorkflow: (workflow: WorkflowData) => void; onAddFirstNode: () => void; onAddStepClick: (nodeId: string) => void; onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void; onExportJSON: () => void; onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void; onDeleteNode: (nodeId: string) => void; onResetWorkflow: () => void }) => {
     return (
         <div className="space-y-6">
             <Card>
@@ -1098,44 +1047,23 @@ const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, 
                     {workflow ? (
                         <div className="relative">
                             {/* Hidden file input for import */}
-                            <input
-                                type="file"
-                                accept=".json"
-                                onChange={onImportJSON}
-                                className="hidden"
-                                id="import-workflow"
-                            />
+                            <input type="file" accept=".json" onChange={onImportJSON} className="hidden" id="import-workflow" />
 
                             {/* Floating action buttons over React Flow */}
                             <div className="absolute top-4 right-4 z-10 flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={onResetWorkflow}
-                                    className="bg-white shadow-md hover:shadow-lg"
-                                >
+                                <Button variant="outline" size="sm" onClick={onResetWorkflow} className="bg-white shadow-md hover:shadow-lg">
                                     <div className="flex items-center gap-1">
                                         <span className="text-sm">↻</span>
                                         Reset
                                     </div>
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => document.getElementById('import-workflow')?.click()}
-                                    className="bg-white shadow-md hover:shadow-lg"
-                                >
+                                <Button variant="outline" size="sm" onClick={() => document.getElementById('import-workflow')?.click()} className="bg-white shadow-md hover:shadow-lg">
                                     <div className="flex items-center gap-1">
                                         <span className="text-sm">↓</span>
                                         Import
                                     </div>
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={onExportJSON}
-                                    className="bg-white shadow-md hover:shadow-lg"
-                                >
+                                <Button variant="outline" size="sm" onClick={onExportJSON} className="bg-white shadow-md hover:shadow-lg">
                                     <div className="flex items-center gap-1">
                                         <span className="text-sm">↑</span>
                                         Export
@@ -1148,29 +1076,21 @@ const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, 
                     ) : (
                         <div className="relative w-full" style={{ height: '70vh' }}>
                             {/* Hidden file input for import */}
-                            <input
-                                type="file"
-                                accept=".json"
-                                onChange={onImportJSON}
-                                className="hidden"
-                                id="import-workflow-empty"
-                            />
+                            <input type="file" accept=".json" onChange={onImportJSON} className="hidden" id="import-workflow-empty" />
 
                             {/* Background with dotted pattern */}
-                            <div className="absolute inset-0 bg-gray-50 rounded-2xl" style={{
-                                backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
-                                backgroundSize: '20px 20px'
-                            }}></div>
+                            <div
+                                className="absolute inset-0 bg-gray-50 rounded-2xl"
+                                style={{
+                                    backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
+                                    backgroundSize: '20px 20px',
+                                }}></div>
 
                             {/* Main content */}
                             <div className="relative flex flex-col items-center justify-center h-full space-y-6">
                                 {/* Main action buttons */}
                                 <div className="flex flex-col items-center space-y-4">
-                                    <Button
-                                        onClick={onAddFirstNode}
-                                        variant="outline"
-                                        className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white"
-                                    >
+                                    <Button onClick={onAddFirstNode} variant="outline" className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white">
                                         <div className="flex items-center gap-2">
                                             <div className="w-4 h-4 border-2 border-gray-400 rounded-sm flex items-center justify-center">
                                                 <span className="text-gray-400 text-xs">+</span>
@@ -1181,11 +1101,7 @@ const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, 
 
                                     <div className="text-sm text-gray-500">OR</div>
 
-                                    <Button
-                                        variant="outline"
-                                        className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white"
-                                        disabled
-                                    >
+                                    <Button variant="outline" className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white" disabled>
                                         <div className="flex items-center gap-2">
                                             <div className="w-4 h-4 bg-gray-200 rounded-sm flex items-center justify-center">
                                                 <span className="text-gray-400 text-xs">📄</span>
@@ -1196,11 +1112,7 @@ const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, 
 
                                     <div className="text-sm text-gray-500">OR</div>
 
-                                    <Button
-                                        variant="outline"
-                                        className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white"
-                                        onClick={() => document.getElementById('import-workflow-empty')?.click()}
-                                    >
+                                    <Button variant="outline" className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white" onClick={() => document.getElementById('import-workflow-empty')?.click()}>
                                         <div className="flex items-center gap-2">
                                             <div className="w-4 h-4 bg-gray-200 rounded-sm flex items-center justify-center">
                                                 <span className="text-gray-400 text-xs">📥</span>
@@ -1215,5 +1127,5 @@ const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, 
                 </CardContent>
             </Card>
         </div>
-    )
-}
+    );
+};
