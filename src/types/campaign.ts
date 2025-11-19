@@ -1,4 +1,4 @@
-import { WorkflowNodeType } from '@/config/workflow-nodes'
+import { WorkflowNodeType } from '@/config/workflow-nodes';
 
 export enum CampaignStatus {
     DRAFT = 'DRAFT',
@@ -29,86 +29,86 @@ export interface Campaign {
 }
 
 export interface WorkflowDefinition {
-    steps: WorkflowStep[]
+    steps: WorkflowStep[];
 }
 
 export interface WorkflowStep {
-    id: string
-    type: WorkflowNodeType
-    delay?: number // in hours
-    config: WorkflowStepConfig
-    errorHandling?: 'skip' | 'retry' | 'fail'
+    id: string;
+    type: WorkflowNodeType;
+    delay?: number; // in hours
+    config: WorkflowStepConfig;
+    errorHandling?: 'skip' | 'retry' | 'fail';
 }
 
 export interface WorkflowStepConfig {
-    message?: string
-    template?: string
-    variables?: Record<string, string>
-    conditions?: WorkflowCondition[]
+    message?: string;
+    template?: string;
+    variables?: Record<string, string>;
+    conditions?: WorkflowCondition[];
 }
 
 export interface WorkflowCondition {
-    field: string
-    operator: 'equals' | 'contains' | 'not_equals' | 'greater_than' | 'less_than'
-    value: string | number
+    field: string;
+    operator: 'equals' | 'contains' | 'not_equals' | 'greater_than' | 'less_than';
+    value: string | number;
 }
 
 export interface CampaignSchedule {
-    timezone: string
+    timezone: string;
     workingHours: {
-        start: string // HH:mm format
-        end: string   // HH:mm format
-    }
-    workingDays: number[] // 0-6, where 0 is Sunday
-    dailyLimit?: number
-    hourlyLimit?: number
+        start: string; // HH:mm format
+        end: string; // HH:mm format
+    };
+    workingDays: number[]; // 0-6, where 0 is Sunday
+    dailyLimit?: number;
+    hourlyLimit?: number;
 }
 
 export interface CampaignStats {
-    totalLeads: number
-    processed: number
-    pending: number
-    successful: number
-    failed: number
-    replies: number
-    connections: number
-    emailsSent: number
-    messagesSet: number
-    profileVisits: number
+    totalLeads: number;
+    processed: number;
+    pending: number;
+    successful: number;
+    failed: number;
+    replies: number;
+    connections: number;
+    emailsSent: number;
+    messagesSet: number;
+    profileVisits: number;
 }
 
 export interface CampaignExecution {
-    id: string
-    campaignId: string
-    leadId: string
-    workflowExecutionId?: string
-    status: 'pending' | 'in_progress' | 'completed' | 'failed'
-    currentStep: number
-    totalSteps: number
-    executionData: Record<string, unknown>
-    createdAt: string
-    updatedAt: string
-    startedAt?: string
-    completedAt?: string
+    id: string;
+    campaignId: string;
+    leadId: string;
+    workflowExecutionId?: string;
+    status: 'pending' | 'in_progress' | 'completed' | 'failed';
+    currentStep: number;
+    totalSteps: number;
+    executionData: Record<string, unknown>;
+    createdAt: string;
+    updatedAt: string;
+    startedAt?: string;
+    completedAt?: string;
 }
 
 // Request/Response types
 export interface CreateCampaignRequest {
-    name: string
-    description?: string
-    leadListId: string
-    accountId: string
-    workflowDefinition: WorkflowDefinition
-    schedule: CampaignSchedule
+    name: string;
+    description?: string;
+    leadListId: string;
+    accountId: string;
+    workflowDefinition: WorkflowDefinition;
+    schedule: CampaignSchedule;
 }
 
 export interface CampaignAnalyticsData {
-    date: string
-    sent: number
-    delivered: number
-    opened: number
-    clicked: number
-    replied: number
-    connected: number
-    bounced: number
+    date: string;
+    sent: number;
+    delivered: number;
+    opened: number;
+    clicked: number;
+    replied: number;
+    connected: number;
+    bounced: number;
 }

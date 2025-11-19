@@ -76,28 +76,15 @@ export const AddStepNode = ({ data, selected, onAddStep, onNodeClick, nodeId }: 
                     height: '12px',
                     backgroundColor: '#6b7280',
                     border: '2px solid white',
-                    borderRadius: '50%'
+                    borderRadius: '50%',
                 }}
             />
 
             {/* Path label - only show when parent node is conditional */}
-            {shouldShowPathLabel() && (data.pathType === 'accepted' || data.pathType === 'not-accepted') && (
-                <div className={`text-xs font-medium mb-1 px-2 py-1 rounded ${
-                    data.pathType === 'accepted'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                }`}>
-                    {getPathLabel()}
-                </div>
-            )}
+            {shouldShowPathLabel() && (data.pathType === 'accepted' || data.pathType === 'not-accepted') && <div className={`text-xs font-medium mb-1 px-2 py-1 rounded ${data.pathType === 'accepted' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{getPathLabel()}</div>}
 
-            <div className='flex items-center justify-center w-40'>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddStep}
-                    className={`flex items-center gap-2 border-dashed border-2 hover:border-solid transition-all w-full ${getPathColor()}`}
-                >
+            <div className="flex items-center justify-center w-40">
+                <Button variant="outline" size="sm" onClick={handleAddStep} className={`flex items-center gap-2 border-dashed border-2 hover:border-solid transition-all w-full ${getPathColor()}`}>
                     <Plus className="h-4 w-4" />
                     Add Step
                 </Button>

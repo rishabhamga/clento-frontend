@@ -1,187 +1,165 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useUploadCsv, usePublishLeadList } from "@/hooks/useLeadLists"
-import { CsvPreviewResponse } from "@/types/lead-list"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, FileSpreadsheet, Eye } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useConnectedAccounts } from "../../../../hooks/useConnectedAccounts"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUploadCsv, usePublishLeadList } from '@/hooks/useLeadLists';
+import { CsvPreviewResponse } from '@/types/lead-list';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Upload, FileText, CheckCircle, AlertCircle, ArrowLeft, FileSpreadsheet, Eye } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useConnectedAccounts } from '../../../../hooks/useConnectedAccounts';
 
 export default function CreateLeadListPage() {
-    const router = useRouter()
+    const router = useRouter();
     const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        connectedAccountId: "",
+        name: '',
+        description: '',
+        connectedAccountId: '',
         csvFile: null as File | null,
-    })
-    const [csvPreview, setCsvPreview] = useState<CsvPreviewResponse | null>(null)
-    const [csvValidationError, setCsvValidationError] = useState<string>("")
-    const [showPreview, setShowPreview] = useState(false)
+    });
+    const [csvPreview, setCsvPreview] = useState<CsvPreviewResponse | null>(null);
+    const [csvValidationError, setCsvValidationError] = useState<string>('');
+    const [showPreview, setShowPreview] = useState(false);
 
     // State for connected accounts
     const { data: connectedAccounts, isLoading: loadingAccounts } = useConnectedAccounts('linkedin');
 
     // API hooks
-    const uploadCsvMutation = useUploadCsv()
-    const publishMutation = usePublishLeadList()
+    const uploadCsvMutation = useUploadCsv();
+    const publishMutation = usePublishLeadList();
 
     const handleDownloadSampleCsv = () => {
         const csvContent = `first_name,last_name,email,linkedin_url,company,title,phone
 John,Doe,john.doe@example.com,https://linkedin.com/in/johndoe,Acme Corp,Software Engineer,+1234567890
 Jane,Smith,jane.smith@example.com,https://linkedin.com/in/janesmith,Tech Solutions,Product Manager,+1234567891
-Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innovation Inc,Data Scientist,+1234567892`
+Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innovation Inc,Data Scientist,+1234567892`;
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-        const link = document.createElement('a')
-        const url = URL.createObjectURL(blob)
-        link.setAttribute('href', url)
-        link.setAttribute('download', 'sample-leads.csv')
-        link.style.visibility = 'hidden'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-    }
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'sample-leads.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     // Filter out any accounts with missing required fields
-    const validConnectedAccounts = connectedAccounts?.data?.filter(account =>
-        account &&
-        account.id &&
-        account.display_name &&
-        typeof account.display_name === 'string' &&
-        account.display_name.trim().length > 0
-    ) || []
+    const validConnectedAccounts = connectedAccounts?.data?.filter(account => account && account.id && account.display_name && typeof account.display_name === 'string' && account.display_name.trim().length > 0) || [];
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0]
-        if (!file) return
+        const file = event.target.files?.[0];
+        if (!file) return;
 
         // Clear previous validation errors and preview
-        setCsvValidationError("")
-        setCsvPreview(null)
-        setShowPreview(false)
+        setCsvValidationError('');
+        setCsvPreview(null);
+        setShowPreview(false);
 
         // Validate file type
         if (!file.name.toLowerCase().endsWith('.csv')) {
-            setCsvValidationError("Please upload a CSV file")
-            return
+            setCsvValidationError('Please upload a CSV file');
+            return;
         }
 
         // Validate file size (10MB = 10 * 1024 * 1024 bytes)
-        const maxSize = 10 * 1024 * 1024 // 10MB in bytes
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
         if (file.size > maxSize) {
-            setCsvValidationError(`File size (${(file.size / 1024 / 1024).toFixed(2)} MB) exceeds the maximum allowed size of 10 MB. Please upload a smaller file.`)
-            setFormData(prev => ({ ...prev, csvFile: null }))
-            return
+            setCsvValidationError(`File size (${(file.size / 1024 / 1024).toFixed(2)} MB) exceeds the maximum allowed size of 10 MB. Please upload a smaller file.`);
+            setFormData(prev => ({ ...prev, csvFile: null }));
+            return;
         }
 
         // Read and validate CSV content
-        const reader = new FileReader()
+        const reader = new FileReader();
 
         reader.onerror = () => {
-            console.error('Error reading file')
-            setCsvValidationError("Error reading CSV file. The file may be corrupted or too large. Please try a different file.")
-            setFormData(prev => ({ ...prev, csvFile: null }))
-        }
+            console.error('Error reading file');
+            setCsvValidationError('Error reading CSV file. The file may be corrupted or too large. Please try a different file.');
+            setFormData(prev => ({ ...prev, csvFile: null }));
+        };
 
-        reader.onload = async (e) => {
+        reader.onload = async e => {
             try {
-                const csvText = e.target?.result as string
+                const csvText = e.target?.result as string;
                 if (!csvText) {
-                    setCsvValidationError("Error reading CSV file. Please ensure it's a valid CSV format.")
-                    setFormData(prev => ({ ...prev, csvFile: null }))
-                    return
+                    setCsvValidationError("Error reading CSV file. Please ensure it's a valid CSV format.");
+                    setFormData(prev => ({ ...prev, csvFile: null }));
+                    return;
                 }
 
-                const lines = csvText.split('\n')
-                const headers = lines[0]?.split(',').map(h => h.trim().toLowerCase())
+                const lines = csvText.split('\n');
+                const headers = lines[0]?.split(',').map(h => h.trim().toLowerCase());
 
                 // Check if CSV has required LinkedIn URL field
-                const hasLinkedInField = headers?.some(header =>
-                    header === 'linkedinurl' || header === 'linkedin_url' || header === 'linkedin'
-                )
+                const hasLinkedInField = headers?.some(header => header === 'linkedinurl' || header === 'linkedin_url' || header === 'linkedin');
 
                 if (!hasLinkedInField) {
-                    setCsvValidationError("CSV must contain a 'linkedin_url' or 'linkedinUrl' field. Please download the sample CSV for the correct format.")
-                    setFormData(prev => ({ ...prev, csvFile: null }))
-                    return
+                    setCsvValidationError("CSV must contain a 'linkedin_url' or 'linkedinUrl' field. Please download the sample CSV for the correct format.");
+                    setFormData(prev => ({ ...prev, csvFile: null }));
+                    return;
                 }
 
                 // If validation passes, store the file
-                setFormData(prev => ({ ...prev, csvFile: file }))
+                setFormData(prev => ({ ...prev, csvFile: file }));
             } catch (error) {
-                console.error('Error reading CSV:', error)
-                setCsvValidationError("Error reading CSV file. Please ensure it's a valid CSV format.")
-                setFormData(prev => ({ ...prev, csvFile: null }))
+                console.error('Error reading CSV:', error);
+                setCsvValidationError("Error reading CSV file. Please ensure it's a valid CSV format.");
+                setFormData(prev => ({ ...prev, csvFile: null }));
             }
-        }
+        };
 
-        reader.readAsText(file)
-    }
+        reader.readAsText(file);
+    };
 
     const handlePreview = async () => {
-        if (!formData.csvFile || !formData.connectedAccountId) return
+        if (!formData.csvFile || !formData.connectedAccountId) return;
 
         try {
             const result = await uploadCsvMutation.mutateAsync({
                 file: formData.csvFile,
-                account_id: formData.connectedAccountId
-            })
-            setCsvPreview(result)
-            setShowPreview(true)
+                account_id: formData.connectedAccountId,
+            });
+            setCsvPreview(result);
+            setShowPreview(true);
         } catch (error) {
-            console.error('Error uploading CSV:', error)
-            setCsvValidationError("Error uploading CSV file. Please try again.")
+            console.error('Error uploading CSV:', error);
+            setCsvValidationError('Error uploading CSV file. Please try again.');
         }
-    }
-
+    };
 
     const handlePublish = async () => {
-        if (!formData.csvFile || !csvPreview) return
+        if (!formData.csvFile || !csvPreview) return;
 
         try {
             // Convert file to base64 string for API
-            const csvData = await new Promise<string>((resolve) => {
-                const reader = new FileReader()
-                reader.onload = () => resolve(reader.result as string)
-                reader.readAsText(formData.csvFile!)
-            })
+            const csvData = await new Promise<string>(resolve => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.readAsText(formData.csvFile!);
+            });
 
             await publishMutation.mutateAsync({
                 name: formData.name,
                 description: formData.description,
                 connected_account_id: formData.connectedAccountId,
-                csv_data: csvData
-            })
+                csv_data: csvData,
+            });
 
-            router.push("/prospect-lists")
+            router.push('/prospect-lists');
         } catch (error) {
-            console.error('Error publishing lead list:', error)
+            console.error('Error publishing lead list:', error);
         }
-    }
+    };
 
     const renderMainForm = () => (
         <div className="space-y-6">
@@ -193,52 +171,48 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
             <div className="grid gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="name">List Name</Label>
-                    <Input
-                        id="name"
-                        placeholder="Enter list name"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    />
+                    <Input id="name" placeholder="Enter list name" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="description">Description (Optional)</Label>
-                    <Textarea
-                        id="description"
-                        placeholder="Enter description"
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    />
+                    <Textarea id="description" placeholder="Enter description" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="account">LinkedIn Account</Label>
-                    <Select
-                        value={formData.connectedAccountId}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, connectedAccountId: value }))}
-                    >
+                    <Select value={formData.connectedAccountId} onValueChange={value => setFormData(prev => ({ ...prev, connectedAccountId: value }))}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select LinkedIn account" />
                         </SelectTrigger>
                         <SelectContent>
                             {loadingAccounts ? (
-                                <SelectItem value="loading" disabled>Loading accounts...</SelectItem>
+                                <SelectItem value="loading" disabled>
+                                    Loading accounts...
+                                </SelectItem>
                             ) : validConnectedAccounts.length === 0 ? (
                                 <SelectItem value="no-accounts" disabled>
                                     {connectedAccounts?.data?.length && connectedAccounts.data.length > 0 ? 'No valid LinkedIn accounts found' : 'No LinkedIn accounts connected'}
                                 </SelectItem>
                             ) : (
-                                validConnectedAccounts.map((account) => (
+                                validConnectedAccounts.map(account => (
                                     <SelectItem key={account.id} value={account.id}>
                                         <div className="flex items-center gap-2">
                                             <Avatar className="w-6 h-6">
                                                 <AvatarImage src={account.profile_picture_url} alt={account.display_name || 'Account'} />
                                                 <AvatarFallback className="text-xs">
-                                                    {account.display_name ? account.display_name.split(' ').map((n: string) => n[0]).join('') : 'AC'}
+                                                    {account.display_name
+                                                        ? account.display_name
+                                                              .split(' ')
+                                                              .map((n: string) => n[0])
+                                                              .join('')
+                                                        : 'AC'}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <span>{account.display_name || 'Unknown Account'}</span>
-                                            <Badge variant="secondary" className="text-xs">Premium</Badge>
+                                            <Badge variant="secondary" className="text-xs">
+                                                Premium
+                                            </Badge>
                                         </div>
                                     </SelectItem>
                                 ))
@@ -250,12 +224,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <Label>CSV File (Max 10MB)</Label>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleDownloadSampleCsv}
-                            className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                        >
+                        <Button variant="outline" size="sm" onClick={handleDownloadSampleCsv} className="text-purple-600 border-purple-200 hover:bg-purple-50">
                             <FileSpreadsheet className="w-4 h-4 mr-2" />
                             Download Sample CSV
                         </Button>
@@ -264,9 +233,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                     {csvValidationError && (
                         <Alert variant="destructive">
                             <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                                {csvValidationError}
-                            </AlertDescription>
+                            <AlertDescription>{csvValidationError}</AlertDescription>
                         </Alert>
                     )}
 
@@ -288,37 +255,20 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                                 <div className="text-center space-y-2">
                                     <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
                                     <p className="text-lg font-medium">{formData.csvFile.name}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {formData.csvFile.size >= 1024 * 1024
-                                            ? `${(formData.csvFile.size / 1024 / 1024).toFixed(2)} MB`
-                                            : `${(formData.csvFile.size / 1024).toFixed(2)} KB`}
-                                    </p>
+                                    <p className="text-sm text-muted-foreground">{formData.csvFile.size >= 1024 * 1024 ? `${(formData.csvFile.size / 1024 / 1024).toFixed(2)} MB` : `${(formData.csvFile.size / 1024).toFixed(2)} KB`}</p>
                                     <div className="flex gap-2 mt-4">
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => document.getElementById('csv-upload')?.click()}
-                                        >
+                                        <Button variant="outline" onClick={() => document.getElementById('csv-upload')?.click()}>
                                             Choose Different File
                                         </Button>
-                                        <Button
-                                            onClick={handlePreview}
-                                            disabled={!formData.connectedAccountId || uploadCsvMutation.isPending}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                                        >
+                                        <Button onClick={handlePreview} disabled={!formData.connectedAccountId || uploadCsvMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white">
                                             <Eye className="w-4 h-4 mr-2" />
-                                            {uploadCsvMutation.isPending ? "Processing..." : "Preview"}
+                                            {uploadCsvMutation.isPending ? 'Processing...' : 'Preview'}
                                         </Button>
                                     </div>
                                 </div>
                             )}
                             {/* Hidden file input - always present in DOM */}
-                            <input
-                                id="csv-upload"
-                                type="file"
-                                accept=".csv"
-                                className="hidden"
-                                onChange={handleFileUpload}
-                            />
+                            <input id="csv-upload" type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
                         </CardContent>
                     </Card>
                 </div>
@@ -338,23 +288,19 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
             </Alert>
 
             <div className="flex justify-between">
-                <Button variant="outline" onClick={() => router.push("/prospect-lists")}>
+                <Button variant="outline" onClick={() => router.push('/prospect-lists')}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Lists
                 </Button>
-                <Button
-                    onClick={handlePublish}
-                    disabled={!formData.name || !formData.connectedAccountId || !formData.csvFile || !csvPreview?.found || publishMutation.isPending}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                    {publishMutation.isPending ? "Publishing..." : "Publish List"}
+                <Button onClick={handlePublish} disabled={!formData.name || !formData.connectedAccountId || !formData.csvFile || !csvPreview?.found || publishMutation.isPending} className="bg-purple-600 hover:bg-purple-700 text-white">
+                    {publishMutation.isPending ? 'Publishing...' : 'Publish List'}
                 </Button>
             </div>
         </div>
-    )
+    );
 
     const renderPreview = () => {
-        if (!showPreview || !csvPreview) return null
+        if (!showPreview || !csvPreview) return null;
 
         return (
             <div className="space-y-6 mt-8">
@@ -368,20 +314,16 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                         <CheckCircle className="h-4 w-4" />
                         <AlertDescription>
                             <strong>CSV processed successfully!</strong>
-                            <br />
-                            ✅ Found {csvPreview.found} LinkedIn profiles
+                            <br />✅ Found {csvPreview.found} LinkedIn profiles
                             <br />
                             📊 Total rows: {csvPreview.total}
-                            <br />
-                            ❌ Not found: {csvPreview.notFound}
+                            <br />❌ Not found: {csvPreview.notFound}
                         </AlertDescription>
                     </Alert>
                 ) : (
                     <Alert variant="destructive">
                         <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                            No LinkedIn profiles found. Please check your CSV format.
-                        </AlertDescription>
+                        <AlertDescription>No LinkedIn profiles found. Please check your CSV format.</AlertDescription>
                     </Alert>
                 )}
 
@@ -413,10 +355,17 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                                                 <Avatar className="w-8 h-8">
                                                     <AvatarImage src={lead.profilePictureUrl} alt={lead.name || 'Profile'} />
                                                     <AvatarFallback>
-                                                        {lead.name ? lead.name.split(' ').map(n => n[0]).join('') : 'P'}
+                                                        {lead.name
+                                                            ? lead.name
+                                                                  .split(' ')
+                                                                  .map(n => n[0])
+                                                                  .join('')
+                                                            : 'P'}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                            ) : 'N/A'}
+                                            ) : (
+                                                'N/A'
+                                            )}
                                         </TableCell>
                                         <TableCell className="font-medium">{lead.name || 'N/A'}</TableCell>
                                         <TableCell>{lead.headline || 'N/A'}</TableCell>
@@ -435,23 +384,15 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                                             {lead.websites && lead.websites.length > 0 ? (
                                                 <div className="space-y-1">
                                                     {lead.websites.slice(0, 2).map((website, idx) => (
-                                                        <a
-                                                            key={idx}
-                                                            href={website}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-primary hover:underline text-sm block"
-                                                        >
+                                                        <a key={idx} href={website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm block">
                                                             {website}
                                                         </a>
                                                     ))}
-                                                    {lead.websites.length > 2 && (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            +{lead.websites.length - 2} more
-                                                        </span>
-                                                    )}
+                                                    {lead.websites.length > 2 && <span className="text-xs text-muted-foreground">+{lead.websites.length - 2} more</span>}
                                                 </div>
-                                            ) : 'N/A'}
+                                            ) : (
+                                                'N/A'
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -460,8 +401,8 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                     </CardContent>
                 </Card>
             </div>
-        )
-    }
+        );
+    };
 
     return (
         <div className="max-w-6xl mx-auto space-y-6">
@@ -472,5 +413,5 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }

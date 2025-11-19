@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { ClerkProvider } from "@/components/providers/ClerkProvider";
-import { QueryProvider } from "@/components/providers/QueryProvider";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { siteConfig } from "@/config/site";
-import { Toaster } from "sonner";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { ClerkProvider } from '@/components/providers/ClerkProvider';
+import { QueryProvider } from '@/components/providers/QueryProvider';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { siteConfig } from '@/config/site';
+import { Toaster } from 'sonner';
 
 const inter = Inter({
-    variable: "--font-inter",
-    subsets: ["latin"],
+    variable: '--font-inter',
+    subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
@@ -27,8 +27,8 @@ export const metadata: Metadata = {
     ],
     creator: siteConfig.creator.name,
     openGraph: {
-        type: "website",
-        locale: "en_US",
+        type: 'website',
+        locale: 'en_US',
         url: siteConfig.url,
         title: siteConfig.name,
         description: siteConfig.description,
@@ -43,18 +43,18 @@ export const metadata: Metadata = {
         ],
     },
     twitter: {
-        card: "summary_large_image",
+        card: 'summary_large_image',
         title: siteConfig.name,
         description: siteConfig.description,
         images: [siteConfig.ogImage],
         creator: siteConfig.creator.twitter,
     },
     icons: {
-        icon: "/favicon.ico",
-        shortcut: "/favicon-16x16.png",
-        apple: "/apple-touch-icon.png",
+        icon: '/favicon.ico',
+        shortcut: '/favicon-16x16.png',
+        apple: '/apple-touch-icon.png',
     },
-    manifest: "/site.webmanifest",
+    manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
@@ -65,19 +65,13 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={`${inter.variable} font-sans antialiased`}>
-
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="dark"
-                    enableSystem
-                    disableTransitionOnChange
-                >
+                <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
                     <ClerkProvider>
                         <QueryProvider>
                             {children}
                             <Toaster />
                         </QueryProvider>
-                    </ClerkProvider >
+                    </ClerkProvider>
                 </ThemeProvider>
             </body>
         </html>
