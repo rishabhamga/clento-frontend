@@ -73,7 +73,7 @@ export function RecentCampaigns({ recentCampaigns, loading }: { recentCampaigns:
     };
 
     return (
-        <Card className="bg-card border-border/50">
+        <Card className="bg-card border-border/50 h-120 overflow-y-auto">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div>
                     <CardTitle className="text-card-foreground">Recent Campaigns</CardTitle>

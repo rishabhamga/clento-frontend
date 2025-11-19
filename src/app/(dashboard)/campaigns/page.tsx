@@ -101,11 +101,11 @@ export default function CampaignsPage() {
                 </Button>
             </div>
 
+            <div className="flex items-center justify-between px-6 py-4 bg-card border border-border/50 rounded-lg">
+                <CardTitle className="text-card-foreground whitespace-nowrap">All Campaigns</CardTitle>
+            </div>
             {/* Campaigns Table */}
-            <Card className="bg-card border-border/50">
-                <CardHeader>
-                    <CardTitle className="text-card-foreground">All Campaigns</CardTitle>
-                </CardHeader>
+            <Card className="bg-card border-border/50 h-[70vh] overflow-y-auto">
                 <CardContent>
                     {isLoading ? (
                         // Loading State

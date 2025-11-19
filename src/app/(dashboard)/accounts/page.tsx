@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MoreHorizontal, Linkedin, Mail, MessageSquare, Send, Instagram, Phone, Plus, Settings, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Linkedin, Mail, MessageSquare, Send, Instagram, Phone, Plus, Settings, Trash2, Loader2 } from 'lucide-react';
 import { useConnectedAccounts } from '@/hooks/useConnectedAccounts';
 
 export default function AccountsPage() {
@@ -226,18 +226,40 @@ export default function AccountsPage() {
                                         </TableCell>
 
                                         {/* Connection Status Column */}
-                                        <TableCell>{isLinkedIn ? linkedInAccounts.length > 0 ? <Badge className="bg-success text-black glow-green">Connected</Badge> : <Badge className="bg-error text-white">Disconnected</Badge> : getStatusBadge(account.status, account.statusColor)}</TableCell>
+                                        <TableCell>
+                                            {isLinkedIn ? (
+                                                isLoading ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                                                        <span className="text-sm text-muted-foreground">Loading...</span>
+                                                    </div>
+                                                ) : linkedInAccounts.length > 0 ? (
+                                                    <Badge className="bg-success text-black glow-green">Connected</Badge>
+                                                ) : (
+                                                    <Badge className="bg-error text-white">Disconnected</Badge>
+                                                )
+                                            ) : (
+                                                getStatusBadge(account.status, account.statusColor)
+                                            )}
+                                        </TableCell>
 
                                         {/* Seat Status Column */}
                                         <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm text-foreground">{account.seatsTotal > 0 ? `${account.seatsUsed}/${account.seatsTotal} used` : '0/0 used'}</span>
-                                                {account.seatsTotal > 0 && (
-                                                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
-                                                        Get more
-                                                    </Button>
-                                                )}
-                                            </div>
+                                            {isLinkedIn && isLoading ? (
+                                                <div className="flex items-center gap-2">
+                                                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                                                    <span className="text-sm text-muted-foreground">Loading...</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm text-foreground">{account.seatsTotal > 0 ? `${account.seatsUsed}/${account.seatsTotal} used` : '0/0 used'}</span>
+                                                    {account.seatsTotal > 0 && (
+                                                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                                                            Get more
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            )}
                                         </TableCell>
 
                                         {/* Actions Column */}

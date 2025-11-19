@@ -70,7 +70,7 @@ export const AnalyticsChart = () => {
         fetchData();
     }, [getToken]);
     return (
-        <Card className="bg-card border-border/50 h-[fit-content]">
+        <Card className="bg-card border-border/50 h-120">
             <CardHeader>
                 <div className="flex justify-between items-center w-full">
                     <CardTitle className="text-card-foreground">Campaign Activity</CardTitle>
