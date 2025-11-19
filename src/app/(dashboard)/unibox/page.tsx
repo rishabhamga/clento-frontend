@@ -208,11 +208,11 @@ export default function UniboxPage() {
         return (
             <div className="h-[calc(100vh-8rem)] flex items-center justify-center bg-background">
                 <div className="text-center">
-                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+                    <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Loader2 className="w-7 h-7 text-purple-600 animate-spin" />
                     </div>
-                    <h3 className="text-lg font-medium text-foreground mb-2">Loading Unibox</h3>
-                    <p className="text-muted-foreground">Fetching your messages and conversations...</p>
+                    <h3 className="text-base font-medium text-foreground mb-1.5">Loading Unibox</h3>
+                    <p className="text-sm text-muted-foreground">Fetching your messages and conversations...</p>
                 </div>
             </div>
         );
@@ -221,20 +221,20 @@ export default function UniboxPage() {
     return (
         <div className="h-[calc(100vh-8rem)] flex">
             {/* Left Sidebar - Conversations */}
-            <div className="w-96 border-r border-border bg-card">
+            <div className="w-80 border-r border-border bg-card">
                 {/* Header */}
-                <div className="p-4 border-b border-border">
-                    <h2 className="text-lg font-semibold text-foreground mb-4">Messaging</h2>
+                <div className="p-3 border-b border-border">
+                    <h2 className="text-base font-semibold text-foreground mb-3">Messaging</h2>
 
                     {/* Account Selector */}
                     <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-                        <SelectTrigger className="w-full bg-background mb-4">
-                            <div className="flex items-center gap-2">
+                        <SelectTrigger className="w-full bg-background mb-3 text-sm">
+                            <div className="flex items-center gap-1.5">
                                 {getSelectedAccount() && (
                                     <>
-                                        <Avatar className="w-6 h-6">
+                                        <Avatar className="w-5 h-5">
                                             <AvatarImage src={getSelectedAccount()?.profile_picture_url} alt={getSelectedAccount()?.name} />
-                                            <AvatarFallback className="bg-gradient-purple text-white text-xs">{getSelectedAccount()?.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                                            <AvatarFallback className="bg-gradient-purple text-white text-[10px]">{getSelectedAccount()?.name?.charAt(0).toUpperCase()}</AvatarFallback>
                                         </Avatar>
                                         <SelectValue placeholder="Select account" />
                                     </>
@@ -243,15 +243,15 @@ export default function UniboxPage() {
                         </SelectTrigger>
                         <SelectContent>
                             {accounts.map(account => (
-                                <SelectItem key={account.id} value={account.id}>
+                                <SelectItem key={account.id} value={account.id} className="text-sm">
                                     <div className="flex items-center justify-between w-full">
                                         <div className="flex flex-col min-w-0 flex-1">
-                                            <span className="truncate font-medium">{account.name}</span>
+                                            <span className="truncate text-sm font-medium">{account.name}</span>
                                             <span className="text-xs text-muted-foreground truncate" title={account.email}>
                                                 {account.email.length > 20 ? `${account.email.substring(0, 20)}...` : account.email}
                                             </span>
                                         </div>
-                                        <Badge variant={account.status === 'connected' ? 'default' : 'secondary'} className="ml-2 flex-shrink-0">
+                                        <Badge variant={account.status === 'connected' ? 'default' : 'secondary'} className="ml-1.5 flex-shrink-0 text-xs">
                                             {account.status}
                                         </Badge>
                                     </div>
@@ -261,19 +261,19 @@ export default function UniboxPage() {
                     </Select>
 
                     {/* Search and Filter */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                            <Input placeholder="Search messages" className="pl-10 bg-background" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5" />
+                            <Input placeholder="Search messages" className="pl-9 text-sm bg-background" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                         </div>
                         <Select value={filterStatus} onValueChange={setFilterStatus}>
-                            <SelectTrigger className="w-20 bg-background">
+                            <SelectTrigger className="w-18 bg-background text-sm">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All</SelectItem>
-                                <SelectItem value="unread">Unread</SelectItem>
-                                <SelectItem value="read">Read</SelectItem>
+                                <SelectItem value="all" className="text-sm">All</SelectItem>
+                                <SelectItem value="unread" className="text-sm">Unread</SelectItem>
+                                <SelectItem value="read" className="text-sm">Read</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -282,42 +282,42 @@ export default function UniboxPage() {
                 {/* Conversations List */}
                 <div className="overflow-y-auto">
                     {getFilteredInbox().length === 0 ? (
-                        <div className="p-8 text-center">
-                            <MessageCircle className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-foreground mb-2">{searchTerm ? 'No conversations found' : 'No conversations yet'}</h3>
-                            <p className="text-muted-foreground text-sm">{searchTerm ? 'Try adjusting your search terms' : 'Your conversations will appear here when you receive messages'}</p>
+                        <div className="p-6 text-center">
+                            <MessageCircle className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
+                            <h3 className="text-base font-medium text-foreground mb-1.5">{searchTerm ? 'No conversations found' : 'No conversations yet'}</h3>
+                            <p className="text-xs text-muted-foreground">{searchTerm ? 'Try adjusting your search terms' : 'Your conversations will appear here when you receive messages'}</p>
                         </div>
                     ) : (
                         getFilteredInbox().map((conversation, index) => (
-                            <div key={conversation.id} className="p-4 border-b border-border hover:bg-background/50 cursor-pointer transition-colors group" onClick={() => getChat(conversation.id)}>
-                                <div className="flex items-start gap-3">
-                                    <Avatar className="w-10 h-10">
+                            <div key={conversation.id} className="p-3 border-b border-border hover:bg-background/50 cursor-pointer transition-colors group" onClick={() => getChat(conversation.id)}>
+                                <div className="flex items-start gap-2.5">
+                                    <Avatar className="w-9 h-9">
                                         <AvatarImage src={conversation.attendee_profile?.profile_picture_url || undefined} alt={conversation.attendee_profile?.name || 'Unknown'} />
-                                        <AvatarFallback className="bg-gradient-purple text-white text-sm">{conversation.attendee_profile?.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
+                                        <AvatarFallback className="bg-gradient-purple text-white text-xs">{conversation.attendee_profile?.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between">
-                                            <h3 className="font-medium text-foreground truncate">{conversation.attendee_profile?.name || conversation.name || 'Unknown Contact'}</h3>
-                                            <div className="flex items-center gap-2">
+                                            <h3 className="text-sm font-medium text-foreground truncate">{conversation.attendee_profile?.name || conversation.name || 'Unknown Contact'}</h3>
+                                            <div className="flex items-center gap-1.5">
                                                 {conversation.unread_count > 0 && (
-                                                    <Badge variant="default" className="bg-purple-600 text-white text-xs">
+                                                    <Badge variant="default" className="bg-purple-600 text-white text-[10px]">
                                                         {conversation.unread_count}
                                                     </Badge>
                                                 )}
-                                                <span className="text-xs text-muted-foreground">{formatTimestamp(conversation.timestamp)}</span>
+                                                <span className="text-[10px] text-muted-foreground">{formatTimestamp(conversation.timestamp)}</span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 mt-1">
+                                        <div className="flex items-center gap-1.5 mt-0.5">
                                             {conversation.folder && conversation.folder.length > 0 && (
-                                                <Badge variant="outline" className="text-xs">
+                                                <Badge variant="outline" className="text-[10px]">
                                                     {getFolderDisplayName(conversation.folder[0])}
                                                 </Badge>
                                             )}
-                                            <span className="text-sm text-muted-foreground truncate">{conversation.unread_count > 0 ? `${conversation.unread_count} unread message${conversation.unread_count > 1 ? 's' : ''}` : 'No unread messages'}</span>
+                                            <span className="text-xs text-muted-foreground truncate">{conversation.unread_count > 0 ? `${conversation.unread_count} unread message${conversation.unread_count > 1 ? 's' : ''}` : 'No unread messages'}</span>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100">
-                                        <MoreHorizontal className="w-4 h-4" />
+                                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-7 w-7 p-0">
+                                        <MoreHorizontal className="w-3.5 h-3.5" />
                                     </Button>
                                 </div>
                             </div>
@@ -331,43 +331,43 @@ export default function UniboxPage() {
                 {loadingChat ? (
                     <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+                            <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Loader2 className="w-7 h-7 text-purple-600 animate-spin" />
                             </div>
-                            <h3 className="text-lg font-medium text-foreground mb-2">Loading messages...</h3>
-                            <p className="text-muted-foreground">Fetching chat messages...</p>
+                            <h3 className="text-base font-medium text-foreground mb-1.5">Loading messages...</h3>
+                            <p className="text-sm text-muted-foreground">Fetching chat messages...</p>
                         </div>
                     </div>
                 ) : chatMessages.length > 0 ? (
                     <>
                         {/* Chat Header */}
-                        <div className="p-4 border-b border-border bg-card">
-                            <div className="flex items-center gap-3">
-                                <Avatar className="w-10 h-10">
+                        <div className="p-3 border-b border-border bg-card">
+                            <div className="flex items-center gap-2.5">
+                                <Avatar className="w-9 h-9">
                                     <AvatarImage src={selectedChat?.attendee_profile?.profile_picture_url || undefined} alt={selectedChat?.attendee_profile?.name || 'Unknown'} />
-                                    <AvatarFallback className="bg-gradient-purple text-white text-sm">{selectedChat?.attendee_profile?.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
+                                    <AvatarFallback className="bg-gradient-purple text-white text-xs">{selectedChat?.attendee_profile?.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-foreground">{selectedChat?.attendee_profile?.name || selectedChat?.name || 'Unknown Contact'}</h3>
-                                    {selectedChat?.folder && selectedChat.folder.length > 0 && <p className="text-sm text-muted-foreground">{getFolderDisplayName(selectedChat.folder[0])}</p>}
+                                    <h3 className="text-base font-semibold text-foreground">{selectedChat?.attendee_profile?.name || selectedChat?.name || 'Unknown Contact'}</h3>
+                                    {selectedChat?.folder && selectedChat.folder.length > 0 && <p className="text-xs text-muted-foreground">{getFolderDisplayName(selectedChat.folder[0])}</p>}
                                 </div>
                             </div>
                         </div>
 
                         {/* Messages List */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        <div className="flex-1 overflow-y-auto p-3 space-y-3">
                             {chatMessages.map(message => (
                                 <div key={message.id} className={`flex ${message.is_sender ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[70%] rounded-lg p-3 ${message.is_sender ? 'bg-purple-600 text-white' : 'bg-muted text-foreground'}`}>
-                                        <div className="text-sm">{message.text || message.subject || 'No content'}</div>
-                                        <div className={`text-xs mt-1 ${message.is_sender ? 'text-purple-100' : 'text-muted-foreground'}`}>
+                                    <div className={`max-w-[70%] rounded-lg p-2.5 ${message.is_sender ? 'bg-purple-600 text-white' : 'bg-muted text-foreground'}`}>
+                                        <div className="text-xs">{message.text || message.subject || 'No content'}</div>
+                                        <div className={`text-[10px] mt-0.5 ${message.is_sender ? 'text-purple-100' : 'text-muted-foreground'}`}>
                                             {formatTimestamp(message.timestamp)}
                                             {message.is_sender && message.delivered && <span className="ml-1">✓</span>}
                                         </div>
                                         {message.reactions && message.reactions.length > 0 && (
-                                            <div className="flex gap-1 mt-2">
+                                            <div className="flex gap-0.5 mt-1.5">
                                                 {message.reactions.map((reaction, idx) => (
-                                                    <span key={idx} className="text-xs">
+                                                    <span key={idx} className="text-[10px]">
                                                         {reaction.value}
                                                     </span>
                                                 ))}
@@ -381,11 +381,11 @@ export default function UniboxPage() {
                 ) : (
                     <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Search className="w-8 h-8 text-muted-foreground" />
+                            <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Search className="w-7 h-7 text-muted-foreground" />
                             </div>
-                            <h3 className="text-lg font-medium text-foreground mb-2">Select a chat to start messaging</h3>
-                            <p className="text-muted-foreground">Choose a conversation from the sidebar to view messages</p>
+                            <h3 className="text-base font-medium text-foreground mb-1.5">Select a chat to start messaging</h3>
+                            <p className="text-sm text-muted-foreground">Choose a conversation from the sidebar to view messages</p>
                         </div>
                     </div>
                 )}

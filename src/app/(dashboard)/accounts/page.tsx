@@ -175,23 +175,23 @@ export default function AccountsPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Accounts</h1>
-                    <p className="text-muted-foreground">Manage your connected accounts and integrations</p>
+                    <h1 className="text-xl font-bold text-foreground">Accounts</h1>
+                    <p className="text-sm text-muted-foreground">Manage your connected accounts and integrations</p>
                 </div>
-                <Button className="bg-gradient-purple hover-glow-purple">
-                    <Plus className="w-4 h-4 mr-2" />
+                <Button className="bg-gradient-purple hover-glow-purple text-sm">
+                    <Plus className="w-3.5 h-3.5 mr-1.5" />
                     Connect Account
                 </Button>
             </div>
 
             {/* Accounts Table */}
             <Card className="bg-card border-border/50">
-                <CardHeader>
-                    <CardTitle className="text-card-foreground">All Accounts</CardTitle>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-card-foreground">All Accounts</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -212,10 +212,10 @@ export default function AccountsPage() {
                                     <TableRow key={account.id} className="hover:bg-background/50">
                                         {/* App Column */}
                                         <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <div className={`p-2 rounded-lg ${account.bgColor || 'bg-muted'}`}>{account.id === 7 ? <IconComponent /> : <IconComponent className={`w-5 h-5 ${account.iconColor}`} />}</div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-medium text-foreground">{account.name}</span>
+                                            <div className="flex items-center gap-1.5">
+                                                <div className={`p-1 rounded-md ${account.bgColor || 'bg-muted'}`}>{account.id === 7 ? <IconComponent /> : <IconComponent className={`w-3.5 h-3.5 ${account.iconColor}`} />}</div>
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-sm font-medium text-foreground">{account.name}</span>
                                                     {account.badge && (
                                                         <Badge variant="secondary" className="text-xs">
                                                             {account.badge}
@@ -229,9 +229,9 @@ export default function AccountsPage() {
                                         <TableCell>
                                             {isLinkedIn ? (
                                                 isLoading ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                                                        <span className="text-sm text-muted-foreground">Loading...</span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                                                        <span className="text-xs text-muted-foreground">Loading...</span>
                                                     </div>
                                                 ) : linkedInAccounts.length > 0 ? (
                                                     <Badge className="bg-success text-black glow-green">Connected</Badge>
@@ -246,15 +246,15 @@ export default function AccountsPage() {
                                         {/* Seat Status Column */}
                                         <TableCell>
                                             {isLinkedIn && isLoading ? (
-                                                <div className="flex items-center gap-2">
-                                                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                                                    <span className="text-sm text-muted-foreground">Loading...</span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                                                    <span className="text-xs text-muted-foreground">Loading...</span>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-sm text-foreground">{account.seatsTotal > 0 ? `${account.seatsUsed}/${account.seatsTotal} used` : '0/0 used'}</span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-xs text-foreground">{account.seatsTotal > 0 ? `${account.seatsUsed}/${account.seatsTotal} used` : '0/0 used'}</span>
                                                     {account.seatsTotal > 0 && (
-                                                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                                                        <Button variant="ghost" size="sm" className="h-5 px-1.5 text-xs">
                                                             Get more
                                                         </Button>
                                                     )}
@@ -264,24 +264,24 @@ export default function AccountsPage() {
 
                                         {/* Actions Column */}
                                         <TableCell>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1.5">
                                                 {isLinkedIn ? (
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <Button variant="outline" size="sm">
-                                                                <Settings className="w-4 h-4" />
+                                                                <Settings className="w-3.5 h-3.5" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuItem onClick={() => handleManageClick(account.name.toLowerCase())}>
-                                                                <Settings className="w-4 h-4 mr-2" />
+                                                                <Settings className="w-3.5 h-3.5 mr-1.5" />
                                                                 Manage
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 ) : (
                                                     <Button variant="outline" size="sm" disabled>
-                                                        <MoreHorizontal className="w-4 h-4" />
+                                                        <MoreHorizontal className="w-3.5 h-3.5" />
                                                     </Button>
                                                 )}
                                             </div>
@@ -296,55 +296,55 @@ export default function AccountsPage() {
 
             {/* Manage LinkedIn Accounts Dialog */}
             <Dialog open={manageDialogOpen} onOpenChange={setManageDialogOpen}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-xl">
                     <DialogHeader>
                         <DialogTitle>Manage LinkedIn Accounts</DialogTitle>
                         <DialogDescription>View and manage your connected LinkedIn accounts</DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {/* Connected Accounts List */}
                         {isLoading ? (
-                            <div className="text-center py-8">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                                <p className="text-muted-foreground mt-2">Loading accounts...</p>
+                            <div className="text-center py-7">
+                                <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-primary mx-auto"></div>
+                                <p className="text-muted-foreground mt-1.5">Loading accounts...</p>
                             </div>
                         ) : linkedInAccounts.length > 0 ? (
-                            <div className="space-y-3">
+                            <div className="space-y-2.5">
                                 <h4 className="font-medium">Connected Accounts ({linkedInAccounts.length})</h4>
                                 {linkedInAccounts.map(account => (
-                                    <div key={account.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                                                <Linkedin className="w-5 h-5 text-blue-600" />
+                                    <div key={account.id} className="flex items-center justify-between p-2.5 border rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-9 h-9 bg-blue-50 rounded-full flex items-center justify-center">
+                                                <Linkedin className="w-4 h-4 text-blue-600" />
                                             </div>
                                             <div>
                                                 <p className="font-medium">{account.display_name}</p>
-                                                <p className="text-sm text-muted-foreground">{account.email}</p>
+                                                <p className="text-xs text-muted-foreground">{account.email}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5">
                                             <Badge variant="outline" className="text-success border-success">
                                                 Active
                                             </Badge>
                                             <Button variant="ghost" size="sm" onClick={() => handleDisconnectAccount(account.id)} className="text-red-600 hover:text-red-700">
-                                                <Trash2 className="w-4 h-4" />
+                                                <Trash2 className="w-3.5 h-3.5" />
                                             </Button>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8">
-                                <Linkedin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            <div className="text-center py-7">
+                                <Linkedin className="w-11 h-11 text-muted-foreground mx-auto mb-3" />
                                 <p className="text-muted-foreground">No LinkedIn accounts connected</p>
                             </div>
                         )}
 
                         {/* Connect New Account Button */}
-                        <div className="pt-4 border-t">
+                        <div className="pt-3 border-t">
                             <Button onClick={handleConnectLinkedIn} className="w-full bg-gradient-purple hover:bg-gradient-purple-dark text-white border-0 hover-glow-purple">
-                                <Plus className="w-4 h-4 mr-2" />
+                                <Plus className="w-3.5 h-3.5 mr-1.5" />
                                 Connect LinkedIn Account
                             </Button>
                         </div>

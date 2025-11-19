@@ -39,24 +39,24 @@ export interface CampaignWithSenderAccount extends Campaign {
 }
 
 const CampaignSkeleton = () => (
-    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-background/50">
+    <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background/50">
         <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-6 w-16 rounded-full" />
+            <div className="flex items-center gap-2 mb-1.5">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-5 w-14 rounded-full" />
             </div>
-            <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2 w-fit min-w-[160px] mb-2">
-                <Skeleton className="w-8 h-8 rounded-full" />
+            <div className="flex items-center gap-1.5 bg-muted rounded-md px-2.5 py-1.5 w-fit min-w-[144px] mb-1.5">
+                <Skeleton className="w-7 h-7 rounded-full" />
                 <div className="flex flex-col gap-1">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-3.5 w-20" />
+                    <Skeleton className="h-3 w-14" />
                 </div>
             </div>
-            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-16" />
         </div>
-        <div className="flex items-center gap-2">
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-8" />
+        <div className="flex items-center gap-1.5">
+            <Skeleton className="h-7 w-7" />
+            <Skeleton className="h-7 w-7" />
         </div>
     </div>
 );
@@ -74,26 +74,26 @@ export function RecentCampaigns({ recentCampaigns, loading }: { recentCampaigns:
 
     return (
         <Card className="bg-card border-border/50 h-120 overflow-y-auto">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <div>
                     <CardTitle className="text-card-foreground">Recent Campaigns</CardTitle>
-                    <p className="text-sm text-muted-foreground">Latest campaigns from your accounts</p>
+                    <p className="text-xs text-muted-foreground">Latest campaigns from your accounts</p>
                 </div>
                 <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80" onClick={handleViewAll}>
-                    <Eye className="w-4 h-4 mr-2" />
+                    <Eye className="w-3.5 h-3.5 mr-1.5" />
                     View All
                 </Button>
             </CardHeader>
             <CardContent>
                 {loading ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {Array.from({ length: 2 }).map((_, index) => (
                             <CampaignSkeleton key={index} />
                         ))}
                     </div>
                 ) : recentCampaigns.length === 0 ? (
                     <EmptyState
-                        icon={<Megaphone className="w-12 h-12 text-muted-foreground" />}
+                        icon={<Megaphone className="w-11 h-11 text-muted-foreground" />}
                         title="No campaigns yet"
                         description="Start your first outreach campaign to connect with potential leads and grow your business."
                         action={{
@@ -103,19 +103,19 @@ export function RecentCampaigns({ recentCampaigns, loading }: { recentCampaigns:
                         className="border-0 shadow-none bg-transparent"
                     />
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {recentCampaigns.map(campaign => (
-                            <div key={campaign.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-background/50 hover:bg-background/80 transition-colors">
+                            <div key={campaign.id} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-background/80 transition-colors">
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
+                                    <div className="flex items-center gap-2 mb-1.5">
                                         <h4 className="font-medium text-foreground">{campaign.name}</h4>
                                         {getStatusBadge(campaign.status)}
                                     </div>
-                                    <div className="flex items-center gap-2 bg-muted rounded-md px-3 py-2 w-fit min-w-[160px]">
+                                    <div className="flex items-center gap-1.5 bg-muted rounded-md px-2.5 py-1.5 w-fit min-w-[144px]">
                                         {campaign.sender_account_detail?.profile_picture_url ? (
-                                            <img src={campaign.sender_account_detail.profile_picture_url} alt={campaign.sender_account_detail.name || 'Sender'} className="w-8 h-8 rounded-full object-cover border border-border" />
+                                            <img src={campaign.sender_account_detail.profile_picture_url} alt={campaign.sender_account_detail.name || 'Sender'} className="w-7 h-7 rounded-full object-cover border border-border" />
                                         ) : (
-                                            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-muted-foreground">
+                                            <div className="w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-muted-foreground">
                                                 {campaign.sender_account_detail?.name
                                                     ? campaign.sender_account_detail.name
                                                           .split(' ')
@@ -126,24 +126,24 @@ export function RecentCampaigns({ recentCampaigns, loading }: { recentCampaigns:
                                             </div>
                                         )}
                                         <div className="flex flex-col">
-                                            <span className="font-medium text-sm text-foreground">{campaign.sender_account_detail?.name || 'Unknown'}</span>
+                                            <span className="font-medium text-xs text-foreground">{campaign.sender_account_detail?.name || 'Unknown'}</span>
                                             <span className="text-xs text-muted-foreground">{campaign.sender_account_detail?.provider || 'No provider'}</span>
                                         </div>
                                     </div>
-                                    <Separator className="my-2 bg-border/50" />
-                                    <div className="text-xs text-muted-foreground mb-2">Created {new Date(campaign.created_at).toLocaleDateString()}</div>
+                                    <Separator className="my-1.5 bg-border/50" />
+                                    <div className="text-xs text-muted-foreground mb-1.5">Created {new Date(campaign.created_at).toLocaleDateString()}</div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
                                     <Button size="sm" variant="outline" onClick={handleViewAll}>
-                                        <Eye className="w-4 h-4" />
+                                        <Eye className="w-3.5 h-3.5" />
                                     </Button>
                                     {campaign.status === CampaignStatus.IN_PROGRESS ? (
                                         <Button size="sm" variant="outline">
-                                            <Pause className="w-4 h-4" />
+                                            <Pause className="w-3.5 h-3.5" />
                                         </Button>
                                     ) : campaign.status === CampaignStatus.PAUSED ? (
                                         <Button size="sm" className="bg-gradient-purple hover-glow-purple">
-                                            <Play className="w-4 h-4" />
+                                            <Play className="w-3.5 h-3.5" />
                                         </Button>
                                     ) : null}
                                 </div>

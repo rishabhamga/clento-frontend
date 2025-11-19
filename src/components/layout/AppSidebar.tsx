@@ -68,12 +68,12 @@ const bottomItems = [
 export function AppSidebar() {
     return (
         <Sidebar className="border-r border-sidebar-border bg-sidebar">
-            <SidebarHeader className="p-4">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-purple rounded-lg flex items-center justify-center">
-                        <Zap className="w-5 h-5 text-white" />
+            <SidebarHeader className="p-3">
+                <div className="flex items-center gap-1.5">
+                    <div className="w-7 h-7 bg-gradient-purple rounded-lg flex items-center justify-center">
+                        <Zap className="w-4 h-4 text-white" />
                     </div>
-                    <span className="font-bold text-lg text-sidebar-foreground">Clento Clay</span>
+                    <span className="font-bold text-sm text-sidebar-foreground">Clento Clay</span>
                 </div>
             </SidebarHeader>
 
@@ -86,7 +86,7 @@ export function AppSidebar() {
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild className="hover-glow-purple hover:bg-sidebar-accent data-[active=true]:bg-gradient-purple data-[active=true]:text-white">
                                         <Link href={item.url}>
-                                            <item.icon className="w-4 h-4" />
+                                            <item.icon className="w-3.5 h-3.5" />
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
@@ -105,7 +105,7 @@ export function AppSidebar() {
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild className="hover-glow-purple hover:bg-sidebar-accent">
                                         <Link href={item.url}>
-                                            <item.icon className="w-4 h-4" />
+                                            <item.icon className="w-3.5 h-3.5" />
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
