@@ -2,17 +2,19 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
+import { Skeleton } from '../ui/skeleton';
 
 interface StatCardProps {
     title: string;
     value: string | number;
+    isLoading: boolean;
     change?: string;
     changeType?: 'positive' | 'negative' | 'neutral';
     icon: LucideIcon;
     gradient?: boolean;
 }
 
-export function StatCard({ title, value, change, changeType = 'neutral', icon: Icon, gradient = false }: StatCardProps) {
+export function StatCard({ title, value, isLoading, change, changeType = 'neutral', icon: Icon, gradient = false }: StatCardProps) {
     const getChangeColor = () => {
         switch (changeType) {
             case 'positive':
@@ -31,7 +33,11 @@ export function StatCard({ title, value, change, changeType = 'neutral', icon: I
                 <Icon className={`h-4 w-4 ${gradient ? 'text-white/80' : 'text-muted-foreground'}`} />
             </CardHeader>
             <CardContent>
-                <div className={`text-2xl font-bold ${gradient ? 'text-white' : 'text-card-foreground'}`}>{value}</div>
+                {isLoading ? (
+                    <Skeleton className='h-8 w-26'/>
+                ) : (
+                    <div className={`text-2xl font-bold ${gradient ? 'text-white' : 'text-card-foreground'}`}>{value}</div>
+                )}
                 {change && <p className={`text-xs ${gradient ? 'text-white/80' : getChangeColor()}`}>{change}</p>}
             </CardContent>
         </Card>

@@ -53,9 +53,9 @@ export default function HomePage() {
 
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <StatCard title="Success Rate" value={dashboardStats?.success_rate ? `${dashboardStats.success_rate}%` : '0%'} change="Acceptance rate" changeType="neutral" icon={TrendingUp} gradient={true} />
-                    <StatCard title="Requests Sent" value={dashboardStats?.requests_sent || 0} change="Total requests sent" changeType="neutral" icon={Send} />
-                    <StatCard title="Total Steps" value={dashboardStats?.total_steps || 0} change="Total steps" changeType="neutral" icon={ListChecks} />
+                    <StatCard isLoading={loading} title="Success Rate" value={dashboardStats?.success_rate ? `${dashboardStats.success_rate}%` : '0%'} change="Acceptance rate" changeType="neutral" icon={TrendingUp} gradient={true} />
+                    <StatCard isLoading={loading} title="Requests Sent" value={dashboardStats?.requests_sent || 0} change="Total requests sent" changeType="neutral" icon={Send} />
+                    <StatCard isLoading={loading} title="Total Steps" value={dashboardStats?.total_steps || 0} change="Total steps" changeType="neutral" icon={ListChecks} />
                 </div>
 
                 {/* Charts and Recent Activity */}
