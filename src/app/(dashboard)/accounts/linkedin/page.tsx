@@ -67,26 +67,26 @@ export default function LinkedInAccountsPage() {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'connected':
-                return <CheckCircle className="w-4 h-4 text-green-600" />;
+                return <CheckCircle className="w-3.5 h-3.5 text-green-600" />;
             case 'pending':
-                return <Clock className="w-4 h-4 text-yellow-600" />;
+                return <Clock className="w-3.5 h-3.5 text-yellow-600" />;
             case 'error':
-                return <AlertTriangle className="w-4 h-4 text-red-600" />;
+                return <AlertTriangle className="w-3.5 h-3.5 text-red-600" />;
             default:
-                return <AlertTriangle className="w-4 h-4 text-gray-600" />;
+                return <AlertTriangle className="w-3.5 h-3.5 text-gray-600" />;
         }
     };
 
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'connected':
-                return <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>;
+                return <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">Active</Badge>;
             case 'pending':
-                return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pending</Badge>;
+                return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs">Pending</Badge>;
             case 'error':
-                return <Badge className="bg-red-100 text-red-800 border-red-200">Error</Badge>;
+                return <Badge className="bg-red-100 text-red-800 border-red-200 text-xs">Error</Badge>;
             default:
-                return <Badge variant="outline">Unknown</Badge>;
+                return <Badge variant="outline" className="text-xs">Unknown</Badge>;
         }
     };
 
@@ -103,40 +103,40 @@ export default function LinkedInAccountsPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold">LinkedIn Accounts</h1>
-                    <p className="text-muted-foreground">Manage your connected LinkedIn accounts for outreach campaigns</p>
+                    <h1 className="text-xl font-bold">LinkedIn Accounts</h1>
+                    <p className="text-sm text-muted-foreground">Manage your connected LinkedIn accounts for outreach campaigns</p>
                 </div>
-                <Button onClick={handleConnectLinkedIn} disabled={isConnecting} className="bg-gradient-purple hover:bg-gradient-purple-dark text-white border-0 hover-glow-purple">
-                    <Plus className="w-4 h-4 mr-2" />
+                <Button onClick={handleConnectLinkedIn} disabled={isConnecting} className="bg-gradient-purple hover:bg-gradient-purple-dark text-white border-0 hover-glow-purple text-sm">
+                    <Plus className="w-3.5 h-3.5 mr-1.5" />
                     {isConnecting ? 'Connecting...' : 'Connect LinkedIn Account'}
                 </Button>
             </div>
 
             {/* Stats Card */}
             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Linkedin className="w-5 h-5 text-blue-600" />
+                <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-1.5 text-base">
+                        <Linkedin className="w-4 h-4 text-blue-600" />
                         LinkedIn Account Overview
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div className="text-center">
-                            <div className="text-2xl font-bold">{connectedAccounts.length}</div>
-                            <div className="text-sm text-muted-foreground">Connected Accounts</div>
+                            <div className="text-xl font-bold">{connectedAccounts.length}</div>
+                            <div className="text-xs text-muted-foreground">Connected Accounts</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-2xl font-bold">{connectedAccounts.filter(acc => acc.status === 'connected').length}</div>
-                            <div className="text-sm text-muted-foreground">Active</div>
+                            <div className="text-xl font-bold">{connectedAccounts.filter(acc => acc.status === 'connected').length}</div>
+                            <div className="text-xs text-muted-foreground">Active</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-2xl font-bold">{connectedAccounts.filter(acc => acc.status === 'pending').length}</div>
-                            <div className="text-sm text-muted-foreground">Pending</div>
+                            <div className="text-xl font-bold">{connectedAccounts.filter(acc => acc.status === 'pending').length}</div>
+                            <div className="text-xs text-muted-foreground">Pending</div>
                         </div>
                     </div>
                 </CardContent>
@@ -144,22 +144,22 @@ export default function LinkedInAccountsPage() {
 
             {/* Accounts Table */}
             <Card>
-                <CardHeader>
-                    <CardTitle>Connected Accounts</CardTitle>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Connected Accounts</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="text-center py-8">
-                            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-                            <p className="text-muted-foreground">Loading accounts...</p>
+                        <div className="text-center py-9">
+                            <RefreshCw className="w-7 h-7 animate-spin mx-auto mb-2" />
+                            <p className="text-sm text-muted-foreground">Loading accounts...</p>
                         </div>
                     ) : connectedAccounts.length === 0 ? (
-                        <div className="text-center py-8">
-                            <Linkedin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                            <h3 className="text-lg font-medium mb-2">No LinkedIn accounts connected</h3>
-                            <p className="text-muted-foreground mb-4">Connect your LinkedIn account to start creating outreach campaigns</p>
-                            <Button onClick={handleConnectLinkedIn} disabled={isConnecting} className="bg-gradient-purple hover:bg-gradient-purple-dark text-white border-0 hover-glow-purple">
-                                <Plus className="w-4 h-4 mr-2" />
+                        <div className="text-center py-9">
+                            <Linkedin className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                            <h3 className="text-base font-medium mb-1.5">No LinkedIn accounts connected</h3>
+                            <p className="text-sm text-muted-foreground mb-3">Connect your LinkedIn account to start creating outreach campaigns</p>
+                            <Button onClick={handleConnectLinkedIn} disabled={isConnecting} className="bg-gradient-purple hover:bg-gradient-purple-dark text-white border-0 hover-glow-purple text-sm">
+                                <Plus className="w-3.5 h-3.5 mr-1.5" />
                                 {isConnecting ? 'Connecting...' : 'Connect Your First Account'}
                             </Button>
                         </div>
@@ -167,60 +167,60 @@ export default function LinkedInAccountsPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Account</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Account Type</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Last Sync</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead className="text-sm">Account</TableHead>
+                                    <TableHead className="text-sm">Email</TableHead>
+                                    <TableHead className="text-sm">Account Type</TableHead>
+                                    <TableHead className="text-sm">Status</TableHead>
+                                    <TableHead className="text-sm">Last Sync</TableHead>
+                                    <TableHead className="text-right text-sm">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {connectedAccounts.map(account => (
                                     <TableRow key={account.id}>
                                         <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="w-8 h-8">
+                                            <div className="flex items-center gap-2.5">
+                                                <Avatar className="w-7 h-7">
                                                     <AvatarImage src={account.profile_picture_url} />
-                                                    <AvatarFallback>{account.display_name?.charAt(0) || 'L'}</AvatarFallback>
+                                                    <AvatarFallback className="text-xs">{account.display_name?.charAt(0) || 'L'}</AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <div className="font-medium">{account.display_name}</div>
-                                                    <div className="text-sm text-muted-foreground">{account.metadata?.account_type || 'Personal'}</div>
+                                                    <div className="font-medium text-sm">{account.display_name}</div>
+                                                    <div className="text-xs text-muted-foreground">{account.metadata?.account_type || 'Personal'}</div>
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{account.email}</TableCell>
+                                        <TableCell className="text-sm">{account.email}</TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className="text-yellow-600 border-yellow-200">
+                                            <Badge variant="outline" className="text-yellow-600 border-yellow-200 text-xs">
                                                 {account.metadata?.account_type === 'premium' ? 'Premium' : 'Personal'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1.5">
                                                 {getStatusIcon(account.status)}
                                                 {getStatusBadge(account.status)}
                                             </div>
                                         </TableCell>
-                                        <TableCell>{formatLastSync(account.last_synced_at || '')}</TableCell>
+                                        <TableCell className="text-sm">{formatLastSync(account.last_synced_at || '')}</TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm">
-                                                        <MoreHorizontal className="w-4 h-4" />
+                                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                                                        <MoreHorizontal className="w-3.5 h-3.5" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem>
-                                                        <Settings className="w-4 h-4 mr-2" />
+                                                <DropdownMenuContent align="end" className="w-40">
+                                                    <DropdownMenuItem className="text-xs">
+                                                        <Settings className="w-3.5 h-3.5 mr-1.5" />
                                                         Settings
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem>
-                                                        <RefreshCw className="w-4 h-4 mr-2" />
+                                                    <DropdownMenuItem className="text-xs">
+                                                        <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                                                         Sync Profile
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-red-600">
-                                                        <Trash2 className="w-4 h-4 mr-2" />
+                                                    <DropdownMenuItem className="text-red-600 text-xs">
+                                                        <Trash2 className="w-3.5 h-3.5 mr-1.5" />
                                                         Disconnect
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>

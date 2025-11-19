@@ -28,15 +28,15 @@ export function StatCard({ title, value, isLoading, change, changeType = 'neutra
 
     return (
         <Card className={`${gradient ? 'bg-gradient-purple glow-purple' : 'bg-card'} border-border/50`}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className={`text-sm font-medium ${gradient ? 'text-white' : 'text-card-foreground'}`}>{title}</CardTitle>
-                <Icon className={`h-4 w-4 ${gradient ? 'text-white/80' : 'text-muted-foreground'}`} />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5">
+                <CardTitle className={`text-xs font-medium ${gradient ? 'text-white' : 'text-card-foreground'}`}>{title}</CardTitle>
+                <Icon className={`h-3.5 w-3.5 ${gradient ? 'text-white/80' : 'text-muted-foreground'}`} />
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <Skeleton className='h-8 w-26'/>
+                    <Skeleton className='h-6 w-20'/>
                 ) : (
-                    <div className={`text-2xl font-bold ${gradient ? 'text-white' : 'text-card-foreground'}`}>{value}</div>
+                    <div className={`text-lg font-bold ${gradient ? 'text-white' : 'text-card-foreground'}`}>{value}</div>
                 )}
                 {change && <p className={`text-xs ${gradient ? 'text-white/80' : getChangeColor()}`}>{change}</p>}
             </CardContent>

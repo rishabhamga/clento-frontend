@@ -9,39 +9,39 @@ const features = ['Unlimited campaigns across 7+ channels', 'LinkedIn Sales Navi
 
 export default function SubscriptionsPage() {
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Subscription Management</h1>
-                    <p className="text-muted-foreground">Manage your subscription, billing details, and plan features</p>
+                    <h1 className="text-xl font-bold text-foreground">Subscription Management</h1>
+                    <p className="text-sm text-muted-foreground">Manage your subscription, billing details, and plan features</p>
                 </div>
-                <Button className="bg-primary hover:bg-primary/90">
-                    <CreditCard className="w-4 h-4 mr-2" />
+                <Button className="bg-primary hover:bg-primary/90 text-sm">
+                    <CreditCard className="w-3.5 h-3.5 mr-1.5" />
                     Manage Billing
                 </Button>
             </div>
 
             {/* Subscription Details */}
             <Card className="bg-card border-border/50">
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <CreditCard className="w-8 h-8 text-primary" />
+                        <div className="flex items-center gap-2.5">
+                            <CreditCard className="w-7 h-7 text-primary" />
                             <div>
-                                <CardTitle className="text-xl">Syndie Subscription</CardTitle>
-                                <p className="text-sm text-muted-foreground">Complete LinkedIn outreach solution for your team</p>
+                                <CardTitle className="text-base">Syndie Subscription</CardTitle>
+                                <p className="text-xs text-muted-foreground">Complete LinkedIn outreach solution for your team</p>
                             </div>
-                            <Badge className="bg-warning text-black">trialing</Badge>
+                            <Badge className="bg-warning text-black text-xs">trialing</Badge>
                         </div>
-                        <Button variant="outline" size="sm">
-                            <span className="text-lg">+</span>
+                        <Button variant="outline" size="sm" className="text-xs">
+                            <span className="text-base">+</span>
                             <span className="ml-1">Add More Seats</span>
                         </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         {/* Plan Details */}
                         <div>
                             <h4 className="text-sm font-medium text-muted-foreground mb-2">PLAN DETAILS</h4>

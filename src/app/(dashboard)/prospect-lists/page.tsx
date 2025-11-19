@@ -165,27 +165,27 @@ export default function ProspectListsPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Prospect lists</h1>
+                    <h1 className="text-xl font-bold text-foreground">Prospect lists</h1>
                 </div>
-                <Button className="bg-gradient-purple hover-glow-purple text-white" onClick={() => (window.location.href = '/prospect-lists/create')}>
-                    <Plus className="w-4 h-4 mr-2" />
+                <Button className="bg-gradient-purple hover-glow-purple text-white text-sm" onClick={() => (window.location.href = '/prospect-lists/create')}>
+                    <Plus className="w-3.5 h-3.5 mr-1.5" />
                     Create Lead List
                 </Button>
             </div>
 
             {/* Search and Filters */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
                 <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input placeholder="Search lead lists..." className="pl-10 bg-background" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
+                    <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5" />
+                    <Input placeholder="Search lead lists..." className="pl-9 text-sm bg-background" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
                 </div>
                 <Select value={sourceFilter} onValueChange={handleSourceFilterChange}>
-                    <SelectTrigger className="w-[180px] bg-background">
-                        <Filter className="w-4 h-4 mr-2" />
+                    <SelectTrigger className="w-[160px] bg-background text-sm">
+                        <Filter className="w-3.5 h-3.5 mr-1.5" />
                         <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
@@ -214,24 +214,24 @@ export default function ProspectListsPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-12">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
-                                            <span className="text-muted-foreground font-medium">Loading lead lists...</span>
+                                    <TableCell colSpan={5} className="text-center py-10">
+                                        <div className="flex items-center justify-center gap-1.5">
+                                            <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
+                                            <span className="text-sm text-muted-foreground font-medium">Loading lead lists...</span>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : error ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-12">
-                                        <div className="flex flex-col items-center gap-4">
-                                            <div className="flex items-center gap-2 text-red-500">
-                                                <AlertCircle className="w-5 h-5" />
-                                                <span className="font-medium">Oops! Something went wrong</span>
+                                    <TableCell colSpan={5} className="text-center py-10">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="flex items-center gap-1.5 text-red-500">
+                                                <AlertCircle className="w-4 h-4" />
+                                                <span className="text-sm font-medium">Oops! Something went wrong</span>
                                             </div>
-                                            <p className="text-muted-foreground text-sm max-w-md text-center">We couldn't load your lead lists. This might be a temporary issue.</p>
-                                            <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="gap-2">
-                                                <RefreshCw className="w-4 h-4" />
+                                            <p className="text-muted-foreground text-xs max-w-md text-center">We couldn't load your lead lists. This might be a temporary issue.</p>
+                                            <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="gap-1.5 text-xs">
+                                                <RefreshCw className="w-3.5 h-3.5" />
                                                 Try Again
                                             </Button>
                                         </div>
@@ -239,15 +239,15 @@ export default function ProspectListsPage() {
                                 </TableRow>
                             ) : leadLists.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-12">
-                                        <div className="flex flex-col items-center gap-4">
-                                            <FileText className="w-12 h-12 text-muted-foreground/50" />
+                                    <TableCell colSpan={5} className="text-center py-10">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <FileText className="w-10 h-10 text-muted-foreground/50" />
                                             <div className="text-center">
-                                                <h3 className="text-lg font-semibold text-foreground mb-2">{searchTerm || sourceFilter !== 'all' ? 'No lead lists found' : 'No lead lists yet'}</h3>
-                                                <p className="text-muted-foreground text-sm max-w-md">{searchTerm || sourceFilter !== 'all' ? 'No lead lists match your search criteria. Try adjusting your filters or search terms.' : 'Create your first lead list to start organizing and managing your prospects.'}</p>
+                                                <h3 className="text-base font-semibold text-foreground mb-1.5">{searchTerm || sourceFilter !== 'all' ? 'No lead lists found' : 'No lead lists yet'}</h3>
+                                                <p className="text-muted-foreground text-xs max-w-md">{searchTerm || sourceFilter !== 'all' ? 'No lead lists match your search criteria. Try adjusting your filters or search terms.' : 'Create your first lead list to start organizing and managing your prospects.'}</p>
                                             </div>
-                                            <Button onClick={() => (window.location.href = '/prospect-lists/create')} className="bg-gradient-purple hover-glow-purple text-white gap-2">
-                                                <Plus className="w-4 h-4" />
+                                            <Button onClick={() => (window.location.href = '/prospect-lists/create')} className="bg-gradient-purple hover-glow-purple text-white gap-1.5 text-sm">
+                                                <Plus className="w-3.5 h-3.5" />
                                                 Create Lead List
                                             </Button>
                                         </div>
@@ -257,11 +257,11 @@ export default function ProspectListsPage() {
                                 leadLists.map((list: any) => (
                                     <TableRow key={list.id} className="border-border/50 hover:bg-background/50">
                                         <TableCell>
-                                            <div className="font-medium text-foreground">{list.name}</div>
-                                            {list.description && <div className="text-sm text-muted-foreground mt-1">{list.description}</div>}
+                                            <div className="text-sm font-medium text-foreground">{list.name}</div>
+                                            {list.description && <div className="text-xs text-muted-foreground mt-0.5">{list.description}</div>}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className="bg-gradient-purple text-white">
+                                            <Badge variant="outline" className="bg-gradient-purple text-white text-xs">
                                                 {getSourceLabel(list.source)}
                                             </Badge>
                                         </TableCell>
@@ -270,8 +270,8 @@ export default function ProspectListsPage() {
                                                 const account = getAccountById(list.connected_account_id);
                                                 if (account) {
                                                     return (
-                                                        <div className="flex items-center gap-3">
-                                                            <Avatar className="w-8 h-8">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <Avatar className="w-7 h-7">
                                                                 <AvatarImage src={account.profile_picture_url} alt={account.display_name || 'Account'} />
                                                                 <AvatarFallback className="bg-gradient-purple text-white text-xs">
                                                                     {account.display_name
@@ -283,20 +283,20 @@ export default function ProspectListsPage() {
                                                                 </AvatarFallback>
                                                             </Avatar>
                                                             <div>
-                                                                <div className="font-medium text-foreground">{account.display_name || 'Unknown Account'}</div>
-                                                                <div className="text-sm text-muted-foreground">{account.metadata.account_type}</div>
+                                                                <div className="text-sm font-medium text-foreground">{account.display_name || 'Unknown Account'}</div>
+                                                                <div className="text-xs text-muted-foreground">{account.metadata.account_type}</div>
                                                             </div>
                                                         </div>
                                                     );
                                                 } else {
                                                     return (
-                                                        <div className="flex items-center gap-3">
-                                                            <Avatar className="w-8 h-8">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <Avatar className="w-7 h-7">
                                                                 <AvatarFallback className="bg-muted text-muted-foreground text-xs">?</AvatarFallback>
                                                             </Avatar>
                                                             <div>
-                                                                <div className="font-medium text-muted-foreground">Account not found</div>
-                                                                <div className="text-sm text-muted-foreground">ID: {list.connected_account_id}</div>
+                                                                <div className="text-sm font-medium text-muted-foreground">Account not found</div>
+                                                                <div className="text-xs text-muted-foreground">ID: {list.connected_account_id}</div>
                                                             </div>
                                                         </div>
                                                     );
@@ -305,22 +305,22 @@ export default function ProspectListsPage() {
                                         </TableCell>
                                         <TableCell>{getStatusBadge(list.status)}</TableCell>
                                         <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <div className="text-sm text-muted-foreground">{list.total_leads} leads</div>
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                <div className="text-xs text-muted-foreground">{list.total_leads} leads</div>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                            <MoreHorizontal className="w-4 h-4" />
+                                                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                                                            <MoreHorizontal className="w-3.5 h-3.5" />
                                                             <span className="sr-only">Open menu</span>
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-48">
-                                                        <DropdownMenuItem onClick={() => handleViewList(list.id)} className="cursor-pointer">
-                                                            <Eye className="w-4 h-4 mr-2" />
+                                                    <DropdownMenuContent align="end" className="w-44">
+                                                        <DropdownMenuItem onClick={() => handleViewList(list.id)} className="cursor-pointer text-xs">
+                                                            <Eye className="w-3.5 h-3.5 mr-1.5" />
                                                             View List
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleEditList(list.id)} className="cursor-pointer">
-                                                            <Edit className="w-4 h-4 mr-2" />
+                                                        <DropdownMenuItem onClick={() => handleEditList(list.id)} className="cursor-pointer text-xs">
+                                                            <Edit className="w-3.5 h-3.5 mr-1.5" />
                                                             Edit List
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
@@ -338,45 +338,45 @@ export default function ProspectListsPage() {
             {/* Pagination */}
             {!isLoading && !error && leadLists.length > 0 && (
                 <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                         Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalLeads)} of {totalLeads} lead lists
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">Rows per page</span>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">Rows per page</span>
                             <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                                <SelectTrigger className="w-16 h-8">
+                                <SelectTrigger className="w-14 h-7 text-xs">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="5">5</SelectItem>
-                                    <SelectItem value="10">10</SelectItem>
-                                    <SelectItem value="25">25</SelectItem>
-                                    <SelectItem value="50">50</SelectItem>
-                                    <SelectItem value="100">100</SelectItem>
+                                    <SelectItem value="5" className="text-xs">5</SelectItem>
+                                    <SelectItem value="10" className="text-xs">10</SelectItem>
+                                    <SelectItem value="25" className="text-xs">25</SelectItem>
+                                    <SelectItem value="50" className="text-xs">50</SelectItem>
+                                    <SelectItem value="100" className="text-xs">100</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        <div className="flex items-center gap-1">
-                            <Button variant="outline" size="sm" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
-                                <ChevronsLeft className="w-4 h-4" />
+                        <div className="flex items-center gap-0.5">
+                            <Button variant="outline" size="sm" onClick={() => handlePageChange(1)} disabled={currentPage === 1} className="h-7 w-7 p-0">
+                                <ChevronsLeft className="w-3.5 h-3.5" />
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-                                <ChevronLeft className="w-4 h-4" />
+                            <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="h-7 w-7 p-0">
+                                <ChevronLeft className="w-3.5 h-3.5" />
                             </Button>
 
                             {getPageNumbers().map(page => (
-                                <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(page)} className="w-8 h-8 p-0 bg-gradient-purple">
+                                <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(page)} className="w-7 h-7 p-0 text-xs bg-gradient-purple">
                                     {page}
                                 </Button>
                             ))}
 
-                            <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
-                                <ChevronRight className="w-4 h-4" />
+                            <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="h-7 w-7 p-0">
+                                <ChevronRight className="w-3.5 h-3.5" />
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>
-                                <ChevronsRight className="w-4 h-4" />
+                            <Button variant="outline" size="sm" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} className="h-7 w-7 p-0">
+                                <ChevronsRight className="w-3.5 h-3.5" />
                             </Button>
                         </div>
                     </div>

@@ -44,22 +44,22 @@ export default function HomePage() {
     }, []);
     return (
         <DashboardLayout>
-            <div className="space-y-6">
+            <div className="space-y-5">
                 {/* Page Header */}
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-                    <p className="text-muted-foreground">Welcome back! Here&apos;s what&apos;s happening with your campaigns.</p>
+                    <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+                    <p className="text-sm text-muted-foreground">Welcome back! Here&apos;s what&apos;s happening with your campaigns.</p>
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                     <StatCard isLoading={loading} title="Success Rate" value={dashboardStats?.success_rate ? `${dashboardStats.success_rate}%` : '0%'} change="Acceptance rate" changeType="neutral" icon={TrendingUp} gradient={true} />
                     <StatCard isLoading={loading} title="Requests Sent" value={dashboardStats?.requests_sent || 0} change="Total requests sent" changeType="neutral" icon={Send} />
                     <StatCard isLoading={loading} title="Total Steps" value={dashboardStats?.total_steps || 0} change="Total steps" changeType="neutral" icon={ListChecks} />
                 </div>
 
                 {/* Charts and Recent Activity */}
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-5 lg:grid-cols-2">
                     <AnalyticsChart />
                     <RecentCampaigns recentCampaigns={recentCampaigns} loading={loading} />
                 </div>

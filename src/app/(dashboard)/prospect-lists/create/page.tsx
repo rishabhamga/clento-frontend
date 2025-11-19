@@ -162,13 +162,13 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
     };
 
     const renderMainForm = () => (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Create Lead List</h2>
-                <p className="text-muted-foreground">Import leads from your CSV file</p>
+                <h2 className="text-xl font-bold text-foreground mb-1.5">Create Lead List</h2>
+                <p className="text-sm text-muted-foreground">Import leads from your CSV file</p>
             </div>
 
-            <div className="grid gap-6">
+            <div className="grid gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">List Name</Label>
                     <Input id="name" placeholder="Enter list name" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} />
@@ -224,44 +224,44 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <Label>CSV File (Max 10MB)</Label>
-                        <Button variant="outline" size="sm" onClick={handleDownloadSampleCsv} className="text-purple-600 border-purple-200 hover:bg-purple-50">
-                            <FileSpreadsheet className="w-4 h-4 mr-2" />
+                        <Button variant="outline" size="sm" onClick={handleDownloadSampleCsv} className="text-purple-600 border-purple-200 hover:bg-purple-50 text-xs">
+                            <FileSpreadsheet className="w-3.5 h-3.5 mr-1.5" />
                             Download Sample CSV
                         </Button>
                     </div>
 
                     {csvValidationError && (
                         <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>{csvValidationError}</AlertDescription>
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            <AlertDescription className="text-sm">{csvValidationError}</AlertDescription>
                         </Alert>
                     )}
 
                     <Card className="border-2 border-dashed border-border/50 bg-background/50">
-                        <CardContent className="flex flex-col items-center justify-center py-12">
+                        <CardContent className="flex flex-col items-center justify-center py-9">
                             {!formData.csvFile ? (
                                 <>
-                                    <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-                                    <div className="text-center space-y-2">
-                                        <p className="text-lg font-medium">Choose File</p>
-                                        <p className="text-sm text-muted-foreground">no file selected</p>
+                                    <FileText className="w-10 h-10 text-muted-foreground mb-3" />
+                                    <div className="text-center space-y-1.5">
+                                        <p className="text-base font-medium">Choose File</p>
+                                        <p className="text-xs text-muted-foreground">no file selected</p>
                                     </div>
-                                    <Button className="mt-4" onClick={() => document.getElementById('csv-upload')?.click()}>
-                                        <Upload className="w-4 h-4 mr-2" />
+                                    <Button className="mt-3 text-sm" onClick={() => document.getElementById('csv-upload')?.click()}>
+                                        <Upload className="w-3.5 h-3.5 mr-1.5" />
                                         Choose File
                                     </Button>
                                 </>
                             ) : (
-                                <div className="text-center space-y-2">
-                                    <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                                    <p className="text-lg font-medium">{formData.csvFile.name}</p>
-                                    <p className="text-sm text-muted-foreground">{formData.csvFile.size >= 1024 * 1024 ? `${(formData.csvFile.size / 1024 / 1024).toFixed(2)} MB` : `${(formData.csvFile.size / 1024).toFixed(2)} KB`}</p>
-                                    <div className="flex gap-2 mt-4">
-                                        <Button variant="outline" onClick={() => document.getElementById('csv-upload')?.click()}>
+                                <div className="text-center space-y-1.5">
+                                    <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-3" />
+                                    <p className="text-base font-medium">{formData.csvFile.name}</p>
+                                    <p className="text-xs text-muted-foreground">{formData.csvFile.size >= 1024 * 1024 ? `${(formData.csvFile.size / 1024 / 1024).toFixed(2)} MB` : `${(formData.csvFile.size / 1024).toFixed(2)} KB`}</p>
+                                    <div className="flex gap-1.5 mt-3">
+                                        <Button variant="outline" onClick={() => document.getElementById('csv-upload')?.click()} className="text-sm">
                                             Choose Different File
                                         </Button>
-                                        <Button onClick={handlePreview} disabled={!formData.connectedAccountId || uploadCsvMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white">
-                                            <Eye className="w-4 h-4 mr-2" />
+                                        <Button onClick={handlePreview} disabled={!formData.connectedAccountId || uploadCsvMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white text-sm">
+                                            <Eye className="w-3.5 h-3.5 mr-1.5" />
                                             {uploadCsvMutation.isPending ? 'Processing...' : 'Preview'}
                                         </Button>
                                     </div>
@@ -275,8 +275,8 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
             </div>
 
             <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
+                <AlertCircle className="h-3.5 w-3.5" />
+                <AlertDescription className="text-sm">
                     <strong>CSV File Requirements</strong>
                     <br />
                     <span className="text-red-500">• Required:</span> Your CSV must contain a column named &quot;linkedin_url&quot; or &quot;linkedinUrl&quot; with LinkedIn profile URLs
@@ -288,11 +288,11 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
             </Alert>
 
             <div className="flex justify-between">
-                <Button variant="outline" onClick={() => router.push('/prospect-lists')}>
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                <Button variant="outline" onClick={() => router.push('/prospect-lists')} className="text-sm">
+                    <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
                     Back to Lists
                 </Button>
-                <Button onClick={handlePublish} disabled={!formData.name || !formData.connectedAccountId || !formData.csvFile || !csvPreview?.found || publishMutation.isPending} className="bg-purple-600 hover:bg-purple-700 text-white">
+                <Button onClick={handlePublish} disabled={!formData.name || !formData.connectedAccountId || !formData.csvFile || !csvPreview?.found || publishMutation.isPending} className="bg-purple-600 hover:bg-purple-700 text-white text-sm">
                     {publishMutation.isPending ? 'Publishing...' : 'Publish List'}
                 </Button>
             </div>
@@ -303,16 +303,16 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
         if (!showPreview || !csvPreview) return null;
 
         return (
-            <div className="space-y-6 mt-8">
+            <div className="space-y-4 mt-6">
                 <div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">Lead List Preview</h3>
-                    <p className="text-muted-foreground">Review your lead list before publishing</p>
+                    <h3 className="text-base font-bold text-foreground mb-1.5">Lead List Preview</h3>
+                    <p className="text-sm text-muted-foreground">Review your lead list before publishing</p>
                 </div>
 
                 {csvPreview?.found > 0 ? (
                     <Alert>
-                        <CheckCircle className="h-4 w-4" />
-                        <AlertDescription>
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <AlertDescription className="text-sm">
                             <strong>CSV processed successfully!</strong>
                             <br />✅ Found {csvPreview.found} LinkedIn profiles
                             <br />
@@ -322,16 +322,16 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                     </Alert>
                 ) : (
                     <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>No LinkedIn profiles found. Please check your CSV format.</AlertDescription>
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <AlertDescription className="text-sm">No LinkedIn profiles found. Please check your CSV format.</AlertDescription>
                     </Alert>
                 )}
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center justify-between text-base">
                             <span>Lead List Preview</span>
-                            <Badge variant="outline">{csvPreview?.found || 0} Found Profiles</Badge>
+                            <Badge variant="outline" className="text-xs">{csvPreview?.found || 0} Found Profiles</Badge>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -352,9 +352,9 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                                     <TableRow key={index}>
                                         <TableCell>
                                             {lead.profilePictureUrl ? (
-                                                <Avatar className="w-8 h-8">
+                                                <Avatar className="w-7 h-7">
                                                     <AvatarImage src={lead.profilePictureUrl} alt={lead.name || 'Profile'} />
-                                                    <AvatarFallback>
+                                                    <AvatarFallback className="text-xs">
                                                         {lead.name
                                                             ? lead.name
                                                                   .split(' ')
@@ -367,31 +367,31 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                                                 'N/A'
                                             )}
                                         </TableCell>
-                                        <TableCell className="font-medium">{lead.name || 'N/A'}</TableCell>
+                                        <TableCell className="font-medium text-sm">{lead.name || 'N/A'}</TableCell>
                                         <TableCell>{lead.headline || 'N/A'}</TableCell>
                                         <TableCell>
                                             {lead.isPremium ? (
-                                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
                                                     Premium
                                                 </Badge>
                                             ) : (
-                                                <Badge variant="outline">Free</Badge>
+                                                <Badge variant="outline" className="text-xs">Free</Badge>
                                             )}
                                         </TableCell>
-                                        <TableCell>{lead.followerCount?.toLocaleString() || 'N/A'}</TableCell>
-                                        <TableCell>{lead.connectionCount?.toLocaleString() || 'N/A'}</TableCell>
+                                        <TableCell className="text-sm">{lead.followerCount?.toLocaleString() || 'N/A'}</TableCell>
+                                        <TableCell className="text-sm">{lead.connectionCount?.toLocaleString() || 'N/A'}</TableCell>
                                         <TableCell>
                                             {lead.websites && lead.websites.length > 0 ? (
-                                                <div className="space-y-1">
+                                                <div className="space-y-0.5">
                                                     {lead.websites.slice(0, 2).map((website, idx) => (
-                                                        <a key={idx} href={website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm block">
+                                                        <a key={idx} href={website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs block">
                                                             {website}
                                                         </a>
                                                     ))}
-                                                    {lead.websites.length > 2 && <span className="text-xs text-muted-foreground">+{lead.websites.length - 2} more</span>}
+                                                    {lead.websites.length > 2 && <span className="text-[10px] text-muted-foreground">+{lead.websites.length - 2} more</span>}
                                                 </div>
                                             ) : (
-                                                'N/A'
+                                                <span className="text-sm">N/A</span>
                                             )}
                                         </TableCell>
                                     </TableRow>
@@ -405,9 +405,9 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
     };
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6">
+        <div className="max-w-6xl mx-auto space-y-4">
             <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-5">
                     {renderMainForm()}
                     {renderPreview()}
                 </CardContent>

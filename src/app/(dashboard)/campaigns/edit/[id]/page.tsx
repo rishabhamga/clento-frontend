@@ -808,23 +808,23 @@ const EditCampaignPage = () => {
     }, []);
 
     return (
-        <div className="container mx-auto py-6 space-y-6">
+        <div className="container mx-auto py-5 space-y-4">
             {/* Tabs */}
             <div className="border-b">
                 <div className="flex row items-center justify-between">
-                    <nav className="flex space-x-8">
+                    <nav className="flex space-x-6">
                         {tabs.map(tabItem => {
                             const Icon = tabItem.icon;
                             return (
-                                <button key={tabItem.id} onClick={() => setTab(tabItem.id)} className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${tab === tabItem.id ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
-                                    <Icon className="h-4 w-4" />
+                                <button key={tabItem.id} onClick={() => setTab(tabItem.id)} className={`flex items-center space-x-1.5 py-3 px-1 border-b-2 font-medium text-xs transition-colors ${tab === tabItem.id ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+                                    <Icon className="h-3.5 w-3.5" />
                                     <span>{tabItem.label}</span>
                                 </button>
                             );
                         })}
                     </nav>
-                    <Button className="bg-gradient-purple hover-glow-purple" onClick={handleEditCampaign} disabled={isEditingCampaign}>
-                        {isEditingCampaign ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
+                    <Button className="bg-gradient-purple hover-glow-purple text-sm" onClick={handleEditCampaign} disabled={isEditingCampaign}>
+                        {isEditingCampaign ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
                         Save Changes
                     </Button>
                 </div>
@@ -832,13 +832,13 @@ const EditCampaignPage = () => {
 
             {/* Tab Content */}
             {isLoading && (
-                <div className="text-center py-8">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    <p className="text-muted-foreground">Loading Details...</p>
+                <div className="text-center py-9">
+                    <RefreshCw className="w-7 h-7 animate-spin mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Loading Details...</p>
                 </div>
             )}
             {!isLoading && (
-                <div className="py-6">
+                <div className="py-5">
                     {tab === CampaignTabs.DETAILS &&
                         renderDetailsTab({
                             state: detailsState,
@@ -903,14 +903,14 @@ const renderDetailsTab = ({
     };
     isLoadingLeadLists: boolean;
 }) => (
-    <div className="space-y-6">
+    <div className="space-y-4">
         <Card>
-            <CardHeader>
-                <CardTitle>Campaign Information</CardTitle>
-                <CardDescription>Set up the basic details for your campaign</CardDescription>
+            <CardHeader className="pb-3">
+                <CardTitle className="text-base">Campaign Information</CardTitle>
+                <CardDescription className="text-sm">Set up the basic details for your campaign</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-2">
                         <Label htmlFor="campaign-name">Campaign Name</Label>
                         <Input id="campaign-name" value={state.name} onChange={e => setState({ type: 'SET_FIELD', field: 'name', value: e.target.value })} placeholder="Enter campaign name" />
@@ -1041,7 +1041,7 @@ const renderDetailsTab = ({
 
 const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, onDelayUpdate, onExportJSON, onImportJSON, onDeleteNode, onResetWorkflow }: { workflow: WorkflowData | null; setWorkflow: (workflow: WorkflowData) => void; onAddFirstNode: () => void; onAddStepClick: (nodeId: string) => void; onDelayUpdate: (edgeId: string, delayConfig: { delay: number; unit: DelayUnit }) => void; onExportJSON: () => void; onImportJSON: (event: React.ChangeEvent<HTMLInputElement>) => void; onDeleteNode: (nodeId: string) => void; onResetWorkflow: () => void }) => {
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <Card>
                 <CardContent>
                     {workflow ? (
@@ -1087,7 +1087,7 @@ const renderFlowTab = ({ workflow, setWorkflow, onAddFirstNode, onAddStepClick, 
                                 }}></div>
 
                             {/* Main content */}
-                            <div className="relative flex flex-col items-center justify-center h-full space-y-6">
+                            <div className="relative flex flex-col items-center justify-center h-full space-y-4">
                                 {/* Main action buttons */}
                                 <div className="flex flex-col items-center space-y-4">
                                     <Button onClick={onAddFirstNode} variant="outline" className="h-12 px-6 border-2 border-gray-300 hover:border-gray-400 bg-white">

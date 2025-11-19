@@ -113,11 +113,11 @@ export default function EditLeadListPage() {
     // Loading state
     if (isLoadingLeadList) {
         return (
-            <div className="max-w-2xl mx-auto space-y-6">
+            <div className="max-w-2xl mx-auto space-y-4">
                 <Card>
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-center py-12">
-                            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    <CardContent className="p-5">
+                        <div className="flex items-center justify-center py-9">
+                            <Loader2 className="w-7 h-7 animate-spin text-muted-foreground" />
                         </div>
                     </CardContent>
                 </Card>
@@ -128,16 +128,16 @@ export default function EditLeadListPage() {
     // Error state
     if (leadListError) {
         return (
-            <div className="max-w-2xl mx-auto space-y-6">
+            <div className="max-w-2xl mx-auto space-y-4">
                 <Card>
-                    <CardContent className="p-6">
+                    <CardContent className="p-5">
                         <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>Failed to load lead list. Please try again.</AlertDescription>
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            <AlertDescription className="text-sm">Failed to load lead list. Please try again.</AlertDescription>
                         </Alert>
-                        <div className="flex justify-start mt-4">
-                            <Button variant="outline" onClick={() => router.push('/prospect-lists')}>
-                                <ArrowLeft className="w-4 h-4 mr-2" />
+                        <div className="flex justify-start mt-3">
+                            <Button variant="outline" onClick={() => router.push('/prospect-lists')} className="text-sm">
+                                <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
                                 Back to Lists
                             </Button>
                         </div>
@@ -150,16 +150,16 @@ export default function EditLeadListPage() {
     // No data state
     if (!leadListData?.leadList) {
         return (
-            <div className="max-w-2xl mx-auto space-y-6">
+            <div className="max-w-2xl mx-auto space-y-4">
                 <Card>
-                    <CardContent className="p-6">
+                    <CardContent className="p-5">
                         <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>Lead list not found.</AlertDescription>
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            <AlertDescription className="text-sm">Lead list not found.</AlertDescription>
                         </Alert>
-                        <div className="flex justify-start mt-4">
-                            <Button variant="outline" onClick={() => router.push('/prospect-lists')}>
-                                <ArrowLeft className="w-4 h-4 mr-2" />
+                        <div className="flex justify-start mt-3">
+                            <Button variant="outline" onClick={() => router.push('/prospect-lists')} className="text-sm">
+                                <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
                                 Back to Lists
                             </Button>
                         </div>
@@ -170,18 +170,18 @@ export default function EditLeadListPage() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-4">
             <div>
-                <h1 className="text-3xl font-bold text-foreground">Edit Lead List</h1>
-                <p className="text-muted-foreground mt-2">Update the name and connected account for your lead list</p>
+                <h1 className="text-xl font-bold text-foreground">Edit Lead List</h1>
+                <p className="text-sm text-muted-foreground mt-1.5">Update the name and connected account for your lead list</p>
             </div>
 
             <Card>
-                <CardHeader>
-                    <CardTitle>Lead List Details</CardTitle>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Lead List Details</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         {/* List Name */}
                         <div className="space-y-2">
                             <Label htmlFor="name">List Name</Label>
@@ -239,9 +239,9 @@ export default function EditLeadListPage() {
                         </div>
 
                         {/* Current Lead List Info */}
-                        <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                            <h4 className="font-medium text-sm text-muted-foreground">Current Lead List Info</h4>
-                            <div className="text-sm space-y-1">
+                        <div className="bg-muted/50 rounded-lg p-3 space-y-1.5">
+                            <h4 className="font-medium text-xs text-muted-foreground">Current Lead List Info</h4>
+                            <div className="text-xs space-y-0.5">
                                 <p>
                                     <span className="font-medium">Total Leads:</span> {leadListData.leadList.total_leads || 0}
                                 </p>
@@ -262,19 +262,19 @@ export default function EditLeadListPage() {
 
                         {/* Action Buttons */}
                         <div className="flex justify-between pt-4">
-                            <Button type="button" variant="outline" onClick={() => router.push('/prospect-lists')} disabled={updateMutation.isPending}>
-                                <ArrowLeft className="w-4 h-4 mr-2" />
+                            <Button type="button" variant="outline" onClick={() => router.push('/prospect-lists')} disabled={updateMutation.isPending} className="text-sm">
+                                <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={updateMutation.isPending || !formData.name.trim() || !formData.connectedAccountId} className="bg-purple-600 hover:bg-purple-700 text-white">
+                            <Button type="submit" disabled={updateMutation.isPending || !formData.name.trim() || !formData.connectedAccountId} className="bg-purple-600 hover:bg-purple-700 text-white text-sm">
                                 {updateMutation.isPending ? (
                                     <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
                                         Saving...
                                     </>
                                 ) : (
                                     <>
-                                        <Save className="w-4 h-4 mr-2" />
+                                        <Save className="w-3.5 h-3.5 mr-1.5" />
                                         Save Changes
                                     </>
                                 )}

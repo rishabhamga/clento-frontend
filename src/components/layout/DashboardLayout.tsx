@@ -14,7 +14,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <AppSidebar />
             <SidebarInset>
                 <TopBar />
-                <main className="flex-1 overflow-auto p-6 bg-background">{children}</main>
+                <main className="flex-1 overflow-auto p-5 bg-background">{children}</main>
             </SidebarInset>
         </SidebarProvider>
     );

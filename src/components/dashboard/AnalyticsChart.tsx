@@ -94,7 +94,7 @@ export const AnalyticsChart = () => {
                         description="There's no campaign activity data available yet. Start a campaign to see analytics here."
                     />
                 ) : (
-                    <ResponsiveContainer width="100%" height={350}>
+                    <ResponsiveContainer width="100%" height={315}>
                         <BarChart data={recentActivity}>
                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                             <Tooltip
@@ -104,8 +104,8 @@ export const AnalyticsChart = () => {
                                 }}
                                 cursor={false}
                             />
-                            <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} angle={-90} textAnchor="end" height={80} />
-                            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                            <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} angle={-90} textAnchor="end" height={72} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
                             {(() => {
                                 switch (type) {
                                     case ERecentActivity.CONNECTIONS:
@@ -161,8 +161,8 @@ const AnalyticsChartSkeleton = () => {
     ];
 
     return (
-        <div className="w-full h-[350px] flex flex-col">
-            <div className="flex-1 flex items-end gap-2 px-4 pb-8">
+        <div className="w-full h-[315px] flex flex-col">
+            <div className="flex-1 flex items-end gap-1.5 px-3 pb-7">
                 {heights.map((barHeights, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1">
                         <div className="flex flex-col items-center gap-1 w-full h-full justify-end">
@@ -170,7 +170,7 @@ const AnalyticsChartSkeleton = () => {
                             <Skeleton className="w-full rounded-t-md" style={{ height: `${barHeights[1]}%` }} />
                             <Skeleton className="w-full rounded-t-md" style={{ height: `${barHeights[2]}%` }} />
                         </div>
-                        <Skeleton className="h-4 w-12 -rotate-90 mt-2" />
+                        <Skeleton className="h-3.5 w-11 -rotate-90 mt-1.5" />
                     </div>
                 ))}
             </div>

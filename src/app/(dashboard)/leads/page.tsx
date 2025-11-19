@@ -90,11 +90,11 @@ function LeadsPageContent() {
     // Show loading state for recent leads (when no listId)
     if (!listId && loadingLeads) {
         return (
-            <div className="space-y-6">
-                <div className="flex items-center justify-center py-12">
-                    <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
-                        <span className="text-muted-foreground font-medium">Loading leads...</span>
+            <div className="space-y-5">
+                <div className="flex items-center justify-center py-9">
+                    <div className="flex items-center gap-1.5">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-600" />
+                        <span className="text-sm text-muted-foreground font-medium">Loading leads...</span>
                     </div>
                 </div>
             </div>
@@ -112,10 +112,10 @@ function LeadsPageContent() {
     // Show loading state while fetching lead list data
     if (isLoadingLeadList) {
         return (
-            <div className="space-y-6">
-                <div className="flex items-center justify-center py-12">
-                    <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+            <div className="space-y-5">
+                <div className="flex items-center justify-center py-10">
+                    <div className="flex items-center gap-1.5">
+                        <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
                         <span className="text-muted-foreground font-medium">Loading lead list...</span>
                     </div>
                 </div>
@@ -200,16 +200,16 @@ function LeadsPageContent() {
     };
 
     return (
-        <div className="space-y-6 w-full max-w-full overflow-hidden">
+        <div className="space-y-4 w-full max-w-full overflow-hidden">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">
+                    <h1 className="text-xl font-bold text-foreground">
                         Leads
-                        {leadList && <span className="text-lg font-normal text-muted-foreground ml-2">from "{leadList.leadList.name}"</span>}
+                        {leadList && <span className="text-sm font-normal text-muted-foreground ml-1.5">from "{leadList.leadList.name}"</span>}
                     </h1>
                     {leadList && (
-                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                             <span>Total: {leadList.leadList.total_leads}</span>
                             <span>•</span>
                             <span>Valid: {leadList.csvData.validRows}</span>
@@ -237,10 +237,10 @@ function LeadsPageContent() {
             </div>
 
             {/* Search */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2.5">
                 <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input placeholder="Search leads..." className="pl-10 bg-background" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5" />
+                    <Input placeholder="Search leads..." className="pl-8 text-sm bg-background" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
                 </div>
             </div>
 
@@ -250,7 +250,7 @@ function LeadsPageContent() {
                     <Table>
                         <TableHeader>
                             <TableRow className="border-border/50">
-                                <TableHead className="w-12 whitespace-nowrap">
+                                <TableHead className="w-11 whitespace-nowrap">
                                     <Checkbox />
                                 </TableHead>
                                 {leadList.csvData.headers.map((header: string, index: number) => (
@@ -263,25 +263,25 @@ function LeadsPageContent() {
                         <TableBody>
                             {isLoadingLeadList ? (
                                 <TableRow>
-                                    <TableCell colSpan={getColumnCount()} className="text-center py-12">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
-                                            <span className="text-muted-foreground font-medium">Loading leads...</span>
+                                    <TableCell colSpan={getColumnCount()} className="text-center py-9">
+                                        <div className="flex items-center justify-center gap-1.5">
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-600" />
+                                            <span className="text-sm text-muted-foreground font-medium">Loading leads...</span>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : error ? (
                                 <TableRow>
-                                    <TableCell colSpan={getColumnCount()} className="text-center py-12">
-                                        <div className="flex flex-col items-center gap-4">
-                                            <div className="flex items-center gap-2 text-red-500">
-                                                <AlertCircle className="w-5 h-5" />
-                                                <span className="font-medium">Oops! Something went wrong</span>
+                                    <TableCell colSpan={getColumnCount()} className="text-center py-9">
+                                        <div className="flex flex-col items-center gap-2.5">
+                                            <div className="flex items-center gap-1.5 text-red-500">
+                                                <AlertCircle className="w-3.5 h-3.5" />
+                                                <span className="text-sm font-medium">Oops! Something went wrong</span>
                                             </div>
-                                            <p className="text-muted-foreground text-sm max-w-md text-center">{error instanceof Error ? error.message : 'Failed to load leads. Please try again.'}</p>
-                                            <div className="flex gap-2">
-                                                <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="gap-2">
-                                                    <RefreshCw className="w-4 h-4" />
+                                            <p className="text-muted-foreground text-xs max-w-md text-center">{error instanceof Error ? error.message : 'Failed to load leads. Please try again.'}</p>
+                                            <div className="flex gap-1.5">
+                                                <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="gap-1.5 text-xs">
+                                                    <RefreshCw className="w-3.5 h-3.5" />
                                                     Try Again
                                                 </Button>
                                             </div>
@@ -290,16 +290,16 @@ function LeadsPageContent() {
                                 </TableRow>
                             ) : filteredLeads.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={getColumnCount()} className="text-center py-12">
-                                        <div className="flex flex-col items-center gap-4">
-                                            <Users className="w-12 h-12 text-muted-foreground/50" />
+                                    <TableCell colSpan={getColumnCount()} className="text-center py-9">
+                                        <div className="flex flex-col items-center gap-2.5">
+                                            <Users className="w-10 h-10 text-muted-foreground/50" />
                                             <div className="text-center">
-                                                <h3 className="text-lg font-semibold text-foreground mb-2">{searchTerm ? 'No leads found' : 'No leads yet'}</h3>
-                                                <p className="text-muted-foreground text-sm max-w-md">{searchTerm ? 'No leads match your search criteria. Try adjusting your search terms.' : 'Import leads from a CSV file or add them manually to get started with your outreach campaigns.'}</p>
+                                                <h3 className="text-sm font-semibold text-foreground mb-1">{searchTerm ? 'No leads found' : 'No leads yet'}</h3>
+                                                <p className="text-muted-foreground text-xs max-w-md">{searchTerm ? 'No leads match your search criteria. Try adjusting your search terms.' : 'Import leads from a CSV file or add them manually to get started with your outreach campaigns.'}</p>
                                             </div>
-                                            <div className="flex gap-2">
-                                                <Button onClick={() => (window.location.href = '/prospect-lists/create')} className="bg-purple-600 hover:bg-purple-700 text-white gap-2">
-                                                    <Plus className="w-4 h-4" />
+                                            <div className="flex gap-1.5">
+                                                <Button onClick={() => (window.location.href = '/prospect-lists/create')} className="bg-purple-600 hover:bg-purple-700 text-white gap-1.5 text-sm">
+                                                    <Plus className="w-3.5 h-3.5" />
                                                     Import Leads
                                                 </Button>
                                             </div>
@@ -331,7 +331,7 @@ function LeadsPageContent() {
                                                         return (
                                                             <Button variant="ghost" size="sm" asChild>
                                                                 <a href={value} target="_blank" rel="noopener noreferrer">
-                                                                    <ExternalLink className="w-4 h-4" />
+                                                                    <ExternalLink className="w-3.5 h-3.5" />
                                                                 </a>
                                                             </Button>
                                                         );
@@ -351,7 +351,7 @@ function LeadsPageContent() {
                                                         return (
                                                             <Button variant="ghost" size="sm" asChild>
                                                                 <a href={value} target="_blank" rel="noopener noreferrer">
-                                                                    <ExternalLink className="w-4 h-4" />
+                                                                    <ExternalLink className="w-3.5 h-3.5" />
                                                                 </a>
                                                             </Button>
                                                         );
@@ -373,15 +373,15 @@ function LeadsPageContent() {
             {/* Pagination */}
             {!isLoadingLeadList && !error && filteredLeads.length > 0 && (
                 <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                         Showing {startIndex + 1} to {Math.min(endIndex, totalLeads)} of {totalLeads} leads
                         {leadList && <span> from "{leadList.leadList.name}"</span>}
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">Rows per page</span>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">Rows per page</span>
                             <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                                <SelectTrigger className="w-16 h-8">
+                                <SelectTrigger className="w-14 h-7">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -396,23 +396,23 @@ function LeadsPageContent() {
 
                         <div className="flex items-center gap-1">
                             <Button variant="outline" size="sm" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
-                                <ChevronsLeft className="w-4 h-4" />
+                                <ChevronsLeft className="w-3.5 h-3.5" />
                             </Button>
                             <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-                                <ChevronLeft className="w-4 h-4" />
+                                <ChevronLeft className="w-3.5 h-3.5" />
                             </Button>
 
                             {getPageNumbers().map(page => (
-                                <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(page)} className="w-8 h-8 p-0 bg-gradient-purple">
+                                <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(page)} className="w-7 h-7 p-0 bg-gradient-purple">
                                     {page}
                                 </Button>
                             ))}
 
                             <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
-                                <ChevronRight className="w-4 h-4" />
+                                <ChevronRight className="w-3.5 h-3.5" />
                             </Button>
                             <Button variant="outline" size="sm" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>
-                                <ChevronsRight className="w-4 h-4" />
+                                <ChevronsRight className="w-3.5 h-3.5" />
                             </Button>
                         </div>
                     </div>
@@ -424,11 +424,11 @@ function LeadsPageContent() {
 
 const LeadsState = ({ leads }: { leads: Leads[] }) => {
     return (
-        <div className="space-y-6 w-full max-w-full overflow-hidden">
+        <div className="space-y-5 w-full max-w-full overflow-hidden">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Leads</h1>
+                    <h1 className="text-2xl font-bold text-foreground">Leads</h1>
                 </div>
             </div>
             <div className="bg-card rounded-lg border border-border/50">
@@ -436,7 +436,7 @@ const LeadsState = ({ leads }: { leads: Leads[] }) => {
                     <Table>
                         <TableHeader>
                             <TableRow className="border-border/50">
-                                <TableHead className="w-12 whitespace-nowrap">
+                                <TableHead className="w-11 whitespace-nowrap">
                                     <Checkbox />
                                 </TableHead>
                                 <TableHead className="text-muted-foreground capitalize whitespace-nowrap">Name</TableHead>
@@ -472,7 +472,7 @@ const LeadsState = ({ leads }: { leads: Leads[] }) => {
                                         <span className="text-purple-600">{extractLinkedInPublicIdentifier(it.linkedin_url)}</span>
                                         <Button variant="ghost" size="sm" asChild>
                                             <a href={it.linkedin_url} target="_blank" rel="noopener noreferrer">
-                                                <ExternalLink className="w-4 h-4 text-purple-600" />
+                                                <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
                                             </a>
                                         </Button>
                                     </TableCell>
