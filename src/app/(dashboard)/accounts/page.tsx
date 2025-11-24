@@ -182,10 +182,6 @@ export default function AccountsPage() {
                     <h1 className="text-xl font-bold text-foreground">Accounts</h1>
                     <p className="text-sm text-muted-foreground">Manage your connected accounts and integrations</p>
                 </div>
-                <Button className="bg-gradient-purple hover-glow-purple text-sm">
-                    <Plus className="w-3.5 h-3.5 mr-1.5" />
-                    Connect Account
-                </Button>
             </div>
 
             {/* Accounts Table */}
