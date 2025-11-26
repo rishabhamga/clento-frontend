@@ -1,39 +1,67 @@
 'use client';
 
-import { Database, MoreHorizontal, Plus, Settings, Webhook, Send } from 'lucide-react';
+import { useAuth } from '@clerk/nextjs';
+import { Loader2, Plus, Send } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../../components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
-import { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../../../../components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../../components/ui/dialog';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
-import { toast } from 'sonner';
-import { makeAuthenticatedRequest, MakeAxiosRequest } from '../../../../lib/axios-utils';
-import { useAuth } from '@clerk/nextjs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
+import { makeAuthenticatedRequest } from '../../../../lib/axios-utils';
 
-interface WebhookFormData {
+interface Webhook {
+    id: string;
+    organization_id: string;
     name: string;
     url: string;
+    success_rate: number;
+    created_at: string;
 }
 
 const WebhooksPageContent = () => {
     const [addModal, setAddModal] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [webhooks, setWebhooks] = useState<Webhook[]>([]);
 
+    const { getToken } = useAuth();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const token = await getToken();
+            if (!token) {
+                toast.error('Login Please');
+                return;
+            }
+            try {
+                const res = await makeAuthenticatedRequest('GET', '/integrations/webhooks', {}, token);
+                console.log(res?.webhooks);
+                setWebhooks(res?.webhooks);
+            } catch (error) {
+                console.log(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
     return (
-        <div className="space-y-4 w-full max-w-full overflow-hidden">
+        <div className="space-y-4 w-full max-w-full">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-xl font-bold text-foreground">Webhooks</h1>
                     <p className="text-sm text-muted-foreground">Manage your Webhooks here</p>
                 </div>
-                <Button className="bg-gradient-purple hover-glow-purple text-sm" onClick={() => setAddModal(true)}>
-                    <Plus className="w-3.5 h-3.5 mr-1.5" />
-                    Add Webhook
-                </Button>
+                <div className="pt-3">
+                    <Button onClick={() => setAddModal(true)} className="bg-gradient-purple hover:bg-gradient-purple-dark text-white border-0 hover-glow-purple">
+                        <Plus className="w-3.5 h-3.5 mr-1.5" />
+                        Add Webhook
+                    </Button>
+            </div>
             </div>
             {/* Accounts Table */}
             <Card className="bg-card border-border/50">
@@ -44,12 +72,43 @@ const WebhooksPageContent = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>App</TableHead>
-                                <TableHead>Connection Status</TableHead>
-                                <TableHead>Actions</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead className="text-center">Url</TableHead>
+                                <TableHead className="text-center">Success Rate</TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody></TableBody>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell className="py-10"> </TableCell>
+                                    <TableCell className="py-10">
+                                        <div className="flex items-center gap-1.5 justify-center">
+                                            <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
+                                            <span className="text-sm text-muted-foreground font-medium">Loading webhooks...</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center py-10"> </TableCell>
+                                </TableRow>
+                            ) : webhooks.length === 0 ? (
+                                <TableRow>
+                                    <TableCell className="py-10"> </TableCell>
+                                    <TableCell className="py-10">
+                                        <div className="flex items-center gap-1.5 text-center justify-center">
+                                            <span className="text-sm text-muted-foreground font-medium">No Webhooks Found</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center py-10"> </TableCell>
+                                </TableRow>
+                            ) : (
+                                webhooks.map(w => (
+                                    <TableRow key={w.id}>
+                                        <TableCell className="text-sm font-medium text-muted-foreground">{w.name}</TableCell>
+                                        <TableCell className="text-center text-muted-foreground">{w.url}</TableCell>
+                                        <TableCell className="text-center text-muted-foreground">{w.success_rate}%</TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
                     </Table>
                 </CardContent>
             </Card>
@@ -67,6 +126,7 @@ const CreateModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (ope
     const { getToken } = useAuth();
     const [tested, setTested] = useState<boolean>(false);
     const [webhookResponse, setWebhookResponse] = useState<string>();
+
     const handleTestConnection = async () => {
         try {
             const token = await getToken();
@@ -78,7 +138,7 @@ const CreateModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (ope
                 command: 'TEST_WEBHOOK',
                 webhookUrl: formData.webhookUrl,
             };
-            const res = await makeAuthenticatedRequest('POST', '/integrations', reqBody, token);
+            const res = await makeAuthenticatedRequest('POST', '/integrations/webhooks', reqBody, token);
             setWebhookResponse(res.webhookResponse);
             setTested(true);
         } catch (err) {
@@ -86,12 +146,31 @@ const CreateModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (ope
             console.log(err);
         }
     };
+
     const checkUrl = (url: string) => {
         const regex = /^https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(?::\d+)?(?:\/[^\s]*)?$/;
         const result = regex.test(url);
         return result;
     };
 
+    const handleCreateWebhooks = async () => {
+        try {
+            const token = await getToken();
+            if (!token) {
+                toast.error('Login Not Detected');
+                return;
+            }
+            const reqBody = {
+                command: 'CREATE',
+                name: formData.name,
+                webhookUrl: formData.webhookUrl,
+            };
+            const res = await makeAuthenticatedRequest('POST', '/integrations/webhooks', reqBody, token);
+            onOpenChange(false);
+        } catch (err) {
+            console.log(err);
+        }
+    };
     useEffect(() => {
         setTested(false);
     }, [formData]);
@@ -149,7 +228,7 @@ const CreateModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (ope
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                         Cancel
                     </Button>
-                    <Button type="button" className="bg-gradient-purple hover-glow-purple" onClick={() => {}} disabled={!tested}>
+                    <Button type="button" className="bg-gradient-purple hover-glow-purple" onClick={handleCreateWebhooks} disabled={!tested}>
                         Create Webhook
                     </Button>
                 </DialogFooter>
