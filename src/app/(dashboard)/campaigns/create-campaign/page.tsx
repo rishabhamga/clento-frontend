@@ -1,7 +1,27 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TimePicker } from '@/components/ui/time-picker';
 import { WorkflowNodeType, getNodeLabel, hasConditionalPaths } from '@/config/workflow-nodes';
+import { useAuth } from '@clerk/nextjs';
+import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
+import { Loader2, Settings, Workflow } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ActionDispatch, useReducer, useState } from 'react';
+import { toast } from 'sonner';
+import ReactFlowCard from '../../../../components/ui/react-flow';
+import { NodeSelectionModal } from '../../../../components/workflow/NodeSelectionModal';
+import { ConnectedAccount, useConnectedAccounts } from '../../../../hooks/useConnectedAccounts';
+import { useLeadLists } from '../../../../hooks/useLeadLists';
+import { CheckNever, makeAuthenticatedRequest } from '../../../../lib/axios-utils';
+import { getTimezoneOptionsByRegion, getUserTimezone } from '../../../../lib/timezone-utils';
+import { LeadList } from '../../../../types/lead-list';
+import { Webhook } from '../../integrations/webhooks/page';
 
 // Function to get default configuration for each node type
 export const getDefaultConfigForNodeType = (nodeType: WorkflowNodeType): BaseConfig => {
@@ -47,29 +67,14 @@ export const getDefaultConfigForNodeType = (nodeType: WorkflowNodeType): BaseCon
                 engageWithRecentActivity: false,
                 messagePurpose: '',
             };
+        case 'webhook':
+            return {
+                webhookId: undefined,
+            };
         default:
             return {};
     }
 };
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DatePicker } from '@/components/ui/date-picker';
-import { TimePicker } from '@/components/ui/time-picker';
-import { Loader2, Settings, Workflow } from 'lucide-react';
-import { toast } from 'sonner';
-import { ActionDispatch, useEffect, useReducer, useState } from 'react';
-import { useConnectedAccounts, ConnectedAccount } from '../../../../hooks/useConnectedAccounts';
-import { useLeadLists } from '../../../../hooks/useLeadLists';
-import { LeadList } from '../../../../types/lead-list';
-import { getTimezoneOptionsByRegion, getUserTimezone } from '../../../../lib/timezone-utils';
-import ReactFlowCard from '../../../../components/ui/react-flow';
-import { NodeSelectionModal } from '../../../../components/workflow/NodeSelectionModal';
-import { getConnectedEdges, getIncomers, getOutgoers } from '@xyflow/react';
-import { CheckNever, makeAuthenticatedRequest } from '../../../../lib/axios-utils';
-import { useAuth } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
 
 export enum CampaignTabs {
     DETAILS = 'DETAILS',
@@ -115,6 +120,7 @@ export interface BaseConfig {
     aiWritingAssistant?: boolean;
     messageLength?: 'short' | 'medium' | 'long';
     messagePurpose?: string;
+    webhookId?: string;
 }
 
 export type DelayUnit = 's' | 'm' | 'h' | 'd' | 'w';
@@ -182,6 +188,7 @@ const CreateCampaignPage = () => {
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [isAddingStepNode, setIsAddingStepNode] = useState(false);
     const [isCreatingCampaign, setIsCreatingCampaign] = useState(false);
+    const [webhooks, setWebhooks] = useState<Webhook[]>([]);
     const { getToken } = useAuth();
 
     // Function to export workflow JSON in the exact reference format

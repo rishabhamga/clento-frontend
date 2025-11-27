@@ -13,7 +13,7 @@ import { Label } from '../../../../components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
 import { makeAuthenticatedRequest } from '../../../../lib/axios-utils';
 
-interface Webhook {
+export interface Webhook {
     id: string;
     organization_id: string;
     name: string;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { WorkflowNodeType, getNodeConfig } from '@/config/workflow-nodes';
 import { ActionNodeData, BaseConfig } from '@/app/(dashboard)/campaigns/create-campaign/page';
 import { Info, Settings, X } from 'lucide-react';
@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Webhook } from '../../app/(dashboard)/integrations/webhooks/page';
+import { useWebhooks } from '../../hooks/use-webhooks';
 
 // Custom Toggle Component
 const Toggle = ({ checked, onCheckedChange, id }: { checked: boolean; onCheckedChange: (checked: boolean) => void; id: string }) => {
@@ -147,6 +149,8 @@ const renderConfiguration = ({ nodeData, config, onConfigChange }: { nodeData: A
             return <CommentConfiguration config={config} onConfigChange={onConfigChange} />;
         case 'send_connection_request':
             return <ConnectionRequestConfiguration config={config} onConfigChange={onConfigChange} />;
+        case 'webhook':
+            return <WebhookConfiguration config={config} onConfigChange={onConfigChange} />;
         default:
             CheckNever(nodeData.type);
     }
@@ -668,6 +672,38 @@ const LikeConfiguration = ({ config, onConfigChange }: { config: BaseConfig; onC
                     Recent Post Within (days)
                 </Label>
                 <Input id="like-recent-post-days" type="number" value={config.recentPostDays || 7} onChange={e => onConfigChange('recentPostDays', parseInt(e.target.value) || 7)} min="1" max="30" className="w-20" />
+            </div>
+        </div>
+    );
+};
+
+const WebhookConfiguration = ({ config, onConfigChange }: { config: BaseConfig; onConfigChange: (key: keyof BaseConfig, value: any) => void }) => {
+    const { webhooks, loading, error } = useWebhooks();
+    return (
+        <div className="space-y-6">
+            {/* Webhook URL */}
+            <div className="flex items-center justify-between">
+                <Label htmlFor="webhook-url" className="text-sm font-medium">
+                    Webhook URL
+                </Label>
+                <Select value={config.webhookId || ''} onValueChange={value => onConfigChange('webhookId', value)}>
+                    <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Select webhook" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {loading ? (
+                            <SelectItem value="loading">Loading...</SelectItem>
+                        ) : error ? (
+                            <SelectItem value="error">Error loading webhooks</SelectItem>
+                        ) : (
+                            webhooks.map(webhook => (
+                                <SelectItem key={webhook.id} value={webhook.id}>
+                                    {webhook.name}
+                                </SelectItem>
+                            ))
+                        )}
+                    </SelectContent>
+                </Select>
             </div>
         </div>
     );
