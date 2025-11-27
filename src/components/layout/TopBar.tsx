@@ -2,12 +2,29 @@
 
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { OrganizationSwitcher, UserButton } from '@clerk/nextjs';
+import { OrganizationSwitcher, useAuth, UserButton } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 import { useTheme } from 'next-themes';
+import { makeAuthenticatedRequest } from '../../lib/axios-utils';
 
 export function TopBar() {
     const { theme } = useTheme();
+    const { getToken } = useAuth();
+
+    const handleSwitchOrg = (org: any) => {
+        const token = getToken().then(token => {
+            if (!token) {
+                console.log('error switching orgs');
+                return;
+            }
+            const reqBody = {
+                organizationId: org.id,
+            };
+            makeAuthenticatedRequest('POST', '/organizations/switch-org', reqBody, token).then(() => window.location.reload());
+        });
+        return '/';
+    };
+
     return (
         <header className="border-b border-border bg-card/50 backdrop-blur-sm">
             <div className="flex h-14 items-center justify-between px-5">
@@ -59,6 +76,7 @@ export function TopBar() {
                             }}
                             createOrganizationMode="modal"
                             organizationProfileMode="modal"
+                            afterSelectOrganizationUrl={handleSwitchOrg}
                             hidePersonal={false} // Show personal account option
                             defaultOpen={false}
                         />

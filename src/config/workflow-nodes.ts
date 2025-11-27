@@ -1,4 +1,4 @@
-import { User, UserPlus, Heart, MessageSquare, MessageCircle, Mail, Building2, UserMinus, Send } from 'lucide-react';
+import { User, UserPlus, Heart, MessageSquare, MessageCircle, Mail, Building2, UserMinus, Send, Zap } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 /**
@@ -7,7 +7,7 @@ import { LucideIcon } from 'lucide-react';
  * To add a new node type, simply add it to the WORKFLOW_NODE_TYPES array
  */
 
-export type WorkflowNodeType = 'profile_visit' | 'like_post' | 'comment_post' | 'send_followup' | 'withdraw_request' | 'send_inmail' | 'send_connection_request';
+export type WorkflowNodeType = 'profile_visit' | 'like_post' | 'comment_post' | 'send_followup' | 'withdraw_request' | 'send_inmail' | 'send_connection_request' | 'webhook';
 
 export enum EWorkflowNodeType {
     profile_visit = 'profile_visit',
@@ -17,6 +17,7 @@ export enum EWorkflowNodeType {
     withdraw_request = 'withdraw_request',
     send_inmail = 'send_inmail',
     send_connection_request = 'send_connection_request',
+    webhook = 'webhook',
 }
 
 export interface WorkflowNodeConfig {
@@ -108,6 +109,17 @@ export const WORKFLOW_NODE_TYPES: WorkflowNodeConfig[] = [
         requiresTemplate: true,
         isLinkedInOnly: true,
     },
+    {
+        type: 'webhook',
+        label: 'Webhook',
+        description: 'Send a webhook to a URL',
+        icon: Zap,
+        color: 'bg-green-100 text-green-800 border-green-200',
+        category: 'messaging',
+        requiresMessage: true,
+        requiresTemplate: true,
+        isLinkedInOnly: false,
+    }
 ];
 
 /**
