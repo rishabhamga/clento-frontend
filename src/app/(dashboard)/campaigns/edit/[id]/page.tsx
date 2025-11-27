@@ -165,7 +165,8 @@ const EditCampaignPage = () => {
     };
 
     const verifyDetailPage = (): boolean => {
-        const requiredFields: (keyof CampaignDetailsState)[] = ['name', 'description', 'prospectList', 'senderAccount', 'startDate', 'leadsPerDay', 'startTime', 'endTime', 'timezone'];
+        type RequiredField = 'name' | 'description' | 'prospectList' | 'senderAccount' | 'leadsPerDay' | 'startTime' | 'endTime' | 'timezone';
+        const requiredFields: RequiredField[] = ['name', 'description', 'prospectList', 'senderAccount', 'leadsPerDay', 'startTime', 'endTime', 'timezone'];
 
         // Helper function to check if a field is empty (including trimmed strings)
         const isFieldEmpty = (field: keyof CampaignDetailsState): boolean => {
@@ -192,9 +193,6 @@ const EditCampaignPage = () => {
                     break;
                 case 'senderAccount':
                     toast.error('Sender Account is required');
-                    break;
-                case 'startDate':
-                    toast.error('Start Date is required');
                     break;
                 case 'leadsPerDay':
                     toast.error('Leads Per Day is required');
@@ -978,7 +976,7 @@ const renderDetailsTab = ({
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="end-date">Leads Per Day</Label>
-                        <Input type="number" placeholder="Leads Per Day" onChange={e => setState({ type: 'SET_FIELD', field: 'leadsPerDay', value: e.target.value })} />
+                        <Input type="number" value={state.leadsPerDay || ''} placeholder="Leads Per Day" onChange={e => setState({ type: 'SET_FIELD', field: 'leadsPerDay', value: e.target.value })} />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
