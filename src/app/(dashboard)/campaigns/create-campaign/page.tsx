@@ -20,6 +20,7 @@ import { ConnectedAccount, useConnectedAccounts } from '../../../../hooks/useCon
 import { useLeadLists } from '../../../../hooks/useLeadLists';
 import { CheckNever, makeAuthenticatedRequest } from '../../../../lib/axios-utils';
 import { getTimezoneOptionsByRegion, getUserTimezone } from '../../../../lib/timezone-utils';
+import { isNodeConfigured, validateWorkflow as validateWorkflowUtil } from '../../../../lib/workflow-validation';
 import { LeadList } from '../../../../types/lead-list';
 import { Webhook } from '../../integrations/webhooks/page';
 
@@ -340,12 +341,27 @@ const CreateCampaignPage = () => {
         return true;
     };
 
+    /**
+     * Validates the entire workflow to ensure all nodes are properly configured
+     */
+    const verifyWorkflow = (): boolean => {
+        const validationResult = validateWorkflowUtil(workflow);
+
+        if (!validationResult.isValid) {
+            validationResult.errors.forEach(error => {
+                toast.error(error);
+            });
+            return false;
+        }
+
+        return true;
+    };
+
     const handleCreateCampaign = async () => {
         if (!verifyDetailPage()) {
             return;
         }
-        if (!workflow) {
-            toast.error('No Workflow Created');
+        if (!verifyWorkflow()) {
             return;
         }
         const cleanJSON = exportWorkflowJSON();
@@ -523,6 +539,15 @@ const CreateCampaignPage = () => {
         const timestamp = Date.now();
         const firstNodeId = `${nodeType}-${timestamp}`;
 
+        const defaultConfig = getDefaultConfigForNodeType(nodeType);
+        const firstNodeData: ActionNodeData = {
+            type: nodeType,
+            label: getNodeLabel(nodeType),
+            isConfigured: false, // Will be validated below
+            config: defaultConfig,
+            pathType: 'accepted',
+        };
+
         const firstNode: WorkflowNode = {
             id: firstNodeId,
             type: 'action',
@@ -530,18 +555,16 @@ const CreateCampaignPage = () => {
                 x: 100,
                 y: 100,
             },
-            data: {
-                type: nodeType,
-                label: getNodeLabel(nodeType),
-                isConfigured: true,
-                config: {},
-            } as ActionNodeData,
+            data: firstNodeData,
             measured: {
                 width: 220,
                 height: 54,
             },
             deletable: false,
         };
+
+        // Set isConfigured based on validation
+        firstNodeData.isConfigured = isNodeConfigured(firstNode);
 
         let nodes: WorkflowNode[] = [firstNode];
         let edges: WorkflowEdge[] = [];
@@ -694,6 +717,15 @@ const CreateCampaignPage = () => {
         const newNodeId = `${nodeType}-${timestamp}`;
 
         // Create new action node at the position of the clicked AddStep node
+        const defaultConfig = getDefaultConfigForNodeType(nodeType);
+        const newActionNodeData: ActionNodeData = {
+            type: nodeType,
+            label: getNodeLabel(nodeType),
+            isConfigured: false, // Will be validated below
+            config: defaultConfig,
+            pathType: clickedPathType,
+        };
+
         const newActionNode: WorkflowNode = {
             id: newNodeId,
             type: 'action',
@@ -701,19 +733,16 @@ const CreateCampaignPage = () => {
                 x: clickedAddStepNode.position.x,
                 y: clickedAddStepNode.position.y,
             },
-            data: {
-                type: nodeType,
-                label: getNodeLabel(nodeType),
-                isConfigured: true,
-                config: getDefaultConfigForNodeType(nodeType),
-                pathType: clickedPathType,
-            } as ActionNodeData,
+            data: newActionNodeData,
             measured: {
                 width: 220,
                 height: 54,
             },
             deletable: true,
         };
+
+        // Set isConfigured based on validation
+        newActionNodeData.isConfigured = isNodeConfigured(newActionNode);
 
         // Find the edge that was leading to the clicked AddStepNode
         const sourceEdge = workflow.edges.find(edge => edge.target === selectedNodeId);

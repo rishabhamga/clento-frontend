@@ -2,6 +2,7 @@ import { addEdge, applyEdgeChanges, applyNodeChanges, Background, BackgroundVari
 import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionNodeData, AddStepNodeData, BaseConfig, DelayUnit, WorkflowData, WorkflowEdge, WorkflowNode } from '../../app/(dashboard)/campaigns/create-campaign/page';
+import { isNodeConfigured } from '../../lib/workflow-validation';
 import { ActionNode } from '../workflow/ActionNode';
 import { AddStepNode } from '../workflow/AddStepNode';
 import DelayEdge from '../workflow/DelayEdge';
@@ -86,12 +87,29 @@ const ReactFlowCard = ({ workflow, setWorkflow, onAddStepClick, onDelayUpdate, o
         setNodes(currentNodes =>
             currentNodes.map(node => {
                 if (node.id === nodeId) {
+                    const updatedData = {
+                        ...node.data,
+                        config: config,
+                    } as ActionNodeData;
+
+                    // Update isConfigured flag based on validation
+                    const workflowNode: WorkflowNode = {
+                        id: node.id,
+                        type: node.type as 'action' | 'addStep',
+                        position: node.position,
+                        data: updatedData,
+                        measured: {
+                            width: node.measured?.width || node.width || 200,
+                            height: node.measured?.height || node.height || 100,
+                        },
+                        deletable: node.deletable ?? false,
+                    };
+
+                    updatedData.isConfigured = isNodeConfigured(workflowNode);
+
                     return {
                         ...node,
-                        data: {
-                            ...node.data,
-                            config: config,
-                        },
+                        data: updatedData,
                     };
                 }
                 return node;
@@ -101,13 +119,20 @@ const ReactFlowCard = ({ workflow, setWorkflow, onAddStepClick, onDelayUpdate, o
         // Also update the parent workflow
         const updatedWorkflowNodes = workflow.nodes.map(workflowNode => {
             if (workflowNode.id === nodeId) {
-                return {
+                const updatedData = {
+                    ...workflowNode.data,
+                    config: config,
+                } as ActionNodeData;
+
+                // Update isConfigured flag based on validation
+                const updatedWorkflowNode: WorkflowNode = {
                     ...workflowNode,
-                    data: {
-                        ...workflowNode.data,
-                        config: config,
-                    },
+                    data: updatedData,
                 };
+
+                updatedData.isConfigured = isNodeConfigured(updatedWorkflowNode);
+
+                return updatedWorkflowNode;
             }
             return workflowNode;
         });

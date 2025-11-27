@@ -39,32 +39,32 @@ export const ActionNode = ({ data, selected, onNodeClick, onDeleteNode }: { data
                                 {hasConditionalPaths(data.type) && <span className="text-xs text-muted-foreground">Conditional</span>}
                             </div>
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
-                            onClick={e => {
-                                e.stopPropagation();
-                                onDeleteNode?.();
-                            }}>
-                            <X className="h-3 w-3" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                            {!data.isConfigured && (
+                                <Badge variant="destructive" className="text-xs px-1.5 py-0">
+                                    !
+                                </Badge>
+                            )}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    onDeleteNode?.();
+                                }}>
+                                <X className="h-3 w-3" />
+                            </Button>
+                        </div>
                     </div>
 
-                    {/* <div className="flex items-center justify-between">
-                        <Badge
-                            variant={data.isConfigured ? "default" : "secondary"}
-                            className="text-xs"
-                        >
-                            {data.isConfigured ? 'Configured' : 'Not Configured'}
-                        </Badge>
-
-                        {data.config.useAI && (
-                            <Badge variant="outline" className="text-xs">
-                                AI Enabled
+                    {!data.isConfigured && (
+                        <div className="mt-2 pt-2 border-t">
+                            <Badge variant="outline" className="text-xs text-amber-600 border-amber-300 bg-amber-50">
+                                Configuration required
                             </Badge>
-                        )}
-                    </div> */}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
