@@ -1,13 +1,66 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, CreditCard, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CheckCircle, CreditCard, Download, Loader2 } from 'lucide-react';
+import { useBillingPlans, useInitiatePayment } from '@/hooks/useBillingPlans';
+import { Plan } from '@/types/billing';
 
 const features = ['Unlimited campaigns across 7+ channels', 'LinkedIn Sales Navigator integration', 'AI-powered lead quality analyzer', 'Team collaboration tools', 'Multi-channel sender management', 'Priority support', 'Unified inbox for all conversations', 'Cloud-based software', 'CSV import & export leads', 'Personalized outreach & engagement', 'LinkedIn Recruiter integration', 'Smart drip campaign flows'];
 
+// Helper function to format amount (assuming amount is in cents)
+const formatAmount = (amount: number): string => {
+    return `$${(amount / 100).toFixed(2)}`;
+};
+
+// Helper function to format interval
+const formatInterval = (interval: string): string => {
+    return interval.charAt(0).toUpperCase() + interval.slice(1);
+};
+
 export default function SubscriptionsPage() {
+    const { data: plans, isLoading, error } = useBillingPlans();
+    const initiatePayment = useInitiatePayment();
+    const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
+    const [seatsPerPlan, setSeatsPerPlan] = useState<Record<string, number>>({});
+
+    const handleSeatsChange = (planId: string, value: string, maxSeats: number) => {
+        const numValue = parseInt(value, 10);
+        if (isNaN(numValue) || numValue < 1) {
+            setSeatsPerPlan((prev) => ({ ...prev, [planId]: 1 }));
+            return;
+        }
+        if (numValue > maxSeats) {
+            setSeatsPerPlan((prev) => ({ ...prev, [planId]: maxSeats }));
+            return;
+        }
+        setSeatsPerPlan((prev) => ({ ...prev, [planId]: numValue }));
+    };
+
+    const handleGetPlan = async (plan: Plan) => {
+        const seats = seatsPerPlan[plan.id] || 1;
+        setProcessingPlanId(plan.id);
+        try {
+            const response = await initiatePayment.mutateAsync({ planId: plan.id, seats });
+            if (response.fwdUrl) {
+                window.open(response.fwdUrl, '_blank', 'noopener,noreferrer');
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setProcessingPlanId(null);
+        }
+    };
+
+    const calculateTotalPrice = (plan: Plan): number => {
+        const seats = seatsPerPlan[plan.id] || 1;
+        return plan.seatPriceCents * seats;
+    };
+
     return (
         <div className="space-y-4">
             {/* Page Header */}
@@ -110,6 +163,95 @@ export default function SubscriptionsPage() {
                             </Button>
                         </div>
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* Available Plans */}
+            <Card className="bg-card border-border/50">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <CreditCard className="w-5 h-5" />
+                        Available Plans
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">Choose a plan that fits your needs</p>
+                </CardHeader>
+                <CardContent>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-8">
+                            <p className="text-sm text-destructive">Failed to load plans. Please try again later.</p>
+                        </div>
+                    ) : plans && plans.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {plans.map((plan) => (
+                                <Card key={plan.id} className="bg-card border-border/50 hover:border-primary/50 transition-colors">
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <CardTitle className="text-lg">{plan.name}</CardTitle>
+                                                <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
+                                            </div>
+                                            {/* Space for selected plan badge - to be added later */}
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className="text-2xl font-bold">{formatAmount(plan.seatPriceCents)}</span>
+                                                    <span className="text-sm text-muted-foreground">/seat/{formatInterval(plan.interval)}</span>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor={`seats-${plan.id}`} className="text-sm">
+                                                        Number of Seats
+                                                    </Label>
+                                                    <Input
+                                                        id={`seats-${plan.id}`}
+                                                        type="number"
+                                                        min="1"
+                                                        max={plan.maxSeats}
+                                                        value={seatsPerPlan[plan.id] || 1}
+                                                        onChange={(e) => handleSeatsChange(plan.id, e.target.value, plan.maxSeats)}
+                                                        className="w-full"
+                                                    />
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Maximum {plan.maxSeats} seats
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="pt-2 border-t border-border">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <span className="text-sm text-muted-foreground">Total</span>
+                                                    <span className="text-lg font-bold">{formatAmount(calculateTotalPrice(plan))}</span>
+                                                </div>
+                                                <Button
+                                                    className="w-full bg-primary hover:bg-primary/90"
+                                                    onClick={() => handleGetPlan(plan)}
+                                                    disabled={processingPlanId === plan.id || initiatePayment.isPending}
+                                                >
+                                                    {processingPlanId === plan.id ? (
+                                                        <>
+                                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                            Processing...
+                                                        </>
+                                                    ) : (
+                                                        'Get Plan'
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <p className="text-sm text-muted-foreground">No plans available at the moment.</p>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
