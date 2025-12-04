@@ -15,7 +15,8 @@ export default function AccountsPage() {
 
     // Get connected LinkedIn accounts
     const { data: connectedAccountsData, isLoading } = useConnectedAccounts('linkedin');
-    const connectedAccounts = connectedAccountsData?.data || [];
+    const connectedAccounts = connectedAccountsData?.accounts || [];
+    const seatsAllowed = connectedAccountsData?.allowedSeats ?? 0;
     const linkedInAccounts = connectedAccounts;
 
     const accounts = [
@@ -248,7 +249,7 @@ export default function AccountsPage() {
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-xs text-foreground">{account.seatsTotal > 0 ? `${account.seatsUsed}/${account.seatsTotal} used` : '0/0 used'}</span>
+                                                    <span className="text-xs text-foreground">{account.seatsTotal > 0 ? `${account.seatsUsed}/${seatsAllowed} used` : '0/0 used'}</span>
                                                     {account.seatsTotal > 0 && (
                                                         <Button variant="ghost" size="sm" className="h-5 px-1.5 text-xs">
                                                             Get more

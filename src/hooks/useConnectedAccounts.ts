@@ -21,13 +21,8 @@ export interface ConnectedAccount {
 
 // Simplified response types
 export interface ConnectedAccountsResponse {
-    data: ConnectedAccount[];
-    pagination: {
-        page: number;
-        limit: number;
-        total: number;
-        pageCount: number;
-    };
+    accounts: ConnectedAccount[];
+    allowedSeats: number;
 }
 
 // Query keys
@@ -55,18 +50,12 @@ export function useConnectedAccounts(provider?: 'linkedin' | 'email') {
 
             const url = params.toString() ? `/accounts?${params.toString()}` : '/accounts';
 
-            const response = await makeAuthenticatedRequest<ConnectedAccount[]>('GET', url, {}, token);
-            console.log(response);
+            const response = await makeAuthenticatedRequest<{ accounts: ConnectedAccount[]; allowedSeats: number }>('GET', url, {}, token);
 
             // Return simplified structure
             return {
-                data: response || [],
-                pagination: {
-                    page: 1,
-                    limit: 20,
-                    total: response?.length || 0,
-                    pageCount: Math.ceil((response?.length || 0) / 20),
-                },
+                accounts: response.accounts || [],
+                allowedSeats: response.allowedSeats || 0,
             };
         },
         staleTime: 5 * 60 * 1000, // 5 minutes

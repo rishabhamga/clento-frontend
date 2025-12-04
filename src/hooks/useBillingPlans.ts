@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { makeAuthenticatedRequest } from '@/lib/axios-utils';
 import { useAuth } from '@clerk/nextjs';
-import { InitiatePaymentRequest, InitiatePaymentResponse, Plan } from '@/types/billing';
+import { InitiatePaymentRequest, InitiatePaymentResponse, BillingResponse } from '@/types/billing';
 import { toast } from 'sonner';
 
 // Query keys
@@ -15,14 +15,13 @@ export const billingPlanKeys = {
 export function useBillingPlans() {
     const { getToken } = useAuth();
 
-    return useQuery<Plan[]>({
+    return useQuery<BillingResponse>({
         queryKey: billingPlanKeys.list(),
         queryFn: async () => {
             const token = await getToken();
             if (!token) throw new Error('Authentication required');
 
-            const response = await makeAuthenticatedRequest<{ plans: Plan[] }>('GET', '/billing', {}, token);
-            return response.plans;
+            return makeAuthenticatedRequest<BillingResponse>('GET', '/billing', {}, token);
         },
         staleTime: 5 * 60 * 1000, // 5 minutes
         retry: 1,
