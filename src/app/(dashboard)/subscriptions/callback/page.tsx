@@ -24,6 +24,11 @@ export default function PaymentCallbackPage() {
 
     useEffect(() => {
         statusRef.current = status;
+        if(status === 'success') {
+            setTimeout(() => {
+            window.location.href = '/subscriptions';
+            }, 5000)
+        }
     }, [status]);
 
     useEffect(() => {
@@ -52,12 +57,10 @@ export default function PaymentCallbackPage() {
 
                 // Hit the backend endpoint to check payment status
                 const response = await makeAuthenticatedRequest('POST', `/payments/callback`, { xpay_intent_id: intentId, secret }, token);
-
-                if (response.success === 'SUCCESS') {
+                if (response.status === 'SUCCESS') {
                     setStatus('success');
-                    setMessage('Payment successful');
-                }
-                if (response.status === 'FAILED') {
+                    setMessage('Payment successful, Redirecting in 5 seconds');
+                } else if (response.status === 'FAILED') {
                     setStatus('failed');
                     setMessage('Payment failed');
                 } else {
