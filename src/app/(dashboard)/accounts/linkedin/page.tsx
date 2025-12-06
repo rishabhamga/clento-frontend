@@ -16,7 +16,7 @@ export default function LinkedInAccountsPage() {
 
     // Get connected LinkedIn accounts
     const { data: connectedAccountsData, isLoading } = useConnectedAccounts('linkedin');
-    const connectedAccounts = connectedAccountsData?.data || [];
+    const connectedAccounts = connectedAccountsData?.accounts || [];
 
     const handleConnectLinkedIn = async () => {
         setIsConnecting(true);

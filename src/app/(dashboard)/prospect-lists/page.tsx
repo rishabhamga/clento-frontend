@@ -73,7 +73,7 @@ export default function ProspectListsPage() {
 
     // Helper function to get account data by ID
     const getAccountById = (accountId: string): ConnectedAccount | undefined => {
-        const accounts = accountsData?.data || [];
+        const accounts = accountsData?.accounts || [];
         return accounts.find(account => account.id === accountId);
     };
 
