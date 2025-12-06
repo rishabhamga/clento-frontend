@@ -41,7 +41,7 @@ export default function EditLeadListPage() {
     const updateMutation = useUpdateLeadList();
 
     // Filter valid connected accounts
-    const validConnectedAccounts = accountsData?.data?.filter(account => account && account.id && account.display_name && typeof account.display_name === 'string' && account.display_name.trim().length > 0 && account.status === 'connected') || [];
+    const validConnectedAccounts = accountsData?.accounts?.filter(account => account && account.id && account.display_name && typeof account.display_name === 'string' && account.display_name.trim().length > 0 && account.status === 'connected') || [];
 
     const validateForm = () => {
         const newErrors: typeof errors = {};

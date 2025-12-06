@@ -54,7 +54,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
     };
 
     // Filter out any accounts with missing required fields
-    const validConnectedAccounts = connectedAccounts?.data?.filter(account => account && account.id && account.display_name && typeof account.display_name === 'string' && account.display_name.trim().length > 0) || [];
+    const validConnectedAccounts = connectedAccounts?.accounts?.filter(account => account && account.id && account.display_name && typeof account.display_name === 'string' && account.display_name.trim().length > 0) || [];
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -192,7 +192,7 @@ Mike,Johnson,mike.johnson@example.com,https://linkedin.com/in/mikejohnson,Innova
                                 </SelectItem>
                             ) : validConnectedAccounts.length === 0 ? (
                                 <SelectItem value="no-accounts" disabled>
-                                    {connectedAccounts?.data?.length && connectedAccounts.data.length > 0 ? 'No valid LinkedIn accounts found' : 'No LinkedIn accounts connected'}
+                                    {connectedAccounts?.accounts?.length && connectedAccounts.accounts.length > 0 ? 'No valid LinkedIn accounts found' : 'No LinkedIn accounts connected'}
                                 </SelectItem>
                             ) : (
                                 validConnectedAccounts.map(account => (

@@ -887,7 +887,7 @@ const renderDetailsTab = ({
 }: {
     state: CampaignDetailsState;
     setState: ActionDispatch<[action: CampaignDetailsAction]>;
-    connectedAccounts?: { data: ConnectedAccount[] };
+    connectedAccounts?: { accounts: ConnectedAccount[] };
     isLoadingAccounts: boolean;
     leadLists?: {
         data: LeadList[];
@@ -929,8 +929,8 @@ const renderDetailsTab = ({
                                 <SelectItem value="loading" disabled>
                                     Loading accounts...
                                 </SelectItem>
-                            ) : connectedAccounts?.data && connectedAccounts.data.length > 0 ? (
-                                connectedAccounts.data.map((account: ConnectedAccount) => (
+                            ) : connectedAccounts?.accounts && connectedAccounts.accounts.length > 0 ? (
+                                connectedAccounts.accounts.map((account: ConnectedAccount) => (
                                     <SelectItem key={account.id} value={account.id}>
                                         {account.display_name} ({account.provider})
                                     </SelectItem>
