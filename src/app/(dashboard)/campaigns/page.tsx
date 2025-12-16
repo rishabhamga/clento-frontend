@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Pause, Play, BarChart3, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Edit, Pause, Play, BarChart3, Trash2, Loader2, PlayIcon, PauseIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
@@ -22,6 +22,13 @@ interface ICampaign extends Campaign {
         profile_picture_url?: string;
         status: string;
         provider: string;
+    };
+    workflowStatus: {
+        isRunning: boolean;
+        isPaused?: boolean;
+        workflowId?: string;
+        runId?: string;
+        status?: string;
     };
 }
 
@@ -68,23 +75,89 @@ export default function CampaignsPage() {
         router.push(`/campaigns/edit/${campaignId}`);
     };
 
-    useEffect(() => {
-        const fetchCampaigns = async () => {
-            setIsLoading(true);
-            const token = await getToken();
-            if (!token) {
-                throw new Error('Authentication required');
-            }
-            try {
-                const res = await makeAuthenticatedRequest('GET', '/campaigns', {}, token);
-                setCampaigns(res?.campaigns);
-            } catch (error) {
-                toast.error('Failed to fetch campaigns');
-                console.error(error);
-            } finally {
-                setIsLoading(false);
-            }
+    const handleStart = async (campaignId: string) => {
+        const token = await getToken();
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+        const reqBody = {
+            campaignId,
         };
+        try {
+            const res = await makeAuthenticatedRequest('POST', '/campaigns/start', reqBody, token);
+            toast.success('Campaign Started');
+            await fetchCampaigns();
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const handlePause = async (campaignId: string) => {
+        const token = await getToken();
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+        const reqBody = {
+            campaignId,
+        };
+        try {
+            const res = await makeAuthenticatedRequest('POST', '/campaigns/pause', reqBody, token);
+
+            toast.success('Campaign Paused');
+            await fetchCampaigns();
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const handleResume = async (campaignId: string) => {
+        const token = await getToken();
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+        const reqBody = {
+            campaignId,
+        };
+        try {
+            const res = await makeAuthenticatedRequest('POST', '/campaigns/resume', reqBody, token);
+            toast.success('Campaign Resumed');
+            await fetchCampaigns();
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const handlePauseOrPlay = async (campaignId: string) => {
+        const campaign = campaigns.find(it => it.id === campaignId);
+
+        if (campaign?.workflowStatus?.isPaused) {
+            await handleResume(campaignId);
+            return;
+        }
+
+        if (campaign?.workflowStatus?.workflowId) {
+            await handlePause(campaignId);
+            return;
+        }
+
+        await handleStart(campaignId);
+    };
+
+    const fetchCampaigns = async () => {
+        setIsLoading(true);
+        const token = await getToken();
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+        try {
+            const res = await makeAuthenticatedRequest('GET', '/campaigns', {}, token);
+            setCampaigns(res?.campaigns);
+        } catch (error) {
+            toast.error('Failed to fetch campaigns');
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    useEffect(() => {
         fetchCampaigns();
     }, []);
     return (
@@ -184,6 +257,9 @@ export default function CampaignsPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1.5">
+                                                <Button className="cursor-pointer" size="sm" variant="outline" onClick={() => handlePauseOrPlay(campaign.id)}>
+                                                    {campaign?.workflowStatus?.isPaused ? <PlayIcon size={20} /> : campaign?.workflowStatus?.workflowId ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
+                                                </Button>
                                                 <Button className="cursor-pointer" size="sm" variant="outline" onClick={() => handleEditCampaign(campaign.id)}>
                                                     <Edit className="w-3.5 h-3.5" />
                                                 </Button>
