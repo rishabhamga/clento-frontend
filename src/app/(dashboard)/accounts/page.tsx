@@ -126,7 +126,7 @@ export default function AccountsPage() {
         // This will redirect to Unipile hosted auth
         try {
             // Use ngrok URL for webhooks so Unipile can reach our server
-            const baseUrl = 'https://623751821a25.ngrok-free.app';
+            const baseUrl = 'https://app.clento.ai';
 
             const response = await fetch('/api/accounts/connect', {
                 method: 'POST',

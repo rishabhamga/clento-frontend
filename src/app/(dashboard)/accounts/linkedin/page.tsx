@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Linkedin, Plus, MoreHorizontal, Settings, Trash2, RefreshCw, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { useConnectedAccounts } from '@/hooks/useConnectedAccounts';
 import { useAuth } from '@clerk/nextjs';
+import { makeAuthenticatedRequest } from '../../../../lib/axios-utils';
 export default function LinkedInAccountsPage() {
     const [isConnecting, setIsConnecting] = useState(false);
     const { getToken } = useAuth();
@@ -17,6 +18,19 @@ export default function LinkedInAccountsPage() {
     // Get connected LinkedIn accounts
     const { data: connectedAccountsData, isLoading } = useConnectedAccounts('linkedin');
     const connectedAccounts = connectedAccountsData?.accounts || [];
+
+    const handleSyncProfile = async (accountId: string) => {
+        const token = await getToken();
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+        try {
+            const res = await makeAuthenticatedRequest('POST', '/accounts/sync-profile', { id: accountId }, token);
+            console.log(res);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     const handleConnectLinkedIn = async () => {
         setIsConnecting(true);
@@ -86,7 +100,11 @@ export default function LinkedInAccountsPage() {
             case 'error':
                 return <Badge className="bg-red-100 text-red-800 border-red-200 text-xs">Error</Badge>;
             default:
-                return <Badge variant="outline" className="text-xs">Unknown</Badge>;
+                return (
+                    <Badge variant="outline" className="text-xs">
+                        Unknown
+                    </Badge>
+                );
         }
     };
 
@@ -215,7 +233,7 @@ export default function LinkedInAccountsPage() {
                                                         <Settings className="w-3.5 h-3.5 mr-1.5" />
                                                         Settings
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-xs">
+                                                    <DropdownMenuItem className="text-xs" onClick={() => handleSyncProfile(account.id)}>
                                                         <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                                                         Sync Profile
                                                     </DropdownMenuItem>
